@@ -37,7 +37,7 @@ class ParseXmlModule : BaseModule() {
         descriptionStringRes = R.string.module_vflow_data_parse_xml_desc,
         name = "解析 XML",
         description = "从 XML 文本中通过 XPath 提取数据",
-        iconRes = R.drawable.rounded_data_object_24,
+        iconRes = R.drawable.rounded_code_xml_24,
         category = "数据",
         categoryId = "data"
     )

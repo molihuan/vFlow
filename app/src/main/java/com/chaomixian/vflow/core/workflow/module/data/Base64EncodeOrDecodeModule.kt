@@ -33,7 +33,7 @@ class Base64EncodeOrDecodeModule : BaseModule() {
         descriptionStringRes = R.string.module_vflow_data_base64_desc,
         name = "Base64 编解码",
         description = "对文本进行 Base64 编码或解码操作。",
-        iconRes = R.drawable.rounded_convert_to_text_24,
+        iconRes = R.drawable.rounded_chef_hat_24,
         category = "数据",
         categoryId = "data"
     )
@@ -74,6 +74,28 @@ class Base64EncodeOrDecodeModule : BaseModule() {
             defaultValue = "",
             acceptsMagicVariable = true,
             supportsRichText = true
+        ),
+        InputDefinition(
+            id = "text_encoding",
+            nameStringRes = R.string.param_vflow_data_base64_text_encoding_name,
+            name = "文本编码",
+            staticType = ParameterType.ENUM,
+            defaultValue = CryptoModuleSupport.ENCODING_UTF8,
+            options = listOf(
+                CryptoModuleSupport.ENCODING_UTF8,
+                CryptoModuleSupport.ENCODING_HEX,
+                CryptoModuleSupport.ENCODING_BASE64,
+                CryptoModuleSupport.ENCODING_LATIN1
+            ),
+            acceptsMagicVariable = false,
+            optionsStringRes = listOf(
+                R.string.option_vflow_data_crypto_text_encoding_utf8,
+                R.string.option_vflow_data_crypto_text_encoding_hex,
+                R.string.option_vflow_data_crypto_text_encoding_base64,
+                R.string.option_vflow_data_crypto_text_encoding_latin1
+            ),
+            legacyValueMap = CryptoModuleSupport.textEncodingLegacyMap,
+            inputStyle = InputStyle.CHIP_GROUP
         )
     )
 
@@ -123,10 +145,17 @@ class Base64EncodeOrDecodeModule : BaseModule() {
 
         return try {
             val result = if (operation == OP_ENCODE) {
-                Base64.getEncoder().encodeToString(source.toByteArray(Charset.forName("UTF-8")))
+                val bytes = CryptoModuleSupport.decodeByEncoding(
+                    source,
+                    context.getVariableAsString("text_encoding", CryptoModuleSupport.ENCODING_UTF8)
+                )
+                Base64.getEncoder().encodeToString(bytes)
             } else {
                 val decodedBytes = Base64.getDecoder().decode(source)
-                String(decodedBytes, Charset.forName("UTF-8"))
+                CryptoModuleSupport.encodeByEncoding(
+                    decodedBytes,
+                    context.getVariableAsString("text_encoding", CryptoModuleSupport.ENCODING_UTF8)
+                )
             }
             ExecutionResult.Success(mapOf("result_text" to VString(result)))
         } catch (e: IllegalArgumentException) {

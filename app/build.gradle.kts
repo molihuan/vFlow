@@ -196,6 +196,7 @@ dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.80")
 
     // OpenCV for image matching
     implementation(libs.opencv)
