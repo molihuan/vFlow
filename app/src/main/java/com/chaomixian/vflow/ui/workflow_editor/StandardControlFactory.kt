@@ -46,17 +46,23 @@ object StandardControlFactory {
         currentValue: Any?,
         allSteps: List<ActionStep>?,
         onMagicVariableRequested: ((String) -> Unit)?,
+        onPickerRequested: ((InputDefinition) -> Unit)? = null,
         onEnumItemSelected: ((String) -> Unit)? = null
     ): View {
         val row = LayoutInflater.from(context).inflate(R.layout.row_editor_input, null, false)
         row.findViewById<TextView>(R.id.input_name).text = inputDef.getLocalizedName(context)
         val valueContainer = row.findViewById<ViewGroup>(R.id.input_value_container)
         val magicButton = row.findViewById<ImageButton>(R.id.button_magic_variable)
+        val pickerButton = row.findViewById<ImageButton>(R.id.button_picker)
 
         // 显示魔法变量按钮（如果支持魔法变量或命名变量）
         magicButton.isVisible = inputDef.acceptsMagicVariable || inputDef.acceptsNamedVariable
         magicButton.setOnClickListener {
             onMagicVariableRequested?.invoke(inputDef.id)
+        }
+        pickerButton.isVisible = inputDef.pickerType != PickerType.NONE
+        pickerButton.setOnClickListener {
+            onPickerRequested?.invoke(inputDef)
         }
 
         valueContainer.removeAllViews()
@@ -64,11 +70,11 @@ object StandardControlFactory {
         // 根据参数类型创建对应的输入控件
         val valueView = when {
             inputDef.supportsRichText -> createRichTextEditor(
-                context,
-                currentValue?.toString() ?: "",
-                allSteps,
-                inputDef.id,  // 使用 inputId 作为 tag，便于后续查找
-                inputDef.getLocalizedHint(context)
+                context = context,
+                initialText = currentValue?.toString() ?: "",
+                allSteps = allSteps,
+                tag = inputDef.id,  // 使用 inputId 作为 tag，便于后续查找
+                hint = inputDef.getLocalizedHint(context)
             )
             isVariableReference(currentValue) -> createVariablePill(
                 context,

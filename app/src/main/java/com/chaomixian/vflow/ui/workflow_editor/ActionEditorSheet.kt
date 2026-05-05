@@ -583,7 +583,7 @@ class ActionEditorSheet : BottomSheetDialogFragment() {
         }
 
         // PICKER 类型使用带选择器图标的输入框
-        if (inputDef.pickerType != PickerType.NONE) {
+        if (inputDef.pickerType != PickerType.NONE && !inputDef.supportsRichText) {
             val row = LayoutInflater.from(requireContext()).inflate(R.layout.row_editor_input, null, false)
             row.findViewById<TextView>(R.id.input_name).text = inputDef.getLocalizedName(requireContext())
             row.findViewById<ImageButton>(R.id.button_magic_variable).visibility = View.GONE
@@ -612,6 +612,7 @@ class ActionEditorSheet : BottomSheetDialogFragment() {
             currentValue = currentValue,
             allSteps = allSteps,
             onMagicVariableRequested = ::requestMagicVariableSelection,
+            onPickerRequested = ::dispatchPickerRequest,
             onEnumItemSelected = { selectedItem ->
                 // 防止重复触发：只在值真正改变时才处理
                 if (currentParameters[inputDef.id] != selectedItem) {

@@ -58,7 +58,9 @@ class FileOperationModule : BaseModule() {
             defaultValue = "",
             hint = "输入文件路径 或 点击右侧按钮选择",
             pickerType = PickerType.FILE,
-            acceptsMagicVariable = false,
+            supportsRichText = true,
+            acceptsMagicVariable = true,
+            acceptsNamedVariable = true,
             visibility = InputVisibility.notIn("operation", listOf(OP_CREATE))
         ),
 
@@ -101,7 +103,9 @@ class FileOperationModule : BaseModule() {
             defaultValue = "",
             hint = "输入目录路径 或 点击选择",
             pickerType = PickerType.DIRECTORY,
-            acceptsMagicVariable = false,
+            supportsRichText = true,
+            acceptsMagicVariable = true,
+            acceptsNamedVariable = true,
             visibility = InputVisibility.whenEquals("operation", OP_CREATE)
         ),
 
