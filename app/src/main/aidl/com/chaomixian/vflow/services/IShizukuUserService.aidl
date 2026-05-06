@@ -1,6 +1,7 @@
 // 文件路径: src/main/aidl/com/chaomixian/vflow/services/IShizukuUserService.aidl
 package com.chaomixian.vflow.services;
 
+import android.os.Bundle;
 import android.view.Surface;
 
 /**
@@ -18,6 +19,11 @@ interface IShizukuUserService {
      * 执行 shell 命令。
      */
     String exec(String command) = 1;
+
+    /**
+     * 执行 shell 命令并返回结构化结果。
+     */
+    Bundle execWithResult(String command) = 7;
 
     /**
      * 退出服务。

@@ -1268,6 +1268,7 @@
     <string name="param_vflow_core_shell_command_command_name">Command</string>
     <string name="output_vflow_core_shell_command_result_name">Command Output</string>
     <string name="output_vflow_core_shell_command_success_name">Success</string>
+    <string name="output_vflow_core_shell_command_exit_code_name">Exit Code</string>
 
     <!-- vflow.core.press_key - CorePressKey Module -->
     <string name="module_vflow_core_press_key_name">Press Key</string>
@@ -1535,6 +1536,7 @@
     <string name="param_vflow_shizuku_shell_command_command_name">Command</string>
     <string name="output_vflow_shizuku_shell_command_result_name">Command Output</string>
     <string name="output_vflow_shizuku_shell_command_success_name">Success</string>
+    <string name="output_vflow_shizuku_shell_command_exit_code_name">Exit Code</string>
     <string name="error_vflow_shizuku_shell_command_empty">Command to execute cannot be empty.</string>
     <string name="error_vflow_shizuku_shell_command_failed">Execution Failed</string>
     <string name="msg_vflow_shizuku_shell_command_executing" formatted="false">Executing via %s: %s</string>

@@ -46,6 +46,12 @@ object ShellManager {
         val output: String
     )
 
+    data class ShellCommandResult(
+        val output: String,
+        val exitCode: Int,
+        val success: Boolean
+    )
+
     @Volatile
     private var shellService: IShizukuUserService? = null
 
@@ -212,6 +218,14 @@ object ShellManager {
         command: String,
         mode: ShellMode = ShellMode.AUTO
     ): String {
+        return execShellCommandWithResult(context, command, mode).output
+    }
+
+    suspend fun execShellCommandWithResult(
+        context: Context,
+        command: String,
+        mode: ShellMode = ShellMode.AUTO
+    ): ShellCommandResult {
         return withContext(Dispatchers.IO) {
             // 确定最终使用的模式
             val finalMode = if (mode == ShellMode.AUTO) {
@@ -293,7 +307,7 @@ object ShellManager {
     /**
      * 内部 Root 执行逻辑
      */
-    private fun executeRootCommand(command: String): String {
+    private fun executeRootCommand(command: String): ShellCommandResult {
         return try {
             val process = Runtime.getRuntime().exec("su")
             val os = DataOutputStream(process.outputStream)
@@ -311,15 +325,27 @@ object ShellManager {
             val exitCode = process.waitFor()
 
             if (exitCode == 0) {
-                if (stdout.isNotEmpty()) stdout.trim() else "Success"
+                ShellCommandResult(
+                    output = if (stdout.isNotEmpty()) stdout.trim() else "Success",
+                    exitCode = exitCode,
+                    success = true
+                )
             } else {
                 // 优先返回 stderr，如果没有则返回 stdout，最后返回错误码
                 val msg = if (stderr.isNotBlank()) stderr else if (stdout.isNotBlank()) stdout else "Exit code $exitCode"
-                "Error: ${msg.trim()}"
+                ShellCommandResult(
+                    output = "Error: ${msg.trim()}",
+                    exitCode = exitCode,
+                    success = false
+                )
             }
         } catch (e: Exception) {
             DebugLogger.e(TAG, "Root execution failed", e)
-            "Error: ${e.message}"
+            ShellCommandResult(
+                output = "Error: ${e.message}",
+                exitCode = -1,
+                success = false
+            )
         }
     }
 
@@ -330,14 +356,23 @@ object ShellManager {
     /**
      * 内部 Shizuku 执行逻辑 (保留原有逻辑)
      */
-    private suspend fun executeShizukuCommand(context: Context, command: String): String {
+    private suspend fun executeShizukuCommand(context: Context, command: String): ShellCommandResult {
         val service = getService(context)
         if (service == null) {
             val status = if (!isShizukuActive(context)) "Shizuku 未激活或未授权" else "服务连接失败"
-            return "Error: $status"
+            return ShellCommandResult(
+                output = "Error: $status",
+                exitCode = -1,
+                success = false
+            )
         }
         return try {
-            service.exec(command)
+            val result = service.execWithResult(command)
+            ShellCommandResult(
+                output = result.getString("output").orEmpty(),
+                exitCode = result.getInt("exitCode", -1),
+                success = result.getBoolean("success", false)
+            )
         } catch (e: CancellationException) {
             // 捕获协程取消异常。
             DebugLogger.d(TAG, "Shizuku command execution was cancelled as expected.")
@@ -346,7 +381,11 @@ object ShellManager {
             // 其他所有类型的异常仍然被视为执行失败。
             DebugLogger.e(TAG, "执行命令失败，连接可能已丢失。", e)
             shellService = null
-            "Error: ${e.message}"
+            ShellCommandResult(
+                output = "Error: ${e.message}",
+                exitCode = -1,
+                success = false
+            )
         }
     }
 

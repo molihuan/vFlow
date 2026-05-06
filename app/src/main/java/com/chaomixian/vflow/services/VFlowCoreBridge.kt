@@ -98,6 +98,12 @@ object VFlowCoreBridge {
         val error: String? = null
     )
 
+    data class ShellExecResult(
+        val output: String,
+        val exitCode: Int,
+        val success: Boolean
+    )
+
     data class ClipboardStreamEvent(
         val event: String,
         val sequence: Long,
@@ -501,7 +507,7 @@ object VFlowCoreBridge {
      * @return 命令输出
      */
     fun exec(cmd: String): String {
-        return exec(cmd, if (privilegeMode == PrivilegeMode.ROOT) ExecMode.ROOT else ExecMode.SHELL)
+        return execWithResult(cmd, if (privilegeMode == PrivilegeMode.ROOT) ExecMode.ROOT else ExecMode.SHELL).output
     }
 
     /**
@@ -512,6 +518,10 @@ object VFlowCoreBridge {
      * @return 命令输出
      */
     fun exec(cmd: String, mode: ExecMode, context: Context? = null): String {
+        return execWithResult(cmd, mode, context).output
+    }
+
+    fun execWithResult(cmd: String, mode: ExecMode, context: Context? = null): ShellExecResult {
         // 根据 mode 决定使用哪个权限级别
         val execAsRoot = when (mode) {
             ExecMode.ROOT -> true
@@ -536,7 +546,11 @@ object VFlowCoreBridge {
                 .put("cmd", cmd)
                 .put("asRoot", execAsRoot))
         val res = sendRaw(req)
-        return res?.optString("output", "") ?: ""
+        return ShellExecResult(
+            output = res?.optString("output", "") ?: "",
+            exitCode = res?.optInt("exitCode", -1) ?: -1,
+            success = res?.optBoolean("success", false) ?: false
+        )
     }
 
     fun performClick(x: Int, y: Int): Boolean {

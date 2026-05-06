@@ -216,12 +216,14 @@ abstract class BaseWorker(
                 if (cmd.isBlank()) {
                     result.put("success", false)
                     result.put("error", "Command is empty")
+                    result.put("exitCode", -1)
                     return result
                 }
 
-                val output = executeCommand(cmd)
-                result.put("success", true)
-                result.put("output", output)
+                val execResult = executeCommand(cmd)
+                result.put("success", execResult.success)
+                result.put("output", execResult.output)
+                result.put("exitCode", execResult.exitCode)
                 return result
             }
 
@@ -282,9 +284,15 @@ abstract class BaseWorker(
     /**
      * 执行 Shell 命令
      * @param command 要执行的命令
-     * @return 命令输出，失败时返回 "Error: ..." 格式
+     * @return 结构化执行结果
      */
-    private fun executeCommand(command: String): String {
+    private data class ShellExecResult(
+        val output: String,
+        val exitCode: Int,
+        val success: Boolean
+    )
+
+    private fun executeCommand(command: String): ShellExecResult {
         return try {
             val process = Runtime.getRuntime().exec(arrayOf("sh", "-c", command))
 
@@ -293,13 +301,25 @@ abstract class BaseWorker(
             val exitCode = process.waitFor()
 
             if (exitCode == 0) {
-                stdout.trim()
+                ShellExecResult(
+                    output = stdout.trim(),
+                    exitCode = exitCode,
+                    success = true
+                )
             } else {
                 val errorMsg = if (stderr.isNotBlank()) stderr else if (stdout.isNotBlank()) stdout else "Exit code $exitCode"
-                "Error: ${errorMsg.trim()}"
+                ShellExecResult(
+                    output = "Error: ${errorMsg.trim()}",
+                    exitCode = exitCode,
+                    success = false
+                )
             }
         } catch (e: Exception) {
-            "Error: ${e.message}"
+            ShellExecResult(
+                output = "Error: ${e.message}",
+                exitCode = -1,
+                success = false
+            )
         }
     }
 }

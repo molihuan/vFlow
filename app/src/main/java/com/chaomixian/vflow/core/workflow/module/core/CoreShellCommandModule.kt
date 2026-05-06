@@ -106,7 +106,8 @@ class CoreShellCommandModule : BaseModule() {
 
     override fun getOutputs(step: ActionStep?): List<OutputDefinition> = listOf(
         OutputDefinition("result", "命令输出", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_core_shell_command_result_name),
-        OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_core_shell_command_success_name)
+        OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_core_shell_command_success_name),
+        OutputDefinition("exit_code", "返回值", VTypeRegistry.NUMBER.id, nameStringRes = R.string.output_vflow_core_shell_command_exit_code_name)
     )
 
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
@@ -180,19 +181,13 @@ class CoreShellCommandModule : BaseModule() {
         // 3. 执行命令
         onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_core_shell_command_executing, modeLabel, command)))
 
-        val result = VFlowCoreBridge.exec(command, execMode, appContext)
+        val result = VFlowCoreBridge.execWithResult(command, execMode, appContext)
 
         // 4. 返回结果
-        return if (result.isBlank()) {
-            ExecutionResult.Success(mapOf(
-                "result" to VString(""),
-                "success" to VBoolean(true)
-            ))
-        } else {
-            ExecutionResult.Success(mapOf(
-                "result" to VString(result),
-                "success" to VBoolean(true)
-            ))
-        }
+        return ExecutionResult.Success(mapOf(
+            "result" to VString(result.output),
+            "success" to VBoolean(result.success),
+            "exit_code" to VNumber(result.exitCode)
+        ))
     }
 }

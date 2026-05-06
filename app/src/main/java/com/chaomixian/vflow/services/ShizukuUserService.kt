@@ -4,6 +4,7 @@ package com.chaomixian.vflow.services
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
+import android.os.Bundle
 import android.os.IBinder
 import android.view.Surface
 import com.chaomixian.vflow.core.logging.DebugLogger
@@ -25,7 +26,16 @@ class ShizukuUserService(private val context: Context) : IShizukuUserService.Stu
 
     companion object {
         private const val TAG = "vFlowShellService"
+        private const val RESULT_OUTPUT = "output"
+        private const val RESULT_EXIT_CODE = "exitCode"
+        private const val RESULT_SUCCESS = "success"
     }
+
+    private data class ShellExecResult(
+        val output: String,
+        val exitCode: Int,
+        val success: Boolean
+    )
 
     init {
         DebugLogger.d(TAG, "ShellService 实例被创建")
@@ -42,11 +52,28 @@ class ShizukuUserService(private val context: Context) : IShizukuUserService.Stu
     }
 
     override fun exec(command: String?): String {
+        return execWithStructuredResult(command).output
+    }
+
+    override fun execWithResult(command: String?): Bundle {
+        val result = execWithStructuredResult(command)
+        return Bundle().apply {
+            putString(RESULT_OUTPUT, result.output)
+            putInt(RESULT_EXIT_CODE, result.exitCode)
+            putBoolean(RESULT_SUCCESS, result.success)
+        }
+    }
+
+    private fun execWithStructuredResult(command: String?): ShellExecResult {
         DebugLogger.d(TAG, "收到命令执行请求: $command")
 
         if (command.isNullOrBlank()) {
             DebugLogger.w(TAG, "命令为空")
-            return "Error: Empty command"
+            return ShellExecResult(
+                output = "Error: Empty command",
+                exitCode = -1,
+                success = false
+            )
         }
 
         return try {
@@ -70,19 +97,39 @@ class ShizukuUserService(private val context: Context) : IShizukuUserService.Stu
             // 根据退出码返回结果
             when {
                 exitCode == 0 -> {
-                    if (stdout.isNotEmpty()) stdout else "Command executed successfully"
+                    ShellExecResult(
+                        output = if (stdout.isNotEmpty()) stdout else "Command executed successfully",
+                        exitCode = exitCode,
+                        success = true
+                    )
                 }
-                stderr.isNotEmpty() -> "Error (code $exitCode): $stderr"
-                else -> "Error (code $exitCode): Command failed with no error message"
+                stderr.isNotEmpty() -> ShellExecResult(
+                    output = "Error (code $exitCode): $stderr",
+                    exitCode = exitCode,
+                    success = false
+                )
+                else -> ShellExecResult(
+                    output = "Error (code $exitCode): Command failed with no error message",
+                    exitCode = exitCode,
+                    success = false
+                )
             }
         } catch (e: SecurityException) {
             val errorMsg = "Permission denied: ${e.message}"
             DebugLogger.e(TAG, errorMsg, e)
-            errorMsg
+            ShellExecResult(
+                output = errorMsg,
+                exitCode = -1,
+                success = false
+            )
         } catch (e: Exception) {
             val errorMsg = "Exception: ${e.message}"
             DebugLogger.e(TAG, errorMsg, e)
-            errorMsg
+            ShellExecResult(
+                output = errorMsg,
+                exitCode = -1,
+                success = false
+            )
         }
     }
 

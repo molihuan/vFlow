@@ -1543,6 +1543,7 @@
     <string name="output_vflow_shizuku_gemini_shortcut_result_name">命令输出</string>
     <string name="output_vflow_shizuku_shell_command_result_name">命令输出</string>
     <string name="output_vflow_shizuku_shell_command_success_name">成功</string>
+    <string name="output_vflow_shizuku_shell_command_exit_code_name">返回值</string>
     <string name="output_vflow_shizuku_wechat_shortcuts_result_name">命令输出</string>
     <string name="output_vflow_system_bluetooth_success_name">成功</string>
     <string name="output_vflow_system_get_usage_stats_most_used_app_name">最常用应用</string>
@@ -1757,6 +1758,7 @@
     <string name="param_vflow_core_shell_command_command_name">命令</string>
     <string name="output_vflow_core_shell_command_result_name">命令输出</string>
     <string name="output_vflow_core_shell_command_success_name">是否成功</string>
+    <string name="output_vflow_core_shell_command_exit_code_name">返回值</string>
 
     <string name="param_vflow_core_press_key_key_code_name">按键代码</string>
     <string name="output_vflow_core_press_key_success_name">是否成功</string>

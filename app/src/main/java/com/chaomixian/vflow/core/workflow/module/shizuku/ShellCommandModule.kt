@@ -94,7 +94,8 @@ class ShellCommandModule : BaseModule() {
 
     override fun getOutputs(step: ActionStep?): List<OutputDefinition> = listOf(
         OutputDefinition("result", "命令输出", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_shizuku_shell_command_result_name),
-        OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_shizuku_shell_command_success_name)
+        OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_shizuku_shell_command_success_name),
+        OutputDefinition("exit_code", "返回值", VTypeRegistry.NUMBER.id, nameStringRes = R.string.output_vflow_shizuku_shell_command_exit_code_name)
     )
 
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
@@ -138,15 +139,12 @@ class ShellCommandModule : BaseModule() {
 
         onProgress(ProgressUpdate("正在通过 $modeStr 执行: $command"))
 
-        val result = ShellManager.execShellCommand(context.applicationContext, command, mode)
+        val result = ShellManager.execShellCommandWithResult(context.applicationContext, command, mode)
 
-        return if (result.startsWith("Error:")) {
-            ExecutionResult.Failure("执行失败", result)
-        } else {
-            ExecutionResult.Success(mapOf(
-                "result" to VString(result),
-                "success" to VBoolean(true)
-            ))
-        }
+        return ExecutionResult.Success(mapOf(
+            "result" to VString(result.output),
+            "success" to VBoolean(result.success),
+            "exit_code" to VNumber(result.exitCode)
+        ))
     }
 }
