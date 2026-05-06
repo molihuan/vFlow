@@ -22,7 +22,6 @@ import android.widget.PopupWindow
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.Space
 import android.widget.TextView
 import com.google.android.material.card.MaterialCardView
@@ -396,7 +395,19 @@ class ActionStepAdapter(
                 },
                 onLongPress = {
                     if (adapterPosition != RecyclerView.NO_POSITION) {
-                        showPopupMenu(itemView.findViewById(R.id.category_color_bar_container), actualPosition)
+                        if (actionPopupWindow?.isShowing == true) {
+                            actionPopupWindow?.dismiss()
+                            actionPopupWindow = null
+                        } else {
+                            showFloatingActionMenu(
+                                itemView.findViewById(R.id.category_color_bar_container),
+                                actualPosition,
+                                step,
+                                canDuplicate,
+                                canDelete,
+                                canRestoreBlock
+                            )
+                        }
                     }
                 }
             )
@@ -424,6 +435,7 @@ class ActionStepAdapter(
             val popupView = LayoutInflater.from(context).inflate(R.layout.popup_step_actions, null, false)
             val toggleEnabledButton: ImageButton = popupView.findViewById(R.id.button_toggle_step_enabled)
             val restoreButton: ImageButton = popupView.findViewById(R.id.button_restore_block_action)
+            val insertBelowButton: ImageButton = popupView.findViewById(R.id.button_insert_below_action)
             val duplicateButton: ImageButton = popupView.findViewById(R.id.button_duplicate_action)
             val deleteButton: ImageButton = popupView.findViewById(R.id.button_delete_action)
 
@@ -455,6 +467,13 @@ class ActionStepAdapter(
                 iconColor = onPrimaryContainer
             )
             restoreButton.visibility = if (canRestoreBlock) View.VISIBLE else View.GONE
+
+            tintPopupButton(
+                button = insertBelowButton,
+                backgroundColor = primaryContainer,
+                iconColor = onPrimaryContainer
+            )
+            insertBelowButton.contentDescription = context.getString(R.string.insert_below)
 
             tintPopupButton(
                 button = duplicateButton,
@@ -497,6 +516,12 @@ class ActionStepAdapter(
                     onRestoreBlockClick(actualPosition)
                 }
             }
+            insertBelowButton.setOnClickListener {
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    popupWindow.dismiss()
+                    onInsertBelowClick(actualPosition)
+                }
+            }
             duplicateButton.setOnClickListener {
                 if (canDuplicate && bindingAdapterPosition != RecyclerView.NO_POSITION) {
                     popupWindow.dismiss()
@@ -533,20 +558,6 @@ class ActionStepAdapter(
             button.setColorFilter(iconColor)
         }
 
-        private fun showPopupMenu(anchor: View, actualPosition: Int) {
-            val popup = PopupMenu(context, anchor)
-            popup.menu.add(0, 1, 0, R.string.insert_below)
-            popup.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    1 -> {
-                        onInsertBelowClick(actualPosition)
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
-        }
     }
 
 }
