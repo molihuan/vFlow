@@ -283,8 +283,18 @@ class WorkflowManager(val context: Context) {
     private fun JsonObject.getActionSteps(name: String): List<ActionStep>? {
         val element = get(name) ?: return null
         if (!element.isJsonArray) return null
-        val type = object : TypeToken<List<ActionStep>>() {}.type
-        return gson.fromJson<List<ActionStep>>(element, type)
+        return element.asJsonArray.mapNotNull { item ->
+            val obj = item.asJsonObjectOrNull() ?: return@mapNotNull null
+            val moduleId = obj.getString("moduleId") ?: return@mapNotNull null
+            val parameters = obj.getMap("parameters") ?: emptyMap()
+            ActionStep(
+                moduleId = moduleId,
+                parameters = parameters,
+                isDisabled = obj.getBoolean("isDisabled") ?: false,
+                indentationLevel = obj.getInt("indentationLevel") ?: 0,
+                id = obj.getString("id")?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString()
+            )
+        }
     }
 
     private fun JsonObject.getMap(name: String): Map<String, Any?>? {

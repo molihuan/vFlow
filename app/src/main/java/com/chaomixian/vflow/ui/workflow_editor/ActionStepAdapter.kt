@@ -18,12 +18,14 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupWindow
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Space
 import android.widget.TextView
+import com.google.android.material.card.MaterialCardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.chaomixian.vflow.R
@@ -47,6 +49,8 @@ class ActionStepAdapter(
     private val onEditClick: (position: Int, inputId: String?) -> Unit,
     private val onDeleteClick: (position: Int) -> Unit,
     private val onDuplicateClick: (position: Int) -> Unit,
+    private val onToggleEnabledClick: (position: Int) -> Unit,
+    private val onRestoreBlockClick: (position: Int) -> Unit,
     private val onInsertBelowClick: (position: Int) -> Unit,
     private val onTriggerParameterPillClick: (position: Int, parameterId: String) -> Unit = { _, _ -> },
     private val onParameterPillClick: (position: Int, parameterId: String) -> Unit,
@@ -142,7 +146,10 @@ class ActionStepAdapter(
         val contentContainer: LinearLayout = cardView.findViewById(R.id.content_container)
         val categoryColorBarContainer: View = cardView.findViewById(R.id.category_color_bar_container)
         val categoryColorBar: View = cardView.findViewById(R.id.category_color_bar)
+        val stepCardView: MaterialCardView = cardView.findViewById(R.id.step_card_view)
+        val actionContainer: LinearLayout = cardView.findViewById(R.id.layout_step_actions)
         val deleteButton: ImageButton = cardView.findViewById(R.id.button_delete_action)
+        val moreButton: ImageButton = cardView.findViewById(R.id.button_more_action)
 
         indentSpace.layoutParams.width = (indentLevel * 24 * context.resources.displayMetrics.density).toInt()
         val categoryColor = ContextCompat.getColor(context, PillTheme.getCategoryColor(module.metadata.getResolvedCategoryId()))
@@ -152,6 +159,13 @@ class ActionStepAdapter(
             setColor(categoryColor)
         }
         categoryColorBar.background = drawable
+
+        val isActionStep = prefixText != null
+        val isDisabled = if (isActionStep) BlockStructureHelper.isStepEffectivelyDisabled(actionSteps, actualPosition) else step.isDisabled
+        val cardAlpha = if (isDisabled) 0.52f else 1f
+        stepCardView.alpha = cardAlpha
+        categoryColorBar.alpha = if (isDisabled) 0.45f else 1f
+        contentContainer.alpha = if (isDisabled) 0.78f else 1f
 
         contentContainer.removeAllViews()
         val summarySegments = buildSummarySegments(
@@ -212,8 +226,17 @@ class ActionStepAdapter(
             contentContainer.addView(customPreview)
         }
 
-        deleteButton.visibility = if (isDeletable) View.VISIBLE else View.GONE
+        deleteButton.visibility = if (isActionStep && isDeletable) View.GONE else if (isDeletable) View.VISIBLE else View.GONE
         deleteButton.setOnClickListener { onDelete?.invoke() }
+
+        if (isActionStep) {
+            actionContainer.visibility = View.VISIBLE
+            moreButton.visibility = View.VISIBLE
+            deleteButton.visibility = View.GONE
+        } else {
+            actionContainer.visibility = if (isDeletable) View.VISIBLE else View.GONE
+            moreButton.visibility = View.GONE
+        }
 
         cardView.setOnClickListener { onClick() }
         categoryColorBarContainer.setOnLongClickListener {
@@ -325,10 +348,18 @@ class ActionStepAdapter(
         private val context: Context = itemView.context
         private val handler = Handler(Looper.getMainLooper())
         private var clickCount = 0
+        private var actionPopupWindow: PopupWindow? = null
 
         fun bind(step: ActionStep, actualPosition: Int, displayIndex: Int, allSteps: List<ActionStep>) {
             val module = ModuleRegistry.getModule(step.moduleId) ?: return
+            val canDelete = module.blockBehavior.isIndividuallyDeletable ||
+                module.blockBehavior.type == BlockType.BLOCK_START ||
+                module.blockBehavior.type == BlockType.NONE
+            val canDuplicate = module.blockBehavior.type != BlockType.BLOCK_END
+            val canRestoreBlock = BlockStructureHelper.getMissingMiddleModuleIds(actionSteps, actualPosition).isNotEmpty()
             val rawSummary = module.getSummary(context, step)
+            actionPopupWindow?.dismiss()
+            actionPopupWindow = null
 
             bindEmbeddedStepCard(
                 cardView = itemView,
@@ -338,9 +369,7 @@ class ActionStepAdapter(
                 prefixText = "#$displayIndex ",
                 allSteps = allSteps,
                 indentLevel = step.indentationLevel,
-                isDeletable = module.blockBehavior.isIndividuallyDeletable ||
-                    module.blockBehavior.type == BlockType.BLOCK_START ||
-                    module.blockBehavior.type == BlockType.NONE,
+                isDeletable = canDelete,
                 onParameterPillClick = { parameterId ->
                     onParameterPillClick(actualPosition, parameterId)
                 },
@@ -355,7 +384,7 @@ class ActionStepAdapter(
                         }, 250)
                     } else if (clickCount == 2) {
                         clickCount = 0
-                        if (adapterPosition != RecyclerView.NO_POSITION) {
+                        if (canDuplicate && adapterPosition != RecyclerView.NO_POSITION) {
                             onDuplicateClick(actualPosition)
                         }
                     }
@@ -371,6 +400,137 @@ class ActionStepAdapter(
                     }
                 }
             )
+
+            val moreButton: ImageButton = itemView.findViewById(R.id.button_more_action)
+
+            moreButton.setOnClickListener {
+                if (actionPopupWindow?.isShowing == true) {
+                    actionPopupWindow?.dismiss()
+                    actionPopupWindow = null
+                } else if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    showFloatingActionMenu(moreButton, actualPosition, step, canDuplicate, canDelete, canRestoreBlock)
+                }
+            }
+        }
+
+        private fun showFloatingActionMenu(
+            anchor: View,
+            actualPosition: Int,
+            step: ActionStep,
+            canDuplicate: Boolean,
+            canDelete: Boolean,
+            canRestoreBlock: Boolean
+        ) {
+            val popupView = LayoutInflater.from(context).inflate(R.layout.popup_step_actions, null, false)
+            val toggleEnabledButton: ImageButton = popupView.findViewById(R.id.button_toggle_step_enabled)
+            val restoreButton: ImageButton = popupView.findViewById(R.id.button_restore_block_action)
+            val duplicateButton: ImageButton = popupView.findViewById(R.id.button_duplicate_action)
+            val deleteButton: ImageButton = popupView.findViewById(R.id.button_delete_action)
+
+            val secondaryContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorSecondaryContainer)
+            val onSecondaryContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorOnSecondaryContainer)
+            val primaryContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorPrimaryContainer)
+            val onPrimaryContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorOnPrimaryContainer)
+            val tertiaryContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorTertiaryContainer)
+            val onTertiaryContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorOnTertiaryContainer)
+            val errorContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorErrorContainer)
+            val onErrorContainer = MaterialColors.getColor(anchor, com.google.android.material.R.attr.colorOnErrorContainer)
+            val isEffectivelyDisabled = BlockStructureHelper.isStepEffectivelyDisabled(actionSteps, actualPosition)
+
+            tintPopupButton(
+                button = toggleEnabledButton,
+                backgroundColor = secondaryContainer,
+                iconColor = onSecondaryContainer
+            )
+            toggleEnabledButton.setImageResource(
+                if (isEffectivelyDisabled) R.drawable.rounded_play_arrow_24 else R.drawable.rounded_pause_24
+            )
+            toggleEnabledButton.contentDescription = context.getString(
+                if (isEffectivelyDisabled) R.string.desc_enable_action else R.string.desc_disable_action
+            )
+
+            tintPopupButton(
+                button = restoreButton,
+                backgroundColor = primaryContainer,
+                iconColor = onPrimaryContainer
+            )
+            restoreButton.visibility = if (canRestoreBlock) View.VISIBLE else View.GONE
+
+            tintPopupButton(
+                button = duplicateButton,
+                backgroundColor = tertiaryContainer,
+                iconColor = onTertiaryContainer
+            )
+            duplicateButton.visibility = if (canDuplicate) View.VISIBLE else View.GONE
+
+            tintPopupButton(
+                button = deleteButton,
+                backgroundColor = errorContainer,
+                iconColor = onErrorContainer
+            )
+            deleteButton.visibility = if (canDelete) View.VISIBLE else View.GONE
+
+            val popupWindow = PopupWindow(
+                popupView,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+            ).apply {
+                isOutsideTouchable = true
+                elevation = 24f
+                setOnDismissListener {
+                    if (actionPopupWindow === this) {
+                        actionPopupWindow = null
+                    }
+                }
+            }
+
+            toggleEnabledButton.setOnClickListener {
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    popupWindow.dismiss()
+                    onToggleEnabledClick(actualPosition)
+                }
+            }
+            restoreButton.setOnClickListener {
+                if (canRestoreBlock && bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    popupWindow.dismiss()
+                    onRestoreBlockClick(actualPosition)
+                }
+            }
+            duplicateButton.setOnClickListener {
+                if (canDuplicate && bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    popupWindow.dismiss()
+                    onDuplicateClick(actualPosition)
+                }
+            }
+            deleteButton.setOnClickListener {
+                if (canDelete && bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    popupWindow.dismiss()
+                    onDeleteClick(actualPosition)
+                }
+            }
+
+            popupView.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+            val xOffset = anchor.width - popupView.measuredWidth
+            val yOffset = -anchor.height - popupView.measuredHeight
+            popupWindow.showAsDropDown(anchor, xOffset, yOffset)
+            actionPopupWindow = popupWindow
+        }
+
+        private fun tintPopupButton(
+            button: ImageButton,
+            backgroundColor: Int,
+            iconColor: Int
+        ) {
+            val background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(backgroundColor)
+            }
+            button.background = background
+            button.setColorFilter(iconColor)
         }
 
         private fun showPopupMenu(anchor: View, actualPosition: Int) {
@@ -388,4 +548,5 @@ class ActionStepAdapter(
             popup.show()
         }
     }
+
 }

@@ -941,6 +941,12 @@ class WorkflowEditorActivity : BaseActivity() {
             onDuplicateClick = { position ->
                 duplicateStepOrBlock(position)
             },
+            onToggleEnabledClick = { position ->
+                toggleStepEnabled(position)
+            },
+            onRestoreBlockClick = { position ->
+                restoreMissingBlockParts(position)
+            },
             // 在下方插入的回调实现
             onInsertBelowClick = { position ->
                 showActionPickerAtPosition(position + 1)
@@ -968,7 +974,7 @@ class WorkflowEditorActivity : BaseActivity() {
         if (position !in actionSteps.indices) return
 
         // 使用现有的逻辑找到块的范围
-        val (blockStart, blockEnd) = findBlockRangeInList(actionSteps, position)
+        val (blockStart, blockEnd) = BlockStructureHelper.findBlockRange(actionSteps, position)
 
         // 创建副本列表
         val stepsToDuplicate = actionSteps.subList(blockStart, blockEnd + 1).map { step ->
@@ -985,6 +991,49 @@ class WorkflowEditorActivity : BaseActivity() {
         toast(getString(R.string.editor_toast_steps_duplicated, stepsToDuplicate.size))
 
         // 滚动到新复制的位置
+        recyclerView.smoothScrollToPosition(insertPosition)
+    }
+
+    private fun toggleStepEnabled(position: Int) {
+        if (position !in actionSteps.indices) return
+        val isEffectivelyDisabled = BlockStructureHelper.isStepEffectivelyDisabled(actionSteps, position)
+        if (isEffectivelyDisabled && BlockStructureHelper.hasDisabledAncestor(actionSteps, position)) {
+            toast(getString(R.string.editor_toast_enable_parent_block_first))
+            return
+        }
+        val (blockStart, blockEnd) = BlockStructureHelper.findBlockRange(actionSteps, position)
+        val targetRange = blockStart..blockEnd
+        val shouldDisable = !isEffectivelyDisabled
+        pushUndoSnapshot()
+        for (index in targetRange) {
+            actionSteps[index] = actionSteps[index].copy(isDisabled = shouldDisable)
+        }
+        recalculateAndNotify()
+        toast(
+            getString(
+                if (shouldDisable) R.string.editor_toast_step_disabled
+                else R.string.editor_toast_step_enabled
+            )
+        )
+    }
+
+    private fun restoreMissingBlockParts(position: Int) {
+        if (position !in actionSteps.indices) return
+
+        val (blockStart, blockEnd) = BlockStructureHelper.findBlockRange(actionSteps, position)
+        val missingMiddleIds = BlockStructureHelper.getMissingMiddleModuleIds(actionSteps, position)
+        if (missingMiddleIds.isEmpty()) return
+
+        val insertPosition = blockEnd
+        val inheritedDisabledState = BlockStructureHelper.isStepEffectivelyDisabled(actionSteps, position)
+        val restoredSteps = missingMiddleIds.map { moduleId ->
+            ActionStep(moduleId = moduleId, parameters = emptyMap(), isDisabled = inheritedDisabledState)
+        }
+
+        pushUndoSnapshot()
+        actionSteps.addAll(insertPosition, restoredSteps)
+        recalculateAndNotify()
+        toast(getString(R.string.editor_toast_block_parts_restored, restoredSteps.size))
         recyclerView.smoothScrollToPosition(insertPosition)
     }
 
@@ -1102,7 +1151,7 @@ class WorkflowEditorActivity : BaseActivity() {
 
                 try {
                     // 找到要移动的完整积木块范围
-                    val (blockStart, blockEnd) = findBlockRangeInList(originalList, fromPos)
+                    val (blockStart, blockEnd) = BlockStructureHelper.findBlockRange(originalList, fromPos)
 
                     // 验证范围有效性
                     if (blockStart < 0 || blockEnd >= originalList.size || blockStart > blockEnd) {
@@ -1185,72 +1234,6 @@ class WorkflowEditorActivity : BaseActivity() {
     /**
      * 更健壮的积木块范围查找
      */
-    private fun findBlockRangeInList(list: List<ActionStep>, position: Int): Pair<Int, Int> {
-        if (position !in list.indices) return position to position
-
-        val initialModule = ModuleRegistry.getModule(list[position].moduleId)
-            ?: return position to position
-
-        val behavior = initialModule.blockBehavior
-        if (behavior?.type == BlockType.NONE || behavior?.pairingId == null) {
-            return position to position
-        }
-
-        try {
-            // 向上查找块的开始
-            var blockStart = position
-            var openCount = 0
-
-            for (i in position downTo 0) {
-                val module = ModuleRegistry.getModule(list[i].moduleId) ?: continue
-                val currentBehavior = module.blockBehavior
-
-                if (currentBehavior?.pairingId != behavior.pairingId) continue
-
-                when (currentBehavior.type) {
-                    BlockType.BLOCK_END -> openCount++
-                    BlockType.BLOCK_START -> {
-                        if (openCount == 0) {
-                            blockStart = i
-                            break
-                        }
-                        openCount--
-                    }
-                    else -> {}
-                }
-            }
-
-            // 向下查找块的结束
-            var blockEnd = blockStart
-            openCount = 0
-
-            for (i in blockStart until list.size) {
-                val module = ModuleRegistry.getModule(list[i].moduleId) ?: continue
-                val currentBehavior = module.blockBehavior
-
-                if (currentBehavior?.pairingId != behavior.pairingId) continue
-
-                when (currentBehavior.type) {
-                    BlockType.BLOCK_START -> openCount++
-                    BlockType.BLOCK_END -> {
-                        openCount--
-                        if (openCount == 0) {
-                            blockEnd = i
-                            break
-                        }
-                    }
-                    else -> {}
-                }
-            }
-
-            return blockStart to blockEnd
-
-        } catch (e: Exception) {
-            // 异常情况返回单个位置
-            return position to position
-        }
-    }
-
     private fun isBlockStructureValid(list: List<ActionStep>): Boolean {
         val blockStack = Stack<String?>()
         for (step in list) {

@@ -80,7 +80,13 @@ object WorkflowEnumMigration {
         allSteps: List<ActionStep>
     ): Pair<ActionStep, Int>? {
         val module = ModuleRegistry.getModule(step.moduleId) ?: return null
-        val stepForUi = ActionStep(step.moduleId, step.parameters, step.indentationLevel, step.id)
+        val stepForUi = ActionStep(
+            moduleId = step.moduleId,
+            parameters = step.parameters,
+            isDisabled = step.isDisabled,
+            indentationLevel = step.indentationLevel,
+            id = step.id
+        )
         val inputDefinitions = (module.getInputs() + module.getDynamicInputs(stepForUi, allSteps))
             .distinctBy { it.id }
 

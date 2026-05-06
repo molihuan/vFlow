@@ -24,6 +24,7 @@ data class ActionStepDto(
     val id: String,
     val moduleId: String,
     val indentationLevel: Int,
+    val isDisabled: Boolean = false,
     val parameters: Map<String, VObjectDto>
 )
 
@@ -31,6 +32,7 @@ data class SimpleActionStepDto(
     val id: String,
     val moduleId: String,
     val indentationLevel: Int? = 0,
+    val isDisabled: Boolean = false,
     val parameters: Map<String, Any?>? = emptyMap()
 ) {
     fun toActionStep(): com.chaomixian.vflow.core.workflow.model.ActionStep {
@@ -38,6 +40,7 @@ data class SimpleActionStepDto(
             id = id,
             moduleId = moduleId,
             indentationLevel = indentationLevel ?: 0,
+            isDisabled = isDisabled,
             parameters = parameters?.let { normalizeImportedJsonObject(it) } ?: emptyMap()
         )
     }

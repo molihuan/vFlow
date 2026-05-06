@@ -22,6 +22,7 @@ class ImportExportHandlerTest {
                         true
                     )
                 ),
+                "isDisabled" to true,
                 "indentationLevel" to 2,
                 "id" to "step-1"
             ),
@@ -29,6 +30,7 @@ class ImportExportHandlerTest {
         )
 
         assertEquals("vflow.test.module", step.moduleId)
+        assertTrue(step.isDisabled)
         assertEquals(2, step.indentationLevel)
         assertEquals("step-1", step.id)
         val headers = step.parameters["headers"] as Map<*, *>
@@ -60,6 +62,7 @@ class ImportExportHandlerTest {
             id = "step-2",
             moduleId = "vflow.test.module",
             indentationLevel = 1,
+            isDisabled = true,
             parameters = mapOf(
                 "body" to mapOf(
                     "items" to listOf(
@@ -69,6 +72,7 @@ class ImportExportHandlerTest {
             )
         ).toActionStep()
 
+        assertTrue(step.isDisabled)
         val body = step.parameters["body"] as Map<*, *>
         val items = body["items"] as List<*>
         assertTrue(items.first() is Map<*, *>)

@@ -644,6 +644,10 @@
     <string name="editor_toast_input_definition_not_found">Cannot find input definition: %s</string>
     <string name="editor_toast_trigger_cannot_duplicate">Trigger cannot be duplicated</string>
     <string name="editor_toast_steps_duplicated">Duplicated %d steps</string>
+    <string name="editor_toast_step_enabled">Step enabled</string>
+    <string name="editor_toast_step_disabled">Step disabled</string>
+    <string name="editor_toast_enable_parent_block_first">Enable the parent block first</string>
+    <string name="editor_toast_block_parts_restored">Restored %d missing block steps</string>
     <string name="editor_toast_invalid_move">Invalid move</string>
     <string name="editor_toast_unknown_modules_removed">Automatically removed %d unknown or deprecated modules.</string>
     <string name="editor_button_stop">Stop</string>
@@ -1192,6 +1196,10 @@
     <string name="desc_delete_item">Delete This Item</string>
     <string name="desc_error_icon">Error Icon</string>
     <string name="desc_delete_action">Delete Action</string>
+    <string name="desc_disable_action">Disable Action</string>
+    <string name="desc_enable_action">Enable Action</string>
+    <string name="desc_more_action">More Actions</string>
+    <string name="desc_restore_block_action">Restore Missing Block Steps</string>
     <string name="insert_below">Insert Below</string>
     <string name="desc_select_device">Select Device</string>
     <string name="label_trigger_condition">Trigger Condition</string>

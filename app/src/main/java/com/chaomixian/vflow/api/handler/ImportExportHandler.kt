@@ -24,6 +24,7 @@ internal fun parseImportedActionStep(stepMap: Map<*, *>, errorLabel: String): Ac
     return ActionStep(
         moduleId = moduleId,
         parameters = parameters,
+        isDisabled = stepMap["isDisabled"] as? Boolean ?: false,
         indentationLevel = (stepMap["indentationLevel"] as? Number)?.toInt() ?: 0,
         id = stepMap["id"] as? String ?: UUID.randomUUID().toString()
     )

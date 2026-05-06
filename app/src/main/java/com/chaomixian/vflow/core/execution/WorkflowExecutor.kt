@@ -412,6 +412,24 @@ object WorkflowExecutor {
                 continue
             }
 
+            if (step.isDisabled) {
+                val behavior = module.blockBehavior
+                val nextPc = when (behavior.type) {
+                    BlockType.BLOCK_START -> {
+                        val endPos = BlockNavigator.findEndBlockPosition(workflow.steps, pc, behavior.pairingId)
+                        if (endPos != -1) endPos + 1 else pc + 1
+                    }
+                    BlockType.BLOCK_MIDDLE -> {
+                        val endPos = BlockNavigator.findEndBlockPosition(workflow.steps, pc, behavior.pairingId)
+                        if (endPos != -1) endPos + 1 else pc + 1
+                    }
+                    else -> pc + 1
+                }
+                DebugLogger.d("WorkflowExecutor", "[${workflow.name}][#${pc + 1}] -> 跳过已禁用步骤: ${module.metadata.name}")
+                pc = nextPc
+                continue
+            }
+
             // 如果在循环内，注入循环变量
             if (loopStack.isNotEmpty()) {
                 val loopState = loopStack.peek()

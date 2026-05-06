@@ -12,6 +12,7 @@ data class ActionStep(
     val moduleId: String,
     // 为 parameters 添加 @RawValue 注解，以解决 Parcelize 无法处理 Any? 类型的编译错误。
     val parameters: @RawValue Map<String, Any?>,
+    val isDisabled: Boolean = false,
     var indentationLevel: Int = 0,
     // ID对于稳定的列表操作至关重要
     val id: String = UUID.randomUUID().toString()

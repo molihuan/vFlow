@@ -652,6 +652,10 @@
     <string name="editor_toast_input_definition_not_found">无法找到输入定义：%s</string>
     <string name="editor_toast_trigger_cannot_duplicate">触发器无法复制</string>
     <string name="editor_toast_steps_duplicated">已复制 %d 个步骤</string>
+    <string name="editor_toast_step_enabled">已启用该步骤</string>
+    <string name="editor_toast_step_disabled">已禁用该步骤</string>
+    <string name="editor_toast_enable_parent_block_first">请先启用父块</string>
+    <string name="editor_toast_block_parts_restored">已恢复 %d 个缺失块步骤</string>
     <string name="editor_toast_invalid_move">无效的移动</string>
     <string name="editor_toast_unknown_modules_removed">已自动移除 %d 个未知或已过时的模块。</string>
     <string name="editor_button_stop">停止</string>
@@ -1182,6 +1186,10 @@
     <string name="desc_delete_item">删除此项目</string>
     <string name="desc_error_icon">错误图标</string>
     <string name="desc_delete_action">删除动作</string>
+    <string name="desc_disable_action">禁用动作</string>
+    <string name="desc_enable_action">启用动作</string>
+    <string name="desc_more_action">更多操作</string>
+    <string name="desc_restore_block_action">恢复缺失块步骤</string>
     <string name="insert_below">在下方插入</string>
     <string name="desc_select_device">选择设备</string>
     <string name="label_trigger_condition">触发条件</string>

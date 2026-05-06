@@ -64,19 +64,38 @@
                 android:paddingEnd="4dp"
                 android:paddingBottom="8dp"
                 android:layout_gravity="center_vertical" />
-            <ImageButton
-                android:id="@+id/button_delete_action"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="0dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/desc_delete_action"
-                android:src="@drawable/rounded_close_small_24"
-                app:tint="?attr/colorError"
-                android:visibility="gone"
-                tools:visibility="visible"
-                android:layout_gravity="center_vertical" />
+            <LinearLayout
+                android:id="@+id/layout_step_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="4dp"
+                android:paddingEnd="0dp">
+
+                <ImageButton
+                    android:id="@+id/button_delete_action"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/desc_delete_action"
+                    android:src="@drawable/rounded_delete_24"
+                    android:visibility="gone"
+                    app:tint="?attr/colorError"
+                    tools:visibility="visible" />
+
+                <ImageButton
+                    android:id="@+id/button_more_action"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="6dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/desc_more_action"
+                    android:src="@drawable/rounded_more_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
