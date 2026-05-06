@@ -39,6 +39,7 @@ class JumpModule : BaseModule() {
             staticType = ParameterType.NUMBER,
             defaultValue = 1L,
             acceptsMagicVariable = true,
+            acceptsNamedVariable = true,
             acceptedMagicVariableTypes = setOf(VTypeRegistry.NUMBER.id)
         )
     )
@@ -58,8 +59,8 @@ class JumpModule : BaseModule() {
     override fun validate(step: ActionStep, allSteps: List<ActionStep>): ValidationResult {
         val targetIndex = step.parameters["target_step_index"]
 
-        // 如果是魔法变量引用，跳过类型检查，执行时再验证
-        if (targetIndex is String && targetIndex.isMagicVariable()) {
+        // 变量引用在执行时再解析和校验，这里只拦截明显无效的静态值
+        if (targetIndex is String && (targetIndex.isMagicVariable() || targetIndex.isNamedVariable())) {
             return ValidationResult(true)
         }
 
