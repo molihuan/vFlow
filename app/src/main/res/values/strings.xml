@@ -392,6 +392,7 @@
     <string name="module_vflow_data_get_current_time_name">获取当前时间</string>
     <string name="module_vflow_data_get_current_time_desc">获取当前时间，支持多种格式输出（时间戳、ISO 8601、自定义格式等）</string>
 
+    <string name="param_vflow_data_file_operation_mode_name">执行方式</string>
     <string name="param_vflow_data_file_operation_file_path_name">文件路径</string>
     <string name="param_vflow_data_file_operation_operation_name">操作</string>
     <string name="param_vflow_data_file_operation_content_name">写入内容</string>
@@ -452,6 +453,8 @@
     <string name="option_vflow_data_get_current_time_format_time">HH:mm:ss</string>
     <string name="option_vflow_data_get_current_time_format_date_cn">yyyy年MM月dd日</string>
     <string name="option_vflow_data_get_current_time_format_month_day_time">MM月dd日 HH:mm</string>
+    <string name="option_vflow_data_file_operation_mode_local">当前应用</string>
+    <string name="option_vflow_data_file_operation_mode_adb">ADB</string>
     <string name="option_vflow_data_file_operation_operation_read">读取</string>
     <string name="option_vflow_data_file_operation_operation_write">写入</string>
     <string name="option_vflow_data_file_operation_operation_delete">删除</string>

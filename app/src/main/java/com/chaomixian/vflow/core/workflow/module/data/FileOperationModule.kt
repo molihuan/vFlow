@@ -2,6 +2,7 @@
 package com.chaomixian.vflow.core.workflow.module.data
 
 import android.content.Context
+import android.util.Base64
 import android.webkit.MimeTypeMap
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.execution.ExecutionContext
@@ -17,12 +18,16 @@ import com.chaomixian.vflow.core.module.ParameterType
 import com.chaomixian.vflow.core.execution.VariableResolver
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.workflow.model.ActionStep
+import com.chaomixian.vflow.permissions.Permission
+import com.chaomixian.vflow.permissions.PermissionManager
+import com.chaomixian.vflow.services.ShellManager
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import java.nio.charset.Charset
 
 /**
  * 文件操作模块
@@ -35,6 +40,8 @@ class FileOperationModule : BaseModule() {
         private const val OP_DELETE = "delete"
         private const val OP_APPEND = "append"
         private const val OP_CREATE = "create"
+        private const val MODE_LOCAL = "local"
+        private const val MODE_ADB = "adb"
     }
 
     override val id = "vflow.data.file_operation"
@@ -48,7 +55,29 @@ class FileOperationModule : BaseModule() {
         categoryId = "data"
     )
 
+    override fun getRequiredPermissions(step: ActionStep?): List<Permission> {
+        val mode = getExecutionMode(step?.parameters?.get("mode") as? String)
+        return when (mode) {
+            MODE_ADB -> listOf(PermissionManager.SHIZUKU)
+            else -> emptyList()
+        }
+    }
+
     override fun getInputs(): List<InputDefinition> = listOf(
+        InputDefinition(
+            id = "mode",
+            nameStringRes = R.string.param_vflow_data_file_operation_mode_name,
+            name = "执行方式",
+            staticType = ParameterType.ENUM,
+            defaultValue = MODE_LOCAL,
+            options = listOf(MODE_LOCAL, MODE_ADB),
+            optionsStringRes = listOf(
+                R.string.option_vflow_data_file_operation_mode_local,
+                R.string.option_vflow_data_file_operation_mode_adb
+            ),
+            inputStyle = InputStyle.CHIP_GROUP
+        ),
+
         // 1. 基础输入 - 文件路径（使用文件选择器）
         InputDefinition(
             id = "file_path",
@@ -132,7 +161,7 @@ class FileOperationModule : BaseModule() {
             defaultValue = "UTF-8",
             options = listOf("UTF-8", "GBK", "GB2312", "ISO-8859-1"),
             inputStyle = InputStyle.CHIP_GROUP,
-            visibility = InputVisibility.whenEquals("operation", OP_CREATE)
+            visibility = InputVisibility.`in`("operation", listOf(OP_CREATE, OP_WRITE, OP_APPEND))
         ),
 
         // 6. 写入内容 - 当操作是"写入"或"追加"时显示
@@ -222,13 +251,18 @@ class FileOperationModule : BaseModule() {
     }
 
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
-        val operation = step.parameters["operation"] as? String ?: OP_READ
+        val operationInput = getInputs().first { it.id == "operation" }
+        val modeInput = getInputs().first { it.id == "mode" }
+        val rawOperation = step.parameters["operation"] as? String ?: OP_READ
+        val operation = operationInput.normalizeEnumValue(rawOperation) ?: OP_READ
+        val mode = getExecutionMode(step.parameters["mode"] as? String)
+        val modePill = PillUtil.createPillFromParam(mode, modeInput, isModuleOption = true)
 
         return when (operation) {
             OP_CREATE -> {
                 val fileName = step.parameters["file_name"] as? String ?: context.getString(R.string.summary_vflow_data_file_operation_unspecified_file_name)
-                val fileNamePill = PillUtil.Pill(fileName, "file_name")
-                PillUtil.buildSpannable(context, context.getString(R.string.summary_vflow_data_file_operation_create_prefix), fileNamePill)
+                val fileNamePill = PillUtil.createPillFromParam(fileName, getInputs().find { it.id == "file_name" })
+                PillUtil.buildSpannable(context, "使用 ", modePill, " 创建 ", fileNamePill)
             }
             else -> {
                 val filePath = step.parameters["file_path"] as? String ?: context.getString(R.string.summary_vflow_data_file_operation_no_file_selected)
@@ -238,7 +272,8 @@ class FileOperationModule : BaseModule() {
                     filePath
                 }
                 val fileName = File(normalizedPath).name.takeIf { it.isNotEmpty() } ?: filePath
-                "${getOperationDisplayName(context, operation)}: $fileName"
+                val filePathPill = PillUtil.createPillFromParam(fileName, getInputs().find { it.id == "file_path" })
+                PillUtil.buildSpannable(context, "使用 ", modePill, " ", getOperationDisplayName(context, operation), " ", filePathPill)
             }
         }
     }
@@ -309,6 +344,7 @@ class FileOperationModule : BaseModule() {
                 val encoding = currentStep.parameters["encoding"] as? String ?: "UTF-8"
                 val rawContent = currentStep.parameters["create_content"] as? String ?: ""
                 val content = VariableResolver.resolve(rawContent, context)
+                val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
 
                 executeCreate(
                     context = context.applicationContext,
@@ -316,6 +352,7 @@ class FileOperationModule : BaseModule() {
                     fileName = fileName,
                     encoding = encoding,
                     content = content,
+                    mode = mode,
                     onProgress = onProgress
                 )
             }
@@ -324,8 +361,9 @@ class FileOperationModule : BaseModule() {
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_path_missing))
                 val encoding = currentStep.parameters["encoding_read"] as? String ?: "UTF-8"
                 val bufferSize = (currentStep.parameters["buffer_size"] as? Number)?.toInt() ?: 8192
+                val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
 
-                executeRead(context.applicationContext, filePath, encoding, bufferSize, onProgress)
+                executeRead(context.applicationContext, filePath, encoding, bufferSize, mode, onProgress)
             }
             OP_WRITE -> {
                 val filePath = currentStep.parameters["file_path"] as? String
@@ -334,8 +372,9 @@ class FileOperationModule : BaseModule() {
                 val rawContent = currentStep.parameters["content"] as? String ?: ""
                 val content = VariableResolver.resolve(rawContent, context)
                 val overwrite = currentStep.parameters["overwrite"] as? Boolean ?: true
+                val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
 
-                executeWrite(context.applicationContext, filePath, content, encoding, overwrite, onProgress)
+                executeWrite(context.applicationContext, filePath, content, encoding, overwrite, mode, onProgress)
             }
             OP_APPEND -> {
                 val filePath = currentStep.parameters["file_path"] as? String
@@ -343,14 +382,16 @@ class FileOperationModule : BaseModule() {
                 val encoding = currentStep.parameters["encoding"] as? String ?: "UTF-8"
                 val rawContent = currentStep.parameters["content"] as? String ?: ""
                 val content = VariableResolver.resolve(rawContent, context)
+                val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
 
-                executeAppend(context.applicationContext, filePath, content, encoding, onProgress)
+                executeAppend(context.applicationContext, filePath, content, encoding, mode, onProgress)
             }
             OP_DELETE -> {
                 val filePath = currentStep.parameters["file_path"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_path_missing))
+                val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
 
-                executeDelete(context.applicationContext, filePath, onProgress)
+                executeDelete(context.applicationContext, filePath, mode, onProgress)
             }
             else -> ExecutionResult.Failure(
                 appContext.getString(R.string.error_vflow_data_file_operation_execution_error),
@@ -367,9 +408,14 @@ class FileOperationModule : BaseModule() {
         filePath: String,
         encoding: String,
         bufferSize: Int,
+        mode: String,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
         onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_reading)))
+
+        if (mode != MODE_LOCAL) {
+            return executeReadViaShell(context, filePath, encoding, mode, onProgress)
+        }
 
         val file = resolveLocalFile(filePath)
             ?: return ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_execution_error), context.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
@@ -419,10 +465,15 @@ class FileOperationModule : BaseModule() {
         content: String,
         encoding: String,
         overwrite: Boolean,
+        mode: String,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
         val action = if (overwrite) OP_WRITE else OP_APPEND
         onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_writing, getOperationDisplayName(context, action))))
+
+        if (mode != MODE_LOCAL) {
+            return executeWriteViaShell(context, filePath, content, encoding, overwrite, mode, onProgress)
+        }
 
         val file = resolveLocalFile(filePath)
             ?: return ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_execution_error), context.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
@@ -476,9 +527,10 @@ class FileOperationModule : BaseModule() {
         filePath: String,
         content: String,
         encoding: String,
+        mode: String,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
-        return executeWrite(context, filePath, content, encoding, false, onProgress)
+        return executeWrite(context, filePath, content, encoding, false, mode, onProgress)
     }
 
     /**
@@ -487,9 +539,14 @@ class FileOperationModule : BaseModule() {
     private suspend fun executeDelete(
         context: Context,
         filePath: String,
+        mode: String,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
         onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_deleting)))
+
+        if (mode != MODE_LOCAL) {
+            return executeDeleteViaShell(context, filePath, mode, onProgress)
+        }
 
         val file = resolveLocalFile(filePath)
             ?: return ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_execution_error), context.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
@@ -520,12 +577,17 @@ class FileOperationModule : BaseModule() {
         fileName: String,
         encoding: String,
         content: String,
+        mode: String,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
         onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_creating, fileName)))
 
         return try {
-            executeCreateWithFileApi(context, directoryPath, fileName, encoding, content, onProgress)
+            if (mode == MODE_LOCAL) {
+                executeCreateWithFileApi(context, directoryPath, fileName, encoding, content, onProgress)
+            } else {
+                executeCreateViaShell(context, directoryPath, fileName, encoding, content, mode, onProgress)
+            }
         } catch (e: java.io.UnsupportedEncodingException) {
             ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_encoding_error), context.getString(R.string.error_vflow_data_file_operation_unsupported_encoding, encoding))
         } catch (e: Exception) {
@@ -605,5 +667,216 @@ class FileOperationModule : BaseModule() {
         val extension = file.extension.lowercase()
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
             ?: "application/octet-stream"
+    }
+
+    private suspend fun executeReadViaShell(
+        context: Context,
+        filePath: String,
+        encoding: String,
+        mode: String,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        val normalizedPath = normalizeAbsolutePath(filePath)
+            ?: return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_invalid_file_path)
+            )
+        val shellMode = toShellMode(mode)
+        val command = "if [ ! -f ${shellQuote(normalizedPath)} ]; then echo '__VFLOW_NOT_FILE__'; " +
+            "elif ${buildBase64EncodeFileCommand(normalizedPath)}; then :; else echo '__VFLOW_READ_FAILED__' >&2; exit 1; fi"
+        val result = ShellManager.execShellCommandWithResult(context, command, shellMode)
+        if (!result.success) {
+            return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                result.output.ifBlank { context.getString(R.string.error_vflow_data_file_operation_open_failed) }
+            )
+        }
+        val output = result.output.trim()
+        if (output == "__VFLOW_NOT_FILE__") {
+            return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_open_failed)
+            )
+        }
+        val contentBytes = Base64.decode(output, Base64.DEFAULT)
+        val content = contentBytes.toString(Charset.forName(encoding))
+        val file = File(normalizedPath)
+        onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_read_complete), 100))
+        return ExecutionResult.Success(
+            mapOf(
+                "content" to content,
+                "file_name" to file.name.ifBlank { "unknown" },
+                "mime_type" to getMimeType(file),
+                "size" to content.length
+            )
+        )
+    }
+
+    private suspend fun executeWriteViaShell(
+        context: Context,
+        filePath: String,
+        content: String,
+        encoding: String,
+        overwrite: Boolean,
+        mode: String,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        val normalizedPath = normalizeAbsolutePath(filePath)
+            ?: return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_invalid_file_path)
+            )
+        val encodedContent = Base64.encodeToString(content.toByteArray(Charset.forName(encoding)), Base64.NO_WRAP)
+        val parentPath = File(normalizedPath).parent
+            ?: return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_open_for_write_failed)
+            )
+        val redirect = if (overwrite) ">" else ">>"
+        val command = buildString {
+            append("[ -d ")
+            append(shellQuote(parentPath))
+            append(" ] || { echo '__VFLOW_PARENT_MISSING__' >&2; exit 1; }; ")
+            append("printf %s ")
+            append(shellQuote(encodedContent))
+            append(" | ")
+            append(buildBase64DecodePipeCommand())
+            append(' ')
+            append(redirect)
+            append(' ')
+            append(shellQuote(normalizedPath))
+        }
+        val result = ShellManager.execShellCommandWithResult(context, command, toShellMode(mode))
+        if (!result.success) {
+            return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                result.output.ifBlank { context.getString(R.string.error_vflow_data_file_operation_open_for_write_failed) }
+            )
+        }
+
+        val message = if (overwrite) {
+            context.getString(R.string.progress_vflow_data_file_operation_write_complete)
+        } else {
+            context.getString(R.string.progress_vflow_data_file_operation_append_complete)
+        }
+        onProgress(ProgressUpdate(message, 100))
+        return ExecutionResult.Success(
+            mapOf(
+                "success" to true,
+                "message" to "$message: $normalizedPath"
+            )
+        )
+    }
+
+    private suspend fun executeDeleteViaShell(
+        context: Context,
+        filePath: String,
+        mode: String,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        val normalizedPath = normalizeAbsolutePath(filePath)
+            ?: return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_invalid_file_path)
+            )
+        val command = "if [ -e ${shellQuote(normalizedPath)} ]; then rm -f ${shellQuote(normalizedPath)}; else echo '__VFLOW_NOT_FOUND__' >&2; exit 1; fi"
+        val result = ShellManager.execShellCommandWithResult(context, command, toShellMode(mode))
+        return if (result.success) {
+            onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_delete_complete), 100))
+            ExecutionResult.Success(
+                mapOf(
+                    "success" to true,
+                    "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, normalizedPath)
+                )
+            )
+        } else {
+            ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_delete_failed),
+                result.output.ifBlank { context.getString(R.string.error_vflow_data_file_operation_cannot_delete, normalizedPath) }
+            )
+        }
+    }
+
+    private suspend fun executeCreateViaShell(
+        context: Context,
+        directoryPath: String,
+        fileName: String,
+        encoding: String,
+        content: String,
+        mode: String,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        val normalizedDirectoryPath = normalizeAbsolutePath(directoryPath)
+            ?: return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_invalid_directory_path, directoryPath)
+            )
+        val targetPath = File(normalizedDirectoryPath, fileName).absolutePath
+        val encodedContent = Base64.encodeToString(content.toByteArray(Charset.forName(encoding)), Base64.NO_WRAP)
+        val command = buildString {
+            append("[ -d ")
+            append(shellQuote(normalizedDirectoryPath))
+            append(" ] || { echo '__VFLOW_DIR_MISSING__' >&2; exit 1; }; ")
+            append("[ ! -e ")
+            append(shellQuote(targetPath))
+            append(" ] || { echo '__VFLOW_FILE_EXISTS__' >&2; exit 1; }; ")
+            if (content.isNotEmpty()) {
+                append("printf %s ")
+                append(shellQuote(encodedContent))
+                append(" | ")
+                append(buildBase64DecodePipeCommand())
+                append(" > ")
+                append(shellQuote(targetPath))
+            } else {
+                append("touch ")
+                append(shellQuote(targetPath))
+            }
+        }
+        val result = ShellManager.execShellCommandWithResult(context, command, toShellMode(mode))
+        if (!result.success) {
+            return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_create_failed),
+                result.output.ifBlank { context.getString(R.string.error_vflow_data_file_operation_cannot_create_file) }
+            )
+        }
+
+        onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_create_complete, fileName), 100))
+        return ExecutionResult.Success(
+            mapOf(
+                "success" to true,
+                "message" to context.getString(R.string.message_vflow_data_file_operation_created, fileName),
+                "file_path" to targetPath,
+                "file_name" to fileName
+            )
+        )
+    }
+
+    private fun getExecutionMode(rawMode: String?): String {
+        val modeInput = getInputs().first { it.id == "mode" }
+        return modeInput.normalizeEnumValue(rawMode ?: MODE_LOCAL) ?: MODE_LOCAL
+    }
+
+    private fun toShellMode(mode: String): ShellManager.ShellMode {
+        return when (mode) {
+            MODE_ADB -> ShellManager.ShellMode.SHIZUKU
+            else -> ShellManager.ShellMode.AUTO
+        }
+    }
+
+    private fun normalizeAbsolutePath(path: String): String? {
+        return resolveLocalFile(path)?.absolutePath
+    }
+
+    private fun shellQuote(value: String): String {
+        return "'${value.replace("'", "'\\''")}'"
+    }
+
+    private fun buildBase64EncodeFileCommand(path: String): String {
+        val quotedPath = shellQuote(path)
+        return "(base64 $quotedPath 2>/dev/null || toybox base64 $quotedPath 2>/dev/null || /system/bin/base64 $quotedPath 2>/dev/null)"
+    }
+
+    private fun buildBase64DecodePipeCommand(): String {
+        return "(base64 -d 2>/dev/null || toybox base64 -d 2>/dev/null || /system/bin/base64 -d 2>/dev/null)"
     }
 }
