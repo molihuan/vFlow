@@ -30,6 +30,8 @@ object ShellManager {
     private const val BIND_TIMEOUT_MS = 3000L
     private const val MAX_RETRY_COUNT = 3
     private const val DEPLOY_SUCCESS_MARKER = "__VFLOW_DEPLOY_OK__"
+    private val ROOT_SHELL_COMMANDS = arrayOf("su", "-mm", "-c", "sh")
+    private val ROOT_SHELL_FALLBACK_COMMANDS = arrayOf("su", "-c", "sh")
 
     /**
      * Shell 执行模式
@@ -117,7 +119,7 @@ object ShellManager {
      */
     fun isRootAvailable(): Boolean {
         return try {
-            val process = Runtime.getRuntime().exec("su")
+            val process = createRootShellProcess()
             val os = DataOutputStream(process.outputStream)
             os.writeBytes("exit\n")
             os.flush()
@@ -309,7 +311,7 @@ object ShellManager {
      */
     private fun executeRootCommand(command: String): ShellCommandResult {
         return try {
-            val process = Runtime.getRuntime().exec("su")
+            val process = createRootShellProcess()
             val os = DataOutputStream(process.outputStream)
 
             // 写入命令和退出指令
@@ -346,6 +348,15 @@ object ShellManager {
                 exitCode = -1,
                 success = false
             )
+        }
+    }
+
+    private fun createRootShellProcess(): Process {
+        return try {
+            Runtime.getRuntime().exec(ROOT_SHELL_COMMANDS)
+        } catch (e: Exception) {
+            DebugLogger.w(TAG, "Failed to start root shell with su -mm, fallback to plain su", e)
+            Runtime.getRuntime().exec(ROOT_SHELL_FALLBACK_COMMANDS)
         }
     }
 

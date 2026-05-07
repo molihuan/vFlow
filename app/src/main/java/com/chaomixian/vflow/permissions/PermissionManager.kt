@@ -442,14 +442,7 @@ object PermissionManager {
     /** Root 策略 */
     private val rootStrategy = object : PermissionStrategy {
         override fun isGranted(context: Context, permission: Permission): Boolean {
-            // 简单的 Root 检查：尝试执行 'su'
-            return try {
-                val process = Runtime.getRuntime().exec("su")
-                val os = DataOutputStream(process.outputStream)
-                os.writeBytes("exit\n")
-                os.flush()
-                process.waitFor() == 0
-            } catch (_: Exception) { false }
+            return ShellManager.isRootAvailable()
         }
         override fun createRequestIntent(context: Context, permission: Permission): Intent? = null
     }

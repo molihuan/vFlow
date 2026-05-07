@@ -25,7 +25,7 @@ object ShellDiagnostic {
         checkShizukuStatus()
 
         // 2. 检查 Root 状态
-        checkRootStatus()
+        checkRootStatus(context)
 
         // 3. 检查当前 Shell 偏好
         val prefs = context.getSharedPreferences("vFlowPrefs", Context.MODE_PRIVATE)
@@ -50,22 +50,18 @@ object ShellDiagnostic {
         }
     }
 
-    private fun checkRootStatus() {
+    private fun checkRootStatus(context: Context) {
         DebugLogger.d(TAG, "--- 检查 Root 状态 ---")
         try {
-            val process = Runtime.getRuntime().exec("su")
-            val os = java.io.DataOutputStream(process.outputStream)
-            os.writeBytes("id\n")
-            os.writeBytes("exit\n")
-            os.flush()
-            val output = process.inputStream.bufferedReader().readText()
-            val exitCode = process.waitFor()
+            val result = kotlinx.coroutines.runBlocking {
+                ShellManager.execShellCommandWithResult(context, "id", ShellManager.ShellMode.ROOT)
+            }
 
-            if (exitCode == 0) {
+            if (result.success) {
                 DebugLogger.d(TAG, "Root 访问: 成功")
-                DebugLogger.d(TAG, "Root ID Info: $output")
+                DebugLogger.d(TAG, "Root ID Info: ${result.output}")
             } else {
-                DebugLogger.w(TAG, "Root 访问: 失败 (Code $exitCode)")
+                DebugLogger.w(TAG, "Root 访问: 失败 (${result.exitCode}) ${result.output}")
             }
         } catch (e: Exception) {
             DebugLogger.w(TAG, "Root 访问: 不可用 (${e.message})")
