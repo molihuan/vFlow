@@ -23,11 +23,10 @@ import com.chaomixian.vflow.core.logging.LogManager
 import com.chaomixian.vflow.core.locale.LocaleManager
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.complex.VCoordinateRegion
 import com.chaomixian.vflow.core.types.complex.VImage
-import com.chaomixian.vflow.core.utils.StorageManager
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.permissions.Permission
-import com.chaomixian.vflow.permissions.PermissionManager
 import com.chaomixian.vflow.services.ExecutionUIService
 import com.chaomixian.vflow.services.ShellManager
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
@@ -47,7 +46,6 @@ class CaptureScreenModule : BaseModule() {
     }
 
     override val id = "vflow.system.capture_screen"
-    override val uiProvider = CaptureScreenModuleUIProvider()
     override val metadata = ActionMetadata(
         name = "截屏",
         description = "捕获当前屏幕内容。",
@@ -98,7 +96,12 @@ class CaptureScreenModule : BaseModule() {
             name = "区域 (可选)",
             staticType = ParameterType.STRING,
             defaultValue = "",
-            acceptsMagicVariable = false,
+            acceptsMagicVariable = true,
+            acceptsNamedVariable = true,
+            acceptedMagicVariableTypes = setOf(VTypeRegistry.COORDINATE_REGION.id),
+            supportsRichText = true,
+            pickerType = PickerType.SCREEN_REGION,
+            hintStringRes = R.string.hint_vflow_system_capture_screen_region_input,
             nameStringRes = R.string.param_vflow_system_capture_screen_region_name
         )
     )
@@ -127,7 +130,12 @@ class CaptureScreenModule : BaseModule() {
                 localizedContext.getString(R.string.error_vflow_system_capture_screen_invalid_param_title),
                 localizedContext.getString(R.string.error_vflow_system_capture_screen_invalid_mode)
             )
-        val regionStr = context.getVariableAsString("region", "")
+        val regionValue = context.getVariable("region")
+        val region = parseRegion(regionValue)
+        val regionStr = when (regionValue) {
+            is VCoordinateRegion -> "${regionValue.left},${regionValue.top},${regionValue.right},${regionValue.bottom}"
+            else -> context.getVariableAsString("region", "")
+        }
 
         onProgress(
             ProgressUpdate(
@@ -147,7 +155,6 @@ class CaptureScreenModule : BaseModule() {
         if (imageUri != null) {
             // 如果指定了区域，裁剪图片
             val finalUri = if (regionStr.isNotEmpty()) {
-                val region = parseRegion(regionStr)
                 if (region != null) {
                     onProgress(
                         ProgressUpdate(
@@ -186,6 +193,18 @@ class CaptureScreenModule : BaseModule() {
      * 解析区域字符串
      * 格式: "left,top,right,bottom" 或 "left,top,width,height" (百分比或像素值)
      */
+    private fun parseRegion(value: Any?): Rect? {
+        when (value) {
+            is VCoordinateRegion -> return value.toRect()
+            is com.chaomixian.vflow.core.types.VObject -> {
+                val region = value as? VCoordinateRegion
+                if (region != null) return region.toRect()
+                return parseRegion(value.asString())
+            }
+        }
+        return parseRegion(value?.toString() ?: "")
+    }
+
     private fun parseRegion(regionStr: String): Rect? {
         return try {
             val parts = regionStr.split(",")

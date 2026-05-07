@@ -61,6 +61,9 @@ object StandardControlFactory {
             onMagicVariableRequested?.invoke(inputDef.id)
         }
         pickerButton.isVisible = inputDef.pickerType != PickerType.NONE
+        if (inputDef.pickerType == PickerType.SCREEN_REGION) {
+            pickerButton.setImageResource(R.drawable.rounded_crop_free_24)
+        }
         pickerButton.setOnClickListener {
             onPickerRequested?.invoke(inputDef)
         }
@@ -296,7 +299,12 @@ object StandardControlFactory {
 
         // 添加选择器图标
         val pickerIcon = ImageButton(context).apply {
-            setImageResource(R.drawable.ic_picker)
+            setImageResource(
+                when (pickerType) {
+                    PickerType.SCREEN_REGION -> R.drawable.rounded_crop_free_24
+                    else -> R.drawable.ic_picker
+                }
+            )
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT

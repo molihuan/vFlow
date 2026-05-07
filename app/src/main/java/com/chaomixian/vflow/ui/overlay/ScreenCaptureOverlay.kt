@@ -579,7 +579,19 @@ class ScreenCaptureOverlay(
             private const val RESET_ANIMATION_DURATION = 260L
         }
 
-        private enum class DragMode { NONE, LEFT, TOP, RIGHT, BOTTOM, MOVE_SELECTION, PAN_IMAGE }
+        private enum class DragMode {
+            NONE,
+            LEFT,
+            TOP,
+            RIGHT,
+            BOTTOM,
+            TOP_LEFT,
+            TOP_RIGHT,
+            BOTTOM_LEFT,
+            BOTTOM_RIGHT,
+            MOVE_SELECTION,
+            PAN_IMAGE
+        }
 
         private val imagePaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         private val dimPaint = Paint().apply {
@@ -766,6 +778,10 @@ class ScreenCaptureOverlay(
             val nearBottom = abs(y - selectionRect.bottom) <= EDGE_TOUCH_SIZE && x in selectionRect.left..selectionRect.right
 
             return when {
+                nearLeft && nearTop -> DragMode.TOP_LEFT
+                nearRight && nearTop -> DragMode.TOP_RIGHT
+                nearLeft && nearBottom -> DragMode.BOTTOM_LEFT
+                nearRight && nearBottom -> DragMode.BOTTOM_RIGHT
                 nearLeft -> DragMode.LEFT
                 nearTop -> DragMode.TOP
                 nearRight -> DragMode.RIGHT
@@ -859,6 +875,22 @@ class ScreenCaptureOverlay(
                                 selectionRect.right = max(selectionRect.right + dx, selectionRect.left + MIN_CROP_SIZE)
                             }
                             DragMode.BOTTOM -> {
+                                selectionRect.bottom = max(selectionRect.bottom + dy, selectionRect.top + MIN_CROP_SIZE)
+                            }
+                            DragMode.TOP_LEFT -> {
+                                selectionRect.left = min(selectionRect.left + dx, selectionRect.right - MIN_CROP_SIZE)
+                                selectionRect.top = min(selectionRect.top + dy, selectionRect.bottom - MIN_CROP_SIZE)
+                            }
+                            DragMode.TOP_RIGHT -> {
+                                selectionRect.right = max(selectionRect.right + dx, selectionRect.left + MIN_CROP_SIZE)
+                                selectionRect.top = min(selectionRect.top + dy, selectionRect.bottom - MIN_CROP_SIZE)
+                            }
+                            DragMode.BOTTOM_LEFT -> {
+                                selectionRect.left = min(selectionRect.left + dx, selectionRect.right - MIN_CROP_SIZE)
+                                selectionRect.bottom = max(selectionRect.bottom + dy, selectionRect.top + MIN_CROP_SIZE)
+                            }
+                            DragMode.BOTTOM_RIGHT -> {
+                                selectionRect.right = max(selectionRect.right + dx, selectionRect.left + MIN_CROP_SIZE)
                                 selectionRect.bottom = max(selectionRect.bottom + dy, selectionRect.top + MIN_CROP_SIZE)
                             }
                             DragMode.MOVE_SELECTION -> moveSelection(dx, dy)

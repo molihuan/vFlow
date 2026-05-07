@@ -78,7 +78,7 @@ class FindElementModule : BaseModule() {
         InputDefinition("class_match_mode", "类名匹配模式", ParameterType.ENUM, MATCH_EXACT, options = matchModeOptions, optionsStringRes = listOf(R.string.option_vflow_interaction_find_element_match_contains, R.string.option_vflow_interaction_find_element_match_exact, R.string.option_vflow_interaction_find_element_match_start, R.string.option_vflow_interaction_find_element_match_regex), legacyValueMap = mapOf("包含" to MATCH_CONTAINS, "Contains" to MATCH_CONTAINS, "完全匹配" to MATCH_EXACT, "Exact Match" to MATCH_EXACT, "开头是" to MATCH_STARTS_WITH, "Starts With" to MATCH_STARTS_WITH, "正则表达式" to MATCH_REGEX, "Regex" to MATCH_REGEX), acceptsMagicVariable = false, isFolded = true, nameStringRes = R.string.param_vflow_interaction_find_element_class_match_mode_name),
 
         // === 区域限制 ===
-        InputDefinition("search_region", "搜索区域", ParameterType.ANY, "", acceptsMagicVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.COORDINATE_REGION.id), hint = "如：100,200,500,600 留空则搜索全屏", nameStringRes = R.string.param_vflow_interaction_find_element_search_region_name),
+        InputDefinition("search_region", "搜索区域", ParameterType.ANY, "", acceptsMagicVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.COORDINATE_REGION.id), supportsRichText = true, pickerType = PickerType.SCREEN_REGION, hint = "如：100,200,500,600 留空则搜索全屏", nameStringRes = R.string.param_vflow_interaction_find_element_search_region_name),
 
         // === 输出过滤 ===
         InputDefinition("only_leaf_nodes", "仅保留叶子节点", ParameterType.BOOLEAN, false, acceptsMagicVariable = false, hint = "只返回没有子节点匹配的控件"),

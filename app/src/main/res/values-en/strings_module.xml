@@ -1595,7 +1595,6 @@
     <string name="output_vflow_system_capture_screen_image_name">Screenshot</string>
     <string name="summary_vflow_system_capture_screen">Screenshot </string>
     <string name="summary_vflow_system_capture_screen_suffix">Screenshot</string>
-    <string name="error_vflow_system_capture_screen_region_format">Invalid format. Enter 4 numbers separated by commas</string>
     <string name="error_vflow_system_capture_screen_invalid_param_title">Invalid Parameter</string>
     <string name="error_vflow_system_capture_screen_invalid_mode">Invalid screenshot mode</string>
     <string name="error_vflow_system_capture_screen_crop_failed">Crop Failed</string>
@@ -1612,7 +1611,6 @@
     <string name="option_vflow_system_capture_screen_mode_auto">Auto</string>
     <string name="option_vflow_system_capture_screen_mode_screencap">screencap</string>
     <string name="hint_vflow_system_capture_screen_region_input">Region coordinates (left,top,right,bottom)</string>
-    <string name="text_vflow_system_capture_screen_region">Region: %1$s</string>
     <string name="toast_vflow_system_capture_screen_overlay_permission_required">Overlay permission is required to select a region</string>
     <string name="toast_vflow_system_capture_screen_shell_permission_required">Shizuku or Root permission is required to capture screenshots</string>
     <string name="toast_vflow_system_capture_screen_region_select_failed">Region selection failed: %1$s</string>
@@ -2960,8 +2958,6 @@
     <string name="summary_vflow_device_wait_for_suffix">to appear</string>
     <string name="summary_vflow_device_timeout_prefix">, timeout</string>
     <string name="summary_vflow_device_timeout_suffix">seconds</string>
-    <string name="dialog_vflow_system_capture_screen_region_title">Set Screenshot Region</string>
-    <string name="dialog_vflow_system_capture_screen_region_message">Enter region coordinates\nFor example: 100,100,500,600</string>
     <string name="summary_vflow_system_get_usage_prefix">Get app usage, interval</string>
     <string name="summary_vflow_system_get_usage_suffix">minutes</string>
     <string name="summary_vflow_system_quick_view_prefix">Quick View</string>

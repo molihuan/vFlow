@@ -1595,7 +1595,6 @@
     <string name="output_vflow_system_capture_screen_image_name">截图</string>
     <string name="summary_vflow_system_capture_screen">截屏 </string>
     <string name="summary_vflow_system_capture_screen_suffix">截屏</string>
-    <string name="error_vflow_system_capture_screen_region_format">格式错误，请输入4个数字，用逗号分隔</string>
     <string name="error_vflow_system_capture_screen_invalid_param_title">参数错误</string>
     <string name="error_vflow_system_capture_screen_invalid_mode">无效的截屏模式</string>
     <string name="error_vflow_system_capture_screen_crop_failed">裁剪失败</string>
@@ -1612,7 +1611,6 @@
     <string name="option_vflow_system_capture_screen_mode_auto">自动</string>
     <string name="option_vflow_system_capture_screen_mode_screencap">screencap</string>
     <string name="hint_vflow_system_capture_screen_region_input">区域坐标 (left,top,right,bottom)</string>
-    <string name="text_vflow_system_capture_screen_region">区域: %1$s</string>
     <string name="toast_vflow_system_capture_screen_overlay_permission_required">需要悬浮窗权限才能选择区域</string>
     <string name="toast_vflow_system_capture_screen_shell_permission_required">需要 Shizuku 或 Root 权限才能截图</string>
     <string name="toast_vflow_system_capture_screen_region_select_failed">区域选择失败: %1$s</string>
@@ -2960,8 +2958,6 @@
     <string name="summary_vflow_device_wait_for_suffix">出现</string>
     <string name="summary_vflow_device_timeout_prefix">，超时</string>
     <string name="summary_vflow_device_timeout_suffix">秒</string>
-    <string name="dialog_vflow_system_capture_screen_region_title">设置截屏区域</string>
-    <string name="dialog_vflow_system_capture_screen_region_message">请输入区域坐标\n例如：100,100,500,600</string>
     <string name="summary_vflow_system_get_usage_prefix">获取应用使用时长，间隔</string>
     <string name="summary_vflow_system_get_usage_suffix">分钟</string>
     <string name="summary_vflow_system_quick_view_prefix">快速查看</string>

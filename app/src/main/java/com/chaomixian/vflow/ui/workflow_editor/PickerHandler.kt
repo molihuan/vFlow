@@ -8,13 +8,19 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.module.InputDefinition
 import com.chaomixian.vflow.core.module.PickerType
+import com.chaomixian.vflow.core.utils.StorageManager
+import com.chaomixian.vflow.permissions.PermissionManager
+import com.chaomixian.vflow.services.ShellManager
 import com.chaomixian.vflow.ui.app_picker.AppPickerMode
 import com.chaomixian.vflow.ui.app_picker.UnifiedAppPickerSheet
+import com.chaomixian.vflow.ui.overlay.RegionSelectionOverlay
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -55,6 +61,7 @@ class PickerHandler(
             PickerType.FILE -> handleFilePicker(inputDef)
             PickerType.DIRECTORY -> handleDirectoryPicker(inputDef)
             PickerType.MEDIA -> handleMediaPicker(inputDef)
+            PickerType.SCREEN_REGION -> handleScreenRegionPicker(inputDef)
             PickerType.NONE -> { currentInputDef = null }
         }
     }
@@ -300,6 +307,40 @@ class PickerHandler(
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         mediaPickerLauncher.launch(intent)
+    }
+
+    private fun handleScreenRegionPicker(inputDef: InputDefinition) {
+        if (!PermissionManager.isGranted(activity, PermissionManager.OVERLAY)) {
+            Toast.makeText(activity, R.string.toast_vflow_system_capture_screen_overlay_permission_required, Toast.LENGTH_SHORT).show()
+            currentInputDef = null
+            return
+        }
+
+        val shellPermissions = ShellManager.getRequiredPermissions(activity)
+        val hasShellPermission = shellPermissions.all { PermissionManager.isGranted(activity, it) }
+        if (!hasShellPermission) {
+            Toast.makeText(activity, R.string.toast_vflow_system_capture_screen_shell_permission_required, Toast.LENGTH_SHORT).show()
+            currentInputDef = null
+            return
+        }
+
+        activity.lifecycleScope.launch {
+            try {
+                val overlay = RegionSelectionOverlay(activity, StorageManager.tempDir)
+                val result = overlay.captureAndSelectRegion()
+                if (result != null) {
+                    onUpdateParameters(mapOf(inputDef.id to result.region))
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    activity,
+                    activity.getString(R.string.toast_vflow_system_capture_screen_region_select_failed, e.message ?: ""),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } finally {
+                currentInputDef = null
+            }
+        }
     }
 
     private var getCurrentValue: (InputDefinition) -> Any? = { null }

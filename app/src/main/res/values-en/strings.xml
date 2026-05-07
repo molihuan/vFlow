@@ -806,8 +806,6 @@
     <string name="button_click_select_image">Click to Select Image</string>
     <string name="text_workflow_to_call">Workflow to Call</string>
     <string name="text_select_image_to_find">Select Image to Find on Screen</string>
-    <string name="text_empty_for_fullscreen">Leave empty to capture full screen, click button below to select region</string>
-    <string name="label_region_select_optional">Region Select (Optional)</string>
     <string name="label_more_settings_execution">More Settings (Execution Mode)</string>
     <string name="label_more_settings_language">More Settings (Language, Strategy, Recognition Region)</string>
     <string name="text_click">Tap</string>
@@ -911,8 +909,6 @@
     <string name="help_load_variables_share">Share mode: Variables are shared in the workflow call chain</string>
     <string name="help_load_variables_copy">Copy mode: Copy initial values from source workflow</string>
     <string name="help_no_variables">No named variables in this workflow</string>
-    <string name="button_set_region">Set Region</string>
-    <string name="button_select_region">Select Region</string>
     <string name="button_clear">Clear</string>
     <string name="label_generate_workflow">Generate Workflow</string>
     <string name="label_select_action">Select Action</string>

@@ -2,30 +2,44 @@
 package com.chaomixian.vflow.ui.overlay
 
 import android.annotation.SuppressLint
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.logging.DebugLogger
-import com.chaomixian.vflow.core.workflow.module.system.RegionSelectionResult
 import com.chaomixian.vflow.services.ShellManager
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.*
 import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
+/**
+ * 区域选择结果。
+ */
+data class RegionSelectionResult(
+    val region: String,
+    val screenshotUri: Uri?
+)
 
 /**
  * 区域选择覆盖层。
@@ -42,11 +56,12 @@ class RegionSelectionOverlay(
 
     // 悬浮按钮
     private var fabRoot: FrameLayout? = null
-    private var fab: FloatingActionButton? = null
+    private var fab: ImageView? = null
 
     // 截图预览和区域选择界面
     private var cropRoot: FrameLayout? = null
-    private var cropView: CropView? = null
+    private var cropView: ScreenshotRegionView? = null
+    private var cropToolbar: MaterialCardView? = null
     private var screenshotBitmap: Bitmap? = null
     private var screenshotUri: Uri? = null
 
@@ -73,17 +88,29 @@ class RegionSelectionOverlay(
             setBackgroundColor(Color.TRANSPARENT)
         }
 
-        // 使用原始 context（带 Material 主题）创建 FAB
-        fab = FloatingActionButton(context).apply {
+        val density = appContext.resources.displayMetrics.density
+        fun dp(value: Float): Int = (value * density + 0.5f).toInt()
+
+        val containerColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorPrimaryContainer,
+            Color.WHITE
+        )
+        val iconColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOnPrimaryContainer,
+            Color.BLACK
+        )
+
+        // 和截图选取入口保持一致：普通 ImageView + 圆角背景，避免 FAB 默认阴影。
+        fab = ImageView(context).apply {
             setImageResource(R.drawable.rounded_fullscreen_portrait_24)
-            size = FloatingActionButton.SIZE_NORMAL
-            setOnClickListener {
-                fabRoot?.visibility = View.INVISIBLE
-                scope.launch {
-                    delay(300) // 等待按钮隐藏
-                    takeScreenshot()
-                }
-            }
+            setBackgroundResource(R.drawable.bg_widget_rounded)
+            background.setTint(containerColor)
+            setColorFilter(iconColor)
+            setPadding(dp(13f), dp(13f), dp(13f), dp(13f))
+            elevation = 0f
+            translationZ = 0f
         }
 
         val fabParams = FrameLayout.LayoutParams(
@@ -107,14 +134,14 @@ class RegionSelectionOverlay(
             x = 50
         }
 
-        // 支持拖动
+        // 支持拖动，点击时截图。
         var initialX = 0
         var initialY = 0
         var initialTouchX = 0f
         var initialTouchY = 0f
         var isDragging = false
 
-        fabRoot?.setOnTouchListener { _, event ->
+        fab?.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = layoutParams.x
@@ -137,6 +164,19 @@ class RegionSelectionOverlay(
                     } catch (e: Exception) {
                         // 忽略
                     }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (!isDragging) {
+                        fabRoot?.visibility = View.INVISIBLE
+                        scope.launch {
+                            delay(300)
+                            takeScreenshot()
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> {
                     true
                 }
                 else -> false
@@ -219,78 +259,27 @@ class RegionSelectionOverlay(
             setBackgroundColor(Color.BLACK)
         }
 
-        // 背景图片（使用 appContext）
-        val bgImage = ImageView(appContext).apply {
-            setImageBitmap(bitmap)
-            scaleType = ImageView.ScaleType.FIT_XY
-        }
-        cropRoot?.addView(bgImage, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-
-        // 裁剪视图（使用 appContext）
-        cropView = CropView(appContext, bitmap.width, bitmap.height)
-        cropRoot?.addView(cropView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-
-        // 底部控制面板（使用 appContext）
-        val controlPanel = LinearLayout(appContext).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#CC000000"))
-            setPadding(32, 24, 32, 24)
-        }
-
-        // 提示文字（使用 appContext）
-        val hintText = TextView(appContext).apply {
-            text = "拖动选择截图区域"
-            setTextColor(Color.WHITE)
-            textSize = 14f
-            setPadding(0, 0, 32, 0)
-        }
-
-        // 使用原始 context（带 Material 主题）创建 Material 按钮
-        val btnConfirm = MaterialButton(context).apply {
-            text = "确定"
-            setOnClickListener {
-                val rect = cropView?.getSelectedRect()
-                if (rect != null && rect.width() > 10 && rect.height() > 10) {
-                    // 将屏幕坐标转换为图片坐标
-                    val scaleX = bitmap.width.toFloat() / metrics.widthPixels
-                    val scaleY = bitmap.height.toFloat() / metrics.heightPixels
-
-                    val imageRect = Rect(
-                        (rect.left * scaleX).toInt().coerceIn(0, bitmap.width),
-                        (rect.top * scaleY).toInt().coerceIn(0, bitmap.height),
-                        (rect.right * scaleX).toInt().coerceIn(0, bitmap.width),
-                        (rect.bottom * scaleY).toInt().coerceIn(0, bitmap.height)
-                    )
-
-                    // 返回图片坐标（相对于原始截图）
-                    val regionStr = "${imageRect.left},${imageRect.top},${imageRect.right},${imageRect.bottom}"
-                    resultDeferred?.complete(RegionSelectionResult(regionStr, screenshotUri))
-                } else {
-                    resultDeferred?.complete(null)
+        // 截图与选择框绘制在同一个 View 中，和截图取样模块保持一致的区域选择体验。
+        cropView = ScreenshotRegionView(
+            context = appContext,
+            bitmap = bitmap,
+            onFrameChanged = { selectionRect, contentAlpha ->
+                cropToolbar?.let { toolbar ->
+                    updateToolbarPosition(toolbar, selectionRect, contentAlpha)
                 }
             }
-        }
+        )
+        cropRoot?.addView(cropView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
 
-        val btnCancel = MaterialButton(context, null, android.R.attr.borderlessButtonStyle).apply {
-            text = "取消"
-            setTextColor(Color.WHITE)
-            setOnClickListener {
-                resultDeferred?.complete(null)
-            }
-        }
-
-        controlPanel.addView(hintText)
-        controlPanel.addView(btnCancel)
-        controlPanel.addView(btnConfirm)
-
-        val panelParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        ).apply {
-            gravity = Gravity.BOTTOM
-        }
-        cropRoot?.addView(controlPanel, panelParams)
+        val toolbar = createSelectionToolbar()
+        cropToolbar = toolbar
+        cropRoot?.addView(
+            toolbar,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
 
         val layoutParams = WindowManager.LayoutParams(
             metrics.widthPixels,
@@ -317,6 +306,158 @@ class RegionSelectionOverlay(
         }
     }
 
+    private fun createSelectionToolbar(): MaterialCardView {
+        val density = appContext.resources.displayMetrics.density
+        fun dp(value: Float): Int = (value * density + 0.5f).toInt()
+
+        val card = MaterialCardView(context).apply {
+            setCardBackgroundColor(
+                MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceContainerHigh)
+            )
+            radius = dp(26f).toFloat()
+            cardElevation = dp(8f).toFloat()
+            strokeColor = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOutlineVariant)
+            strokeWidth = dp(1f)
+            setContentPadding(dp(6f), dp(6f), dp(6f), dp(6f))
+            alpha = 0f
+        }
+
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val errorContainer = MaterialColors.getColor(card, com.google.android.material.R.attr.colorErrorContainer)
+        val onErrorContainer = MaterialColors.getColor(card, com.google.android.material.R.attr.colorOnErrorContainer)
+        val primaryContainer = MaterialColors.getColor(card, com.google.android.material.R.attr.colorPrimaryContainer)
+        val onPrimaryContainer = MaterialColors.getColor(card, com.google.android.material.R.attr.colorOnPrimaryContainer)
+        val tertiaryContainer = MaterialColors.getColor(card, com.google.android.material.R.attr.colorTertiaryContainer)
+        val onTertiaryContainer = MaterialColors.getColor(card, com.google.android.material.R.attr.colorOnTertiaryContainer)
+
+        val cancelButton = createToolbarButton(
+            iconRes = R.drawable.rounded_close_24,
+            backgroundColor = errorContainer,
+            iconColor = onErrorContainer
+        ).apply {
+            contentDescription = context.getString(R.string.common_cancel)
+            setOnClickListener {
+                finishSelectionAnimated {
+                    resultDeferred?.complete(null)
+                }
+            }
+        }
+        row.addView(cancelButton)
+
+        val resetButton = createToolbarButton(
+            iconRes = R.drawable.rounded_reset_iso_24,
+            backgroundColor = primaryContainer,
+            iconColor = onPrimaryContainer
+        ).apply {
+            contentDescription = context.getString(R.string.workflow_editor_undo)
+            setOnClickListener {
+                cropView?.resetAnimated()
+            }
+        }
+        row.addView(resetButton, LinearLayout.LayoutParams(dp(40f), dp(40f)).apply {
+            marginStart = dp(8f)
+        })
+
+        val confirmButton = createToolbarButton(
+            iconRes = R.drawable.rounded_check_24,
+            backgroundColor = tertiaryContainer,
+            iconColor = onTertiaryContainer
+        ).apply {
+            contentDescription = context.getString(R.string.common_confirm)
+            setOnClickListener {
+                val rect = cropView?.getSelectedImageRect()
+                if (rect != null && rect.width() > 10 && rect.height() > 10) {
+                    val regionStr = "${rect.left},${rect.top},${rect.right},${rect.bottom}"
+                    finishSelectionAnimated {
+                        resultDeferred?.complete(RegionSelectionResult(regionStr, screenshotUri))
+                    }
+                } else {
+                    finishSelectionAnimated {
+                        resultDeferred?.complete(null)
+                    }
+                }
+            }
+        }
+        row.addView(confirmButton, LinearLayout.LayoutParams(dp(40f), dp(40f)).apply {
+            marginStart = dp(8f)
+        })
+
+        card.addView(row)
+        return card
+    }
+
+    private fun finishSelectionAnimated(onFinished: () -> Unit) {
+        setSelectionToolbarEnabled(false)
+        cropView?.finishAnimated(onFinished) ?: onFinished()
+    }
+
+    private fun setSelectionToolbarEnabled(enabled: Boolean) {
+        cropToolbar?.isEnabled = enabled
+        val row = cropToolbar?.getChildAt(0) as? LinearLayout ?: return
+        for (i in 0 until row.childCount) {
+            row.getChildAt(i).isEnabled = enabled
+        }
+    }
+
+    private fun createToolbarButton(
+        iconRes: Int,
+        backgroundColor: Int,
+        iconColor: Int
+    ): ImageButton {
+        val density = appContext.resources.displayMetrics.density
+        val size = (40f * density + 0.5f).toInt()
+        return ImageButton(context).apply {
+            layoutParams = LinearLayout.LayoutParams(size, size)
+            setImageResource(iconRes)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(backgroundColor)
+            }
+            setColorFilter(iconColor)
+            scaleType = ImageView.ScaleType.CENTER
+            isClickable = true
+            isFocusable = true
+        }
+    }
+
+    private fun updateToolbarPosition(
+        toolbar: MaterialCardView,
+        selectionRect: RectF,
+        contentAlpha: Int
+    ) {
+        val density = appContext.resources.displayMetrics.density
+        val margin = 8f * density
+        val gap = 12f * density
+
+        if (toolbar.measuredWidth == 0 || toolbar.measuredHeight == 0) {
+            toolbar.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            )
+        }
+
+        val toolbarWidth = toolbar.measuredWidth.toFloat()
+        val toolbarHeight = toolbar.measuredHeight.toFloat()
+        val parentWidth = cropRoot?.width?.takeIf { it > 0 }?.toFloat() ?: return
+        val parentHeight = cropRoot?.height?.takeIf { it > 0 }?.toFloat() ?: return
+
+        toolbar.x = (selectionRect.centerX() - toolbarWidth / 2f)
+            .coerceIn(margin, (parentWidth - toolbarWidth - margin).coerceAtLeast(margin))
+
+        val belowTop = selectionRect.bottom + gap
+        val aboveTop = selectionRect.top - gap - toolbarHeight
+        toolbar.y = when {
+            belowTop + toolbarHeight <= parentHeight - margin -> belowTop
+            aboveTop >= margin -> aboveTop
+            else -> (parentHeight - toolbarHeight - margin).coerceAtLeast(margin)
+        }
+        toolbar.alpha = contentAlpha / 255f
+    }
+
     private fun dismiss() {
         scope.cancel()
         try {
@@ -333,8 +474,21 @@ class RegionSelectionOverlay(
         }
         fab = null
         cropView = null
-        // WindowManager 移除视图后仍可能发生尾帧绘制，这里不能手动 recycle 位图。
+        cropToolbar = null
+
+        val bitmapToRecycle = screenshotBitmap
         screenshotBitmap = null
+        if (bitmapToRecycle != null) {
+            Handler(Looper.getMainLooper()).post {
+                try {
+                    if (!bitmapToRecycle.isRecycled) {
+                        bitmapToRecycle.recycle()
+                    }
+                } catch (e: Exception) {
+                    DebugLogger.e("RegionSelectionOverlay", "回收 bitmap 失败", e)
+                }
+            }
+        }
         screenshotUri = null
         resultDeferred = null
     }
@@ -349,22 +503,42 @@ class RegionSelectionOverlay(
     }
 
     /**
-     * 裁剪视图
+     * 截图区域选择视图。
+     *
+     * 初始状态会将截图收缩到屏幕中间；选择框保持在视图中央。触摸选择框边缘可以调整大小，
+     * 触摸框内可以移动选择框，触摸其它位置则移动截图本身。
      */
     @SuppressLint("ViewConstructor")
-    private class CropView(
+    private class ScreenshotRegionView(
         context: Context,
-        private val imageWidth: Int,
-        private val imageHeight: Int
+        private val bitmap: Bitmap,
+        private val onFrameChanged: (selectionRect: RectF, contentAlpha: Int) -> Unit
     ) : View(context) {
 
         companion object {
-            private const val CORNER_TOUCH_RADIUS = 40f  // 角点触摸检测半径
-            private const val MIN_CROP_SIZE = 50f  // 最小裁剪尺寸
+            private const val INITIAL_IMAGE_SCALE = 0.86f
+            private const val EDGE_TOUCH_SIZE = 44f
+            private const val MIN_CROP_SIZE = 50f
+            private const val SHOW_ANIMATION_DURATION = 750L
+            private const val HIDE_ANIMATION_DURATION = 520L
+            private const val RESET_ANIMATION_DURATION = 260L
         }
 
-        private enum class DragMode { NONE, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, MOVE }
+        private enum class DragMode {
+            NONE,
+            LEFT,
+            TOP,
+            RIGHT,
+            BOTTOM,
+            TOP_LEFT,
+            TOP_RIGHT,
+            BOTTOM_LEFT,
+            BOTTOM_RIGHT,
+            MOVE_SELECTION,
+            PAN_IMAGE
+        }
 
+        private val imagePaint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         private val dimPaint = Paint().apply {
             color = Color.parseColor("#80000000")
             style = Paint.Style.FILL
@@ -386,82 +560,249 @@ class RegionSelectionOverlay(
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
+        private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#40FFFFFF")
+            style = Paint.Style.STROKE
+            strokeWidth = 1f
+            pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
+        }
 
-        private var cropLeft = 0f
-        private var cropTop = 0f
-        private var cropRight = 0f
-        private var cropBottom = 0f
+        private val imageRect = RectF()
+        private val initialImageRect = RectF()
+        private val targetImageRect = RectF()
+        private val selectionRect = RectF()
+        private val defaultSelectionRect = RectF()
+        private val bitmapSrcRect = Rect(0, 0, bitmap.width, bitmap.height)
 
+        private var contentAlpha = 0
         private var dragMode = DragMode.NONE
         private var lastTouchX = 0f
         private var lastTouchY = 0f
+        private var showAnimator: ValueAnimator? = null
+        private var resetAnimator: ValueAnimator? = null
+        private var finishAnimator: ValueAnimator? = null
+        private var isFinishing = false
 
-        init {
-            // 默认选择中央区域
-            post {
-                val centerX = width / 2f
-                val centerY = height / 2f
-                val defaultSize = minOf(width, height) / 3f
-                cropLeft = centerX - defaultSize / 2
-                cropTop = centerY - defaultSize / 2
-                cropRight = centerX + defaultSize / 2
-                cropBottom = centerY + defaultSize / 2
-                invalidate()
+        override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+            super.onSizeChanged(w, h, oldw, oldh)
+            if (w <= 0 || h <= 0) return
+
+            val fitScale = min(w / bitmap.width.toFloat(), h / bitmap.height.toFloat()) * INITIAL_IMAGE_SCALE
+            val targetWidth = bitmap.width * fitScale
+            val targetHeight = bitmap.height * fitScale
+            val targetLeft = (w - targetWidth) / 2f
+            val targetTop = (h - targetHeight) / 2f
+            targetImageRect.set(targetLeft, targetTop, targetLeft + targetWidth, targetTop + targetHeight)
+            initialImageRect.set(0f, 0f, w.toFloat(), h.toFloat())
+            imageRect.set(initialImageRect)
+
+            val defaultSize = min(w, h) / 3f
+            val centerX = w / 2f
+            val centerY = h / 2f
+            defaultSelectionRect.set(
+                centerX - defaultSize / 2f,
+                centerY - defaultSize / 2f,
+                centerX + defaultSize / 2f,
+                centerY + defaultSize / 2f
+            )
+            selectionRect.set(defaultSelectionRect)
+            constrainSelectionToView()
+            notifyFrameChanged()
+            startShowAnimation()
+        }
+
+        override fun onDetachedFromWindow() {
+            showAnimator?.cancel()
+            resetAnimator?.cancel()
+            finishAnimator?.cancel()
+            super.onDetachedFromWindow()
+        }
+
+        fun resetAnimated() {
+            if (width <= 0 || height <= 0 || isFinishing) return
+
+            showAnimator?.cancel()
+            resetAnimator?.cancel()
+            finishAnimator?.cancel()
+
+            val startImageRect = RectF(imageRect)
+            val startSelectionRect = RectF(selectionRect)
+            resetAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = RESET_ANIMATION_DURATION
+                interpolator = DecelerateInterpolator(1.8f)
+                addUpdateListener { animator ->
+                    val t = animator.animatedValue as Float
+                    lerpRect(startImageRect, targetImageRect, t, imageRect)
+                    lerpRect(startSelectionRect, defaultSelectionRect, t, selectionRect)
+                    notifyFrameChanged()
+                    invalidate()
+                }
+                start()
             }
         }
 
-        fun getSelectedRect(): Rect {
-            val left = minOf(cropLeft, cropRight).toInt().coerceIn(0, width)
-            val top = minOf(cropTop, cropBottom).toInt().coerceIn(0, height)
-            val right = maxOf(cropLeft, cropRight).toInt().coerceIn(0, width)
-            val bottom = maxOf(cropTop, cropBottom).toInt().coerceIn(0, height)
+        fun finishAnimated(onFinished: () -> Unit) {
+            if (width <= 0 || height <= 0) {
+                onFinished()
+                return
+            }
+            if (isFinishing) return
+
+            isFinishing = true
+            showAnimator?.cancel()
+            resetAnimator?.cancel()
+            finishAnimator?.cancel()
+
+            val startImageRect = RectF(imageRect)
+            val startAlpha = contentAlpha
+            finishAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = HIDE_ANIMATION_DURATION
+                interpolator = DecelerateInterpolator(1.6f)
+                addUpdateListener { animator ->
+                    val t = animator.animatedValue as Float
+                    lerpRect(startImageRect, initialImageRect, t, imageRect)
+                    contentAlpha = (startAlpha * (1f - t)).toInt().coerceIn(0, 255)
+                    notifyFrameChanged()
+                    invalidate()
+                }
+                addListener(object : android.animation.AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        onFinished()
+                    }
+                })
+                start()
+            }
+        }
+
+        fun getSelectedImageRect(): Rect? {
+            val visibleSelection = RectF(selectionRect)
+            if (!visibleSelection.intersect(imageRect)) return null
+
+            val scaleX = bitmap.width / imageRect.width()
+            val scaleY = bitmap.height / imageRect.height()
+            val left = ((visibleSelection.left - imageRect.left) * scaleX).toInt().coerceIn(0, bitmap.width)
+            val top = ((visibleSelection.top - imageRect.top) * scaleY).toInt().coerceIn(0, bitmap.height)
+            val right = ((visibleSelection.right - imageRect.left) * scaleX).toInt().coerceIn(0, bitmap.width)
+            val bottom = ((visibleSelection.bottom - imageRect.top) * scaleY).toInt().coerceIn(0, bitmap.height)
             return Rect(left, top, right, bottom)
         }
 
-        private fun getOrderedRect(): RectF {
-            return RectF(
-                minOf(cropLeft, cropRight),
-                minOf(cropTop, cropBottom),
-                maxOf(cropLeft, cropRight),
-                maxOf(cropTop, cropBottom)
+        private fun startShowAnimation() {
+            showAnimator?.cancel()
+            contentAlpha = 0
+            showAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = SHOW_ANIMATION_DURATION
+                interpolator = DecelerateInterpolator(2f)
+                addUpdateListener { animator ->
+                    val t = animator.animatedValue as Float
+                    lerpRect(initialImageRect, targetImageRect, t, imageRect)
+                    contentAlpha = (255 * t).toInt().coerceIn(0, 255)
+                    notifyFrameChanged()
+                    invalidate()
+                }
+                start()
+            }
+        }
+
+        private fun lerpRect(from: RectF, to: RectF, fraction: Float, out: RectF) {
+            out.set(
+                from.left + (to.left - from.left) * fraction,
+                from.top + (to.top - from.top) * fraction,
+                from.right + (to.right - from.right) * fraction,
+                from.bottom + (to.bottom - from.bottom) * fraction
             )
         }
 
-        private fun hitTestCorner(x: Float, y: Float, cornerX: Float, cornerY: Float): Boolean {
-            val dx = x - cornerX
-            val dy = y - cornerY
-            return dx * dx + dy * dy <= CORNER_TOUCH_RADIUS * CORNER_TOUCH_RADIUS
+        private fun hitTestEdge(x: Float, y: Float): DragMode {
+            val expanded = RectF(selectionRect).apply { inset(-EDGE_TOUCH_SIZE, -EDGE_TOUCH_SIZE) }
+            if (!expanded.contains(x, y)) return DragMode.NONE
+
+            val nearLeft = abs(x - selectionRect.left) <= EDGE_TOUCH_SIZE && y in selectionRect.top..selectionRect.bottom
+            val nearTop = abs(y - selectionRect.top) <= EDGE_TOUCH_SIZE && x in selectionRect.left..selectionRect.right
+            val nearRight = abs(x - selectionRect.right) <= EDGE_TOUCH_SIZE && y in selectionRect.top..selectionRect.bottom
+            val nearBottom = abs(y - selectionRect.bottom) <= EDGE_TOUCH_SIZE && x in selectionRect.left..selectionRect.right
+
+            return when {
+                nearLeft && nearTop -> DragMode.TOP_LEFT
+                nearRight && nearTop -> DragMode.TOP_RIGHT
+                nearLeft && nearBottom -> DragMode.BOTTOM_LEFT
+                nearRight && nearBottom -> DragMode.BOTTOM_RIGHT
+                nearLeft -> DragMode.LEFT
+                nearTop -> DragMode.TOP
+                nearRight -> DragMode.RIGHT
+                nearBottom -> DragMode.BOTTOM
+                selectionRect.contains(x, y) -> DragMode.MOVE_SELECTION
+                else -> DragMode.NONE
+            }
         }
 
-        private fun hitTestMove(x: Float, y: Float, rect: RectF): Boolean {
-            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+        private fun constrainSelectionToView() {
+            if (selectionRect.width() < MIN_CROP_SIZE) {
+                selectionRect.right = selectionRect.left + MIN_CROP_SIZE
+            }
+            if (selectionRect.height() < MIN_CROP_SIZE) {
+                selectionRect.bottom = selectionRect.top + MIN_CROP_SIZE
+            }
+
+            val dx = when {
+                selectionRect.left < 0f -> -selectionRect.left
+                selectionRect.right > width -> width - selectionRect.right
+                else -> 0f
+            }
+            val dy = when {
+                selectionRect.top < 0f -> -selectionRect.top
+                selectionRect.bottom > height -> height - selectionRect.bottom
+                else -> 0f
+            }
+            selectionRect.offset(dx, dy)
+        }
+
+        private fun moveSelection(dx: Float, dy: Float) {
+            selectionRect.offset(dx, dy)
+            constrainSelectionToView()
+        }
+
+        private fun panImage(dx: Float, dy: Float) {
+            val horizontalMargin = width * 0.2f
+            val verticalMargin = height * 0.2f
+            var safeDx = dx
+            var safeDy = dy
+
+            if (imageRect.left + dx > width - horizontalMargin) {
+                safeDx = width - horizontalMargin - imageRect.left
+            } else if (imageRect.right + dx < horizontalMargin) {
+                safeDx = horizontalMargin - imageRect.right
+            }
+
+            if (imageRect.top + dy > height - verticalMargin) {
+                safeDy = height - verticalMargin - imageRect.top
+            } else if (imageRect.bottom + dy < verticalMargin) {
+                safeDy = verticalMargin - imageRect.bottom
+            }
+
+            imageRect.offset(safeDx, safeDy)
+        }
+
+        private fun notifyFrameChanged() {
+            onFrameChanged(RectF(selectionRect), contentAlpha)
         }
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(event: MotionEvent): Boolean {
+            if (isFinishing) return true
+
             val x = event.x
             val y = event.y
-            val rect = getOrderedRect()
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     lastTouchX = x
                     lastTouchY = y
-
-                    // 检测是否点击在角点上
-                    when {
-                        hitTestCorner(x, y, rect.left, rect.top) -> dragMode = DragMode.TOP_LEFT
-                        hitTestCorner(x, y, rect.right, rect.top) -> dragMode = DragMode.TOP_RIGHT
-                        hitTestCorner(x, y, rect.left, rect.bottom) -> dragMode = DragMode.BOTTOM_LEFT
-                        hitTestCorner(x, y, rect.right, rect.bottom) -> dragMode = DragMode.BOTTOM_RIGHT
-                        hitTestMove(x, y, rect) -> dragMode = DragMode.MOVE
-                        else -> dragMode = DragMode.NONE
+                    dragMode = hitTestEdge(x, y).let { mode ->
+                        if (mode == DragMode.NONE) DragMode.PAN_IMAGE else mode
                     }
-
-                    if (dragMode != DragMode.NONE) {
-                        invalidate()
-                        return true
-                    }
+                    invalidate()
+                    return true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     if (dragMode != DragMode.NONE) {
@@ -469,48 +810,40 @@ class RegionSelectionOverlay(
                         val dy = y - lastTouchY
 
                         when (dragMode) {
+                            DragMode.LEFT -> {
+                                selectionRect.left = min(selectionRect.left + dx, selectionRect.right - MIN_CROP_SIZE)
+                            }
+                            DragMode.TOP -> {
+                                selectionRect.top = min(selectionRect.top + dy, selectionRect.bottom - MIN_CROP_SIZE)
+                            }
+                            DragMode.RIGHT -> {
+                                selectionRect.right = max(selectionRect.right + dx, selectionRect.left + MIN_CROP_SIZE)
+                            }
+                            DragMode.BOTTOM -> {
+                                selectionRect.bottom = max(selectionRect.bottom + dy, selectionRect.top + MIN_CROP_SIZE)
+                            }
                             DragMode.TOP_LEFT -> {
-                                cropLeft = (cropLeft + dx).coerceAtMost(rect.right - MIN_CROP_SIZE)
-                                cropTop = (cropTop + dy).coerceAtMost(rect.bottom - MIN_CROP_SIZE)
+                                selectionRect.left = min(selectionRect.left + dx, selectionRect.right - MIN_CROP_SIZE)
+                                selectionRect.top = min(selectionRect.top + dy, selectionRect.bottom - MIN_CROP_SIZE)
                             }
                             DragMode.TOP_RIGHT -> {
-                                cropRight = (cropRight + dx).coerceAtLeast(rect.left + MIN_CROP_SIZE)
-                                cropTop = (cropTop + dy).coerceAtMost(rect.bottom - MIN_CROP_SIZE)
+                                selectionRect.right = max(selectionRect.right + dx, selectionRect.left + MIN_CROP_SIZE)
+                                selectionRect.top = min(selectionRect.top + dy, selectionRect.bottom - MIN_CROP_SIZE)
                             }
                             DragMode.BOTTOM_LEFT -> {
-                                cropLeft = (cropLeft + dx).coerceAtMost(rect.right - MIN_CROP_SIZE)
-                                cropBottom = (cropBottom + dy).coerceAtLeast(rect.top + MIN_CROP_SIZE)
+                                selectionRect.left = min(selectionRect.left + dx, selectionRect.right - MIN_CROP_SIZE)
+                                selectionRect.bottom = max(selectionRect.bottom + dy, selectionRect.top + MIN_CROP_SIZE)
                             }
                             DragMode.BOTTOM_RIGHT -> {
-                                cropRight = (cropRight + dx).coerceAtLeast(rect.left + MIN_CROP_SIZE)
-                                cropBottom = (cropBottom + dy).coerceAtLeast(rect.top + MIN_CROP_SIZE)
+                                selectionRect.right = max(selectionRect.right + dx, selectionRect.left + MIN_CROP_SIZE)
+                                selectionRect.bottom = max(selectionRect.bottom + dy, selectionRect.top + MIN_CROP_SIZE)
                             }
-                            DragMode.MOVE -> {
-                                val newLeft = rect.left + dx
-                                val newTop = rect.top + dy
-                                val newRight = rect.right + dx
-                                val newBottom = rect.bottom + dy
-
-                                // 确保移动后不超出边界
-                                if (newLeft >= 0 && newRight <= width) {
-                                    cropLeft += dx
-                                    cropRight += dx
-                                }
-                                if (newTop >= 0 && newBottom <= height) {
-                                    cropTop += dy
-                                    cropBottom += dy
-                                }
-                            }
-                            DragMode.NONE -> {}
+                            DragMode.MOVE_SELECTION -> moveSelection(dx, dy)
+                            DragMode.PAN_IMAGE -> panImage(dx, dy)
+                            DragMode.NONE -> Unit
                         }
-
-                        // 边界约束
-                        getOrderedRect().let { r ->
-                            cropLeft = r.left.coerceIn(0f, width.toFloat())
-                            cropTop = r.top.coerceIn(0f, height.toFloat())
-                            cropRight = r.right.coerceIn(0f, width.toFloat())
-                            cropBottom = r.bottom.coerceIn(0f, height.toFloat())
-                        }
+                        constrainSelectionToView()
+                        notifyFrameChanged()
 
                         lastTouchX = x
                         lastTouchY = y
@@ -530,22 +863,26 @@ class RegionSelectionOverlay(
         override fun onDraw(canvas: Canvas) {
             super.onDraw(canvas)
 
-            val rect = getOrderedRect()
+            canvas.drawColor(Color.BLACK)
+            canvas.drawBitmap(bitmap, bitmapSrcRect, imageRect, imagePaint)
 
-            // 绘制半透明遮罩
+            dimPaint.alpha = (0x80 * (contentAlpha / 255f)).toInt()
+            borderPaint.alpha = contentAlpha
+            cornerPaint.alpha = contentAlpha
+            cornerStrokePaint.alpha = contentAlpha
+            gridPaint.alpha = (0x40 * (contentAlpha / 255f)).toInt()
+
+            val rect = selectionRect
             canvas.drawRect(0f, 0f, width.toFloat(), rect.top, dimPaint)
             canvas.drawRect(0f, rect.bottom, width.toFloat(), height.toFloat(), dimPaint)
             canvas.drawRect(0f, rect.top, rect.left, rect.bottom, dimPaint)
             canvas.drawRect(rect.right, rect.top, width.toFloat(), rect.bottom, dimPaint)
 
-            // 绘制边框
             canvas.drawRect(rect, borderPaint)
 
-            // 绘制角点
             val cornerSize = 24f
             val halfSize = cornerSize / 2f
 
-            // 左上角
             canvas.drawRoundRect(
                 rect.left - halfSize, rect.top - halfSize,
                 rect.left + halfSize, rect.top + halfSize,
@@ -557,7 +894,6 @@ class RegionSelectionOverlay(
                 4f, 4f, cornerStrokePaint
             )
 
-            // 右上角
             canvas.drawRoundRect(
                 rect.right - halfSize, rect.top - halfSize,
                 rect.right + halfSize, rect.top + halfSize,
@@ -569,7 +905,6 @@ class RegionSelectionOverlay(
                 4f, 4f, cornerStrokePaint
             )
 
-            // 左下角
             canvas.drawRoundRect(
                 rect.left - halfSize, rect.bottom - halfSize,
                 rect.left + halfSize, rect.bottom + halfSize,
@@ -581,7 +916,6 @@ class RegionSelectionOverlay(
                 4f, 4f, cornerStrokePaint
             )
 
-            // 右下角
             canvas.drawRoundRect(
                 rect.right - halfSize, rect.bottom - halfSize,
                 rect.right + halfSize, rect.bottom + halfSize,
@@ -593,17 +927,11 @@ class RegionSelectionOverlay(
                 4f, 4f, cornerStrokePaint
             )
 
-            // 绘制中心十字线（辅助线）
             val centerX = rect.centerX()
             val centerY = rect.centerY()
-            val gridPaint = Paint().apply {
-                color = Color.parseColor("#40FFFFFF")
-                style = Paint.Style.STROKE
-                strokeWidth = 1f
-                pathEffect = DashPathEffect(floatArrayOf(10f, 10f), 0f)
-            }
             canvas.drawLine(centerX, rect.top, centerX, rect.bottom, gridPaint)
             canvas.drawLine(rect.left, centerY, rect.right, centerY, gridPaint)
         }
     }
+
 }

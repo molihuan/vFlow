@@ -190,7 +190,9 @@ enum class PickerType {
     /** 时间选择器 */
     TIME,
     /** 日期时间选择器 */
-    DATETIME
+    DATETIME,
+    /** 屏幕区域选择器 */
+    SCREEN_REGION
 }
 
 /**

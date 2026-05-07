@@ -160,6 +160,8 @@ class OCRModule : BaseModule() {
             defaultValue = "",
             acceptsMagicVariable = true,
             acceptedMagicVariableTypes = setOf(VTypeRegistry.COORDINATE_REGION.id),
+            supportsRichText = true,
+            pickerType = PickerType.SCREEN_REGION,
             isFolded = true,
             hint = "留空则识别全屏",
             nameStringRes = R.string.param_vflow_interaction_ocr_region_name,
