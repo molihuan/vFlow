@@ -102,6 +102,11 @@ object LogManager {
         }
     }
 
+    @Synchronized
+    fun clearLogs() {
+        saveLogs(emptyList())
+    }
+
     private fun saveLogs(logs: List<LogEntry>) {
         val json = gson.toJson(logs)
         applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

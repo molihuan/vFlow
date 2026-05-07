@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -364,6 +365,14 @@ fun HomeScreen(
                 LogViewerBottomSheet(
                     logs = uiState.allLogs,
                     onLogClick = { selectedLog = it },
+                    onClearLogs = {
+                        LogManager.clearLogs()
+                        uiState = uiState.copy(
+                            recentLogs = emptyList(),
+                            allLogs = emptyList(),
+                        )
+                        context.toast(context.getString(R.string.settings_toast_logs_cleared))
+                    },
                 )
             }
         }
@@ -783,18 +792,34 @@ private fun SectionDivider() {
 private fun LogViewerBottomSheet(
     logs: List<LogEntry>,
     onLogClick: (LogEntry) -> Unit,
+    onClearLogs: () -> Unit,
 ) {
+    var showClearConfirmDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.label_execution_log),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.label_execution_log),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            FilledTonalButton(
+                onClick = { showClearConfirmDialog = true },
+                enabled = logs.isNotEmpty(),
+            ) {
+                Text(text = stringResource(R.string.settings_button_clear_logs))
+            }
+        }
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -808,6 +833,33 @@ private fun LogViewerBottomSheet(
                 }
             }
         }
+    }
+
+    if (showClearConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmDialog = false },
+            title = {
+                Text(text = stringResource(R.string.home_logs_clear_confirm_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.home_logs_clear_confirm_message))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onClearLogs()
+                        showClearConfirmDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(R.string.settings_button_clear_logs))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirmDialog = false }) {
+                    Text(text = stringResource(R.string.common_cancel))
+                }
+            }
+        )
     }
 }
 

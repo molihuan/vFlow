@@ -945,6 +945,8 @@
     <string name="label_sender_number_contains">发件人号码包含</string>
     <string name="label_sms_content_contains">短信内容包含</string>
     <string name="label_execution_log">执行日志</string>
+    <string name="home_logs_clear_confirm_title">清空所有执行日志？</string>
+    <string name="home_logs_clear_confirm_message">这会删除最近日志中的全部执行记录，且无法恢复。</string>
     <string name="desc_execute_workflow">执行工作流</string>
     <string name="text_when_opened">打开时</string>
     <string name="text_when_closed">关闭时</string>

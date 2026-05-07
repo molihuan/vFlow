@@ -945,6 +945,8 @@
     <string name="label_sender_number_contains">Sender Number Contains</string>
     <string name="label_sms_content_contains">Message Content Contains</string>
     <string name="label_execution_log">Execution Log</string>
+    <string name="home_logs_clear_confirm_title">Clear all execution logs?</string>
+    <string name="home_logs_clear_confirm_message">This will delete every execution record shown in the recent logs sheet, and it cannot be undone.</string>
     <string name="desc_execute_workflow">Execute Workflow</string>
     <string name="text_when_opened">When Opened</string>
     <string name="text_when_closed">When Closed</string>
