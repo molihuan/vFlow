@@ -107,7 +107,7 @@ abstract class BaseWorkflowTileService : TileService() {
     }
 
     private fun openApp() {
-        val intent = Intent(this, MainActivity::class.java).apply {
+        val intent = MainActivity.createAppLaunchIntent(this).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         val pendingIntent = PendingIntent.getActivity(

@@ -48,6 +48,13 @@ class MainActivity : BaseActivity() {
         const val LOG_PREFS_NAME = "vFlowLogPrefs"
         private const val EXTRA_INITIAL_MAIN_TAB_TAG = "initial_main_tab_tag"
         private const val STATE_CURRENT_MAIN_TAB_TAG = "current_main_tab_tag"
+
+        fun createAppLaunchIntent(context: Context): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_MAIN
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            }
+        }
     }
 
     private var uiShellReady = false
@@ -80,6 +87,11 @@ class MainActivity : BaseActivity() {
     @androidx.compose.material3.ExperimentalMaterial3Api
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (shouldFinishDuplicateLauncherLaunch()) {
+            finish()
+            return
+        }
 
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         liquidGlassNavBarEnabled = AppearanceManager.isLiquidGlassNavBarEnabled(this)
@@ -133,6 +145,16 @@ class MainActivity : BaseActivity() {
                 onPrimaryTabChanged = ::setPrimaryMainTab,
             )
         }
+    }
+
+    private fun shouldFinishDuplicateLauncherLaunch(): Boolean {
+        if (isTaskRoot) {
+            return false
+        }
+
+        val launchIntent = intent ?: return false
+        return launchIntent.action == Intent.ACTION_MAIN &&
+            launchIntent.categories?.contains(Intent.CATEGORY_LAUNCHER) == true
     }
 
     private fun continueStartup() {
