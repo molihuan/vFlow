@@ -161,6 +161,7 @@ class FeishuMediaUploadModule : BaseModule() {
             hint = "JSON 格式，如 {\"drive_route_token\":\"xxx\"}",
             hintStringRes = R.string.hint_vflow_feishu_upload_extra
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -206,6 +207,11 @@ class FeishuMediaUploadModule : BaseModule() {
             try {
                 val inputsById = getInputs().associateBy { it.id }
                 val timeout = context.getVariableAsLong("timeout") ?: 30
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
                 val rawAccessToken = context.getVariableAsString("access_token", "")
                 val accessToken = VariableResolver.resolve(rawAccessToken, context)
                     .trim()
@@ -307,7 +313,8 @@ class FeishuMediaUploadModule : BaseModule() {
                 val client = applyProxyIfConfigured(
                     OkHttpClient.Builder()
                         .callTimeout(timeout, java.util.concurrent.TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 val request = Request.Builder()

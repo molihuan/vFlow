@@ -174,6 +174,7 @@ class WebhookPushModule : BaseModule() {
             isFolded = true,
             hintStringRes = R.string.hint_vflow_network_webhook_push_headers
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -256,6 +257,11 @@ class WebhookPushModule : BaseModule() {
                 val rawBody = VariableResolver.resolve(context.getVariableAsString("raw_body", ""), context)
                 val formFieldsJson = VariableResolver.resolve(context.getVariableAsString("form_fields_json", ""), context).trim()
                 val headersJson = VariableResolver.resolve(context.getVariableAsString("headers_json", ""), context).trim()
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
 
                 val missingRequiredFields = if (bodyType == BODY_CUSTOM_JSON) {
                     url.isEmpty() || customJsonBody.isEmpty()
@@ -299,7 +305,8 @@ class WebhookPushModule : BaseModule() {
                         .readTimeout(timeout, TimeUnit.SECONDS)
                         .writeTimeout(timeout, TimeUnit.SECONDS)
                         .callTimeout(timeout, TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_network_webhook_push_sending, method, url)))

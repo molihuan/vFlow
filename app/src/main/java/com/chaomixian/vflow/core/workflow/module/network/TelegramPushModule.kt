@@ -117,6 +117,7 @@ class TelegramPushModule : BaseModule() {
             isFolded = true,
             hintStringRes = R.string.hint_vflow_network_telegram_push_thread_id
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -173,6 +174,11 @@ class TelegramPushModule : BaseModule() {
                 val parseMode = inputs.find { it.id == "parse_mode" }?.normalizeEnumValue(rawParseMode) ?: rawParseMode
                 val disablePreview = context.getVariableAsBoolean("disable_web_page_preview") ?: false
                 val messageThreadId = VariableResolver.resolve(context.getVariableAsString("message_thread_id", ""), context).trim()
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
 
                 if (botToken.isEmpty() || chatId.isEmpty() || text.isBlank()) {
                     return@withContext ExecutionResult.Failure(
@@ -196,7 +202,8 @@ class TelegramPushModule : BaseModule() {
                         .readTimeout(timeout, TimeUnit.SECONDS)
                         .writeTimeout(timeout, TimeUnit.SECONDS)
                         .callTimeout(timeout, TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_network_telegram_push_sending, chatId)))

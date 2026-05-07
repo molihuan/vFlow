@@ -183,6 +183,7 @@ class BarkPushModule : BaseModule() {
             isFolded = true,
             hintStringRes = R.string.hint_vflow_network_bark_push_url
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -250,6 +251,11 @@ class BarkPushModule : BaseModule() {
                 val autoCopy = context.getVariableAsBoolean("auto_copy") ?: false
                 val copy = VariableResolver.resolve(context.getVariableAsString("copy", ""), context).trim()
                 val jumpUrl = VariableResolver.resolve(context.getVariableAsString("jump_url", ""), context).trim()
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
 
                 if (serverUrl.isEmpty() || deviceKey.isEmpty() || body.isEmpty()) {
                     return@withContext ExecutionResult.Failure(
@@ -279,7 +285,8 @@ class BarkPushModule : BaseModule() {
                         .readTimeout(timeout, TimeUnit.SECONDS)
                         .writeTimeout(timeout, TimeUnit.SECONDS)
                         .callTimeout(timeout, TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_network_bark_push_sending, requestUrl)))

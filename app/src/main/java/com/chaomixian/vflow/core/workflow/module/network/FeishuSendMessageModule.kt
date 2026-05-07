@@ -161,6 +161,7 @@ class FeishuSendMessageModule : BaseModule() {
             hint = "可选，用于请求去重",
             hintStringRes = R.string.hint_vflow_feishu_send_message_uuid
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -219,6 +220,11 @@ class FeishuSendMessageModule : BaseModule() {
             try {
                 val inputsById = getInputs().associateBy { it.id }
                 val timeout = context.getVariableAsLong("timeout") ?: 15L
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
                 val rawAuthMode = context.getVariableAsString("auth_mode", "tenant_access_token")
                 val authMode = inputsById["auth_mode"]?.normalizeEnumValue(rawAuthMode) ?: rawAuthMode
                 val token = when (
@@ -266,7 +272,8 @@ class FeishuSendMessageModule : BaseModule() {
                         .readTimeout(timeout, TimeUnit.SECONDS)
                         .writeTimeout(timeout, TimeUnit.SECONDS)
                         .callTimeout(timeout, TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 val body = Gson().toJson(requestJson)

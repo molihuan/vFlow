@@ -142,6 +142,7 @@ class FeishuGetMessageHistoryModule : BaseModule() {
             hint = "留空表示从第一页开始",
             hintStringRes = R.string.hint_vflow_feishu_get_message_history_page_token
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -271,6 +272,11 @@ class FeishuGetMessageHistoryModule : BaseModule() {
         return withContext(Dispatchers.IO) {
             try {
                 val timeout = resolveLongInput(context, "timeout", 15L).coerceAtLeast(1L)
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
                 val containerIdType = resolveEnumInput(context, "container_id_type", "chat")
                 val containerId = resolveStringInput(context, "container_id", "")
                 val startTime = resolveStringInput(context, "start_time", "")
@@ -325,7 +331,8 @@ class FeishuGetMessageHistoryModule : BaseModule() {
                         .readTimeout(timeout, TimeUnit.SECONDS)
                         .writeTimeout(timeout, TimeUnit.SECONDS)
                         .callTimeout(timeout, TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 val request = Request.Builder()

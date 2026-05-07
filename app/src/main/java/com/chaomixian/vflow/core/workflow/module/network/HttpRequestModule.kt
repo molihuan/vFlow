@@ -94,6 +94,7 @@ class HttpRequestModule : BaseModule() {
         InputDefinition("query_params", "查询参数", ParameterType.ANY, defaultValue = emptyMap<String, String>(), acceptsMagicVariable = true, nameStringRes = R.string.param_vflow_network_http_request_query_params_name),
         InputDefinition("body_type", "请求体类型", ParameterType.ENUM, BODY_TYPE_NONE, options = bodyTypeOptions, acceptsMagicVariable = false, nameStringRes = R.string.param_vflow_network_http_request_body_type_name, optionsStringRes = listOf(R.string.option_vflow_network_http_request_body_none, R.string.option_vflow_network_http_request_body_json, R.string.option_vflow_network_http_request_body_form, R.string.option_vflow_network_http_request_body_raw, R.string.option_vflow_network_http_request_body_file), legacyValueMap = LEGACY_BODY_TYPE_ALIASES),
         InputDefinition("body", "请求体", ParameterType.ANY, acceptsMagicVariable = true, supportsRichText = true, nameStringRes = R.string.param_vflow_network_http_request_body_name),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition("timeout", "超时(秒)", ParameterType.NUMBER, 10.0, acceptsMagicVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.NUMBER.id), nameStringRes = R.string.param_vflow_network_http_request_timeout_name),
         InputDefinition("show_advanced", "显示高级", ParameterType.BOOLEAN, false, isHidden = true, nameStringRes = R.string.param_vflow_network_http_request_show_advanced_name)
     )
@@ -226,6 +227,11 @@ class HttpRequestModule : BaseModule() {
                 }
 
                 val timeout = context.getVariableAsLong("timeout") ?: 10
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
 
                 val client = applyProxyIfConfigured(
                     OkHttpClient.Builder()
@@ -233,7 +239,8 @@ class HttpRequestModule : BaseModule() {
                         .readTimeout(timeout, java.util.concurrent.TimeUnit.SECONDS)
                         .writeTimeout(timeout, java.util.concurrent.TimeUnit.SECONDS)
                         .callTimeout(timeout, java.util.concurrent.TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 val httpUrlBuilder = urlString.toHttpUrlOrNull()?.newBuilder() ?: return@withContext ExecutionResult.Failure(

@@ -1,6 +1,12 @@
 package com.chaomixian.vflow.core.workflow.module.network
 
 import android.content.Context
+import com.chaomixian.vflow.R
+import com.chaomixian.vflow.core.execution.ExecutionContext
+import com.chaomixian.vflow.core.module.InputDefinition
+import com.chaomixian.vflow.core.module.InputStyle
+import com.chaomixian.vflow.core.module.InputVisibility
+import com.chaomixian.vflow.core.module.ParameterType
 import com.chaomixian.vflow.ui.settings.ModuleConfigActivity
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -9,9 +15,21 @@ import okhttp3.OkHttpClient
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-internal fun applyProxyIfConfigured(builder: OkHttpClient.Builder, context: Context): OkHttpClient.Builder {
-    val proxy = readConfiguredProxy(context) ?: return builder
-    return builder.proxy(proxy)
+private const val MODULE_PROXY_INPUT_ID = "proxy"
+private const val MODULE_PROXY_MODE_INPUT_ID = "proxy_mode"
+private const val MODULE_PROXY_MODE_FOLLOW_GLOBAL = "follow_global"
+private const val MODULE_PROXY_MODE_MANUAL = "manual"
+
+internal fun applyProxyIfConfigured(
+    builder: OkHttpClient.Builder,
+    context: Context,
+    moduleProxyAddress: String? = null
+): OkHttpClient.Builder {
+    return when (val override = resolveProxyOverride(moduleProxyAddress, context)) {
+        ProxyOverride.UseDirect -> builder.proxy(Proxy.NO_PROXY)
+        is ProxyOverride.UseProxy -> builder.proxy(override.proxy)
+        ProxyOverride.UseGlobal -> readConfiguredProxy(context)?.let { builder.proxy(it) } ?: builder
+    }
 }
 
 internal fun readConfiguredProxy(context: Context): Proxy? {
@@ -54,6 +72,93 @@ internal fun parseProxy(address: String): Proxy? {
     } catch (_: Exception) {
         null
     }
+}
+
+internal fun moduleProxyInputDefinition(): InputDefinition {
+    error("Use moduleProxyInputDefinitions() instead")
+}
+
+internal fun moduleProxyInputDefinitions(): List<InputDefinition> {
+    return listOf(
+        InputDefinition(
+            id = MODULE_PROXY_MODE_INPUT_ID,
+            name = "代理模式",
+            nameStringRes = R.string.param_vflow_network_module_proxy_mode_name,
+            staticType = ParameterType.ENUM,
+            defaultValue = MODULE_PROXY_MODE_FOLLOW_GLOBAL,
+            options = listOf(MODULE_PROXY_MODE_FOLLOW_GLOBAL, MODULE_PROXY_MODE_MANUAL),
+            optionsStringRes = listOf(
+                R.string.option_vflow_network_module_proxy_mode_follow_global,
+                R.string.option_vflow_network_module_proxy_mode_manual
+            ),
+            acceptsMagicVariable = false,
+            isFolded = true,
+            inputStyle = InputStyle.CHIP_GROUP,
+            legacyValueMap = mapOf(
+                "跟随全局" to MODULE_PROXY_MODE_FOLLOW_GLOBAL,
+                "手动设置" to MODULE_PROXY_MODE_MANUAL
+            )
+        ),
+        InputDefinition(
+            id = MODULE_PROXY_INPUT_ID,
+            name = "代理地址",
+            nameStringRes = R.string.param_vflow_network_module_proxy_address_name,
+            staticType = ParameterType.STRING,
+            defaultValue = "",
+            supportsRichText = true,
+            isFolded = true,
+            visibility = InputVisibility.whenEquals(MODULE_PROXY_MODE_INPUT_ID, MODULE_PROXY_MODE_MANUAL),
+            hint = "例如 http://host:port 或 socks5://host:port",
+            hintStringRes = R.string.hint_vflow_network_module_proxy_address
+        )
+    )
+}
+
+internal fun resolveModuleProxyAddress(
+    rawModeValue: String?,
+    rawProxyValue: String?,
+    context: ExecutionContext
+): String {
+    val proxyAddress = rawProxyValue?.let { com.chaomixian.vflow.core.execution.VariableResolver.resolve(it, context) }
+        ?.trim()
+        .orEmpty()
+    val proxyMode = rawModeValue?.trim().orEmpty()
+    return if (proxyMode == MODULE_PROXY_MODE_MANUAL) proxyAddress else ""
+}
+
+private sealed interface ProxyOverride {
+    data object UseGlobal : ProxyOverride
+    data object UseDirect : ProxyOverride
+    data class UseProxy(val proxy: Proxy) : ProxyOverride
+}
+
+private fun resolveProxyOverride(moduleProxyAddress: String?, context: Context): ProxyOverride {
+    val normalizedModuleProxy = moduleProxyAddress?.trim().orEmpty()
+    if (normalizedModuleProxy.isNotEmpty()) {
+        if (isDirectProxyOverride(normalizedModuleProxy)) {
+            return ProxyOverride.UseDirect
+        }
+        parseProxy(normalizedModuleProxy)?.let { return ProxyOverride.UseProxy(it) }
+    }
+
+    val globalProxy = context.getSharedPreferences(ModuleConfigActivity.PREFS_NAME, Context.MODE_PRIVATE)
+        .getString(ModuleConfigActivity.KEY_NETWORK_PROXY, null)
+        ?.trim()
+        .orEmpty()
+
+    if (isDirectProxyOverride(globalProxy)) {
+        return ProxyOverride.UseDirect
+    }
+
+    return ProxyOverride.UseGlobal
+}
+
+private fun isDirectProxyOverride(value: String): Boolean {
+    return value.equals("direct", ignoreCase = true) ||
+        value.equals("none", ignoreCase = true) ||
+        value.equals("off", ignoreCase = true) ||
+        value == "直连" ||
+        value == "不使用代理"
 }
 
 internal data class BarkPushResponse(

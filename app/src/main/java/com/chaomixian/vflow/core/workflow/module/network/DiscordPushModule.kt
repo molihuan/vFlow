@@ -91,6 +91,7 @@ class DiscordPushModule : BaseModule() {
             acceptsMagicVariable = false,
             isFolded = true
         ),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition(
             id = "timeout",
             name = "超时(秒)",
@@ -140,6 +141,11 @@ class DiscordPushModule : BaseModule() {
                 val username = VariableResolver.resolve(context.getVariableAsString("username", ""), context).trim()
                 val avatarUrl = VariableResolver.resolve(context.getVariableAsString("avatar_url", ""), context).trim()
                 val tts = context.getVariableAsBoolean("tts") ?: false
+                val proxyAddress = resolveModuleProxyAddress(
+                    context.getVariableAsString("proxy_mode", ""),
+                    context.getVariableAsString("proxy", ""),
+                    context
+                )
 
                 if (webhookUrl.isEmpty() || content.isBlank()) {
                     return@withContext ExecutionResult.Failure(
@@ -162,7 +168,8 @@ class DiscordPushModule : BaseModule() {
                         .readTimeout(timeout, TimeUnit.SECONDS)
                         .writeTimeout(timeout, TimeUnit.SECONDS)
                         .callTimeout(timeout, TimeUnit.SECONDS),
-                    appContext
+                    appContext,
+                    proxyAddress
                 ).build()
 
                 onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_network_discord_push_sending, webhookUrl)))

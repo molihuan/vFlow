@@ -75,6 +75,7 @@ class AIModule : BaseModule() {
         InputDefinition("prompt", "提示词", ParameterType.STRING, "", acceptsMagicVariable = true, supportsRichText = true, nameStringRes = R.string.param_vflow_network_ai_prompt),
         InputDefinition("system_prompt", "系统提示词", ParameterType.STRING, "You are a helpful assistant.", nameStringRes = R.string.param_vflow_network_ai_system_prompt),
         InputDefinition("temperature", "随机性", ParameterType.NUMBER, 0.7, nameStringRes = R.string.param_vflow_network_ai_temperature),
+    ) + moduleProxyInputDefinitions() + listOf(
         InputDefinition("show_advanced", "显示高级", ParameterType.BOOLEAN, false, isHidden = true, nameStringRes = R.string.param_vflow_network_ai_show_advanced)
     )
 
@@ -116,6 +117,11 @@ class AIModule : BaseModule() {
         val systemPrompt = context.getVariableAsString("system_prompt", "You are a helpful assistant.")
         // 现在 variables 是 Map<String, VObject>，使用 getVariableAsNumber 获取
         val temperature = context.getVariableAsNumber("temperature") ?: 0.7
+        val proxyAddress = resolveModuleProxyAddress(
+            context.getVariableAsString("proxy_mode", ""),
+            context.getVariableAsString("proxy", ""),
+            context
+        )
 
         if (apiKey.isBlank()) return ExecutionResult.Failure("配置错误", "API Key 不能为空")
         if (prompt.isBlank()) return ExecutionResult.Failure("配置错误", "提示词不能为空")
@@ -125,7 +131,8 @@ class AIModule : BaseModule() {
             OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS),
-            appContext
+            appContext,
+            proxyAddress
         ).build()
 
         // 构建 JSON Body
