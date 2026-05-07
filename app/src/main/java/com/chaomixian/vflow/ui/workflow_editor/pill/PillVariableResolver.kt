@@ -6,7 +6,10 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.execution.VariableInfo
+import com.chaomixian.vflow.core.module.isMagicVariable
+import com.chaomixian.vflow.core.module.isNamedVariable
 import com.chaomixian.vflow.core.module.ModuleRegistry
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 
 /**
@@ -54,9 +57,8 @@ object PillVariableResolver {
         val propertyName = resolvePropertyName(variableReference)
         
         // 如果是魔法变量且有属性，使用新的方法获取VariableInfo
-        val varInfo = if (propertyName != null && variableReference.startsWith("{{")) {
-            val content = variableReference.removeSurrounding("{{", "}}")
-            val parts = content.split('.')
+        val varInfo = if (propertyName != null && variableReference.isMagicVariable()) {
+            val parts = VariablePathParser.parseVariableReference(variableReference)
             if (parts.size >= 2) {
                 VariableInfo.fromMagicVariableWithProperty(parts[0], parts[1], propertyName, allSteps)
             } else null
@@ -124,24 +126,13 @@ object PillVariableResolver {
      * @return 属性名，如果没有属性则返回null
      */
     private fun resolvePropertyName(variableReference: String): String? {
-        // 提取变量引用内容
-        val content = when {
-            variableReference.startsWith("[[") -> {
-                variableReference.removeSurrounding("[[", "]]")
-            }
-            variableReference.startsWith("{{") -> {
-                variableReference.removeSurrounding("{{", "}}")
-            }
-            else -> return null
-        }
-
-        // 解析属性路径
-        val parts = content.split('.')
+        val parsed = VariablePathParser.parseSingleVariableReference(variableReference) ?: return null
+        val parts = parsed.path
         val propName = when {
             // 命名变量：[[varName.property]]
-            variableReference.startsWith("[[") && parts.size > 1 -> parts[1]
+            parsed.isNamedVariable && parts.size > 1 -> parts[1]
             // 魔法变量：{{stepId.outputName.property}}
-            variableReference.startsWith("{{") && parts.size > 2 -> parts[2]
+            !parsed.isNamedVariable && parts.size > 2 -> parts[2]
             else -> null
         }
 

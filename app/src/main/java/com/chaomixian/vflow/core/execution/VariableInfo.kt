@@ -6,6 +6,7 @@ import com.chaomixian.vflow.core.module.ModuleRegistry
 import com.chaomixian.vflow.core.module.isMagicVariable
 import com.chaomixian.vflow.core.module.isNamedVariable
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.core.workflow.module.data.CreateVariableModule
 
@@ -210,13 +211,11 @@ data class VariableInfo(
         fun fromReference(variableRef: String, allSteps: List<ActionStep>): VariableInfo? {
             return when {
                 variableRef.isNamedVariable() -> {
-                    val content = variableRef.removeSurrounding("[[", "]]")
-                    val varName = content.split('.').first()
+                    val varName = VariablePathParser.parseVariableReference(variableRef).firstOrNull() ?: return null
                     fromNamedVariable(varName, allSteps)
                 }
                 variableRef.isMagicVariable() -> {
-                    val content = variableRef.removeSurrounding("{{", "}}")
-                    val parts = content.split('.')
+                    val parts = VariablePathParser.parseVariableReference(variableRef)
                     if (parts.size >= 2) {
                         fromMagicVariable(parts[0], parts[1], allSteps)
                     } else null

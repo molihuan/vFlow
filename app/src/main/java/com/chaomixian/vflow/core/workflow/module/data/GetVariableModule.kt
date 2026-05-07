@@ -10,6 +10,7 @@ import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.VObjectFactory
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VNull
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -75,7 +76,7 @@ class GetVariableModule : BaseModule() {
         // 解析源变量引用（支持 {{step.output}} 或 [[varName]] 格式）
         val variableValue: VObject = if (rawSource.isNamedVariable()) {
             // 处理命名变量引用：[[varName]] -> varName
-            val variableName = rawSource.removeSurrounding("[[", "]]")
+            val variableName = VariablePathParser.parseVariableReference(rawSource).firstOrNull() ?: rawSource
             context.getVariable(variableName)
         } else if (rawSource.isMagicVariable()) {
             // 处理魔法变量引用

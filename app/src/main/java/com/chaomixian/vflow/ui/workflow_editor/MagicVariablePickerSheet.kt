@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.parcelize.Parcelize
@@ -200,16 +201,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
                     which <= properties.size -> {
                         // 选择内置属性
                         val prop = properties[which - offset]
-                        val oldRef = item.variableReference
-                        val newRef = when {
-                            oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                                oldRef.removeSuffix("}}") + ".${prop.name}}}"
-                            }
-                            oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                                oldRef.removeSuffix("]]") + ".${prop.name}]]"
-                            }
-                            else -> oldRef
-                        }
+                        val newRef = VariablePathParser.appendPathSegment(item.variableReference, prop.name)
                         val newItem = item.copy(
                             variableReference = newRef,
                             variableName = buildPropertyVariableName(item, prop.getLocalizedName(requireContext()))
@@ -240,16 +232,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
             .setPositiveButton(R.string.common_confirm) { _, _ ->
                 val key = editText.text.toString().trim()
                 if (key.isNotEmpty()) {
-                    val oldRef = item.variableReference
-                    val newRef = when {
-                        oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                            oldRef.removeSuffix("}}") + ".$key}}"
-                        }
-                        oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                            oldRef.removeSuffix("]]") + ".$key]]"
-                        }
-                        else -> oldRef
-                    }
+                    val newRef = VariablePathParser.appendPathSegment(item.variableReference, key)
 
                     val newItem = item.copy(
                         variableReference = newRef,
@@ -299,16 +282,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
                     which <= properties.size -> {
                         // 选择内置属性
                         val prop = properties[which - offset]
-                        val oldRef = item.variableReference
-                        val newRef = when {
-                            oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                                oldRef.removeSuffix("}}") + ".${prop.name}}}"
-                            }
-                            oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                                oldRef.removeSuffix("]]") + ".${prop.name}]]"
-                            }
-                            else -> oldRef
-                        }
+                        val newRef = VariablePathParser.appendPathSegment(item.variableReference, prop.name)
                         val newItem = item.copy(
                             variableReference = newRef,
                             variableName = buildPropertyVariableName(item, prop.getLocalizedName(requireContext()))
@@ -340,16 +314,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
             .setPositiveButton(R.string.common_confirm) { _, _ ->
                 val indexText = editText.text.toString().trim()
                 if (indexText.isNotEmpty()) {
-                    val oldRef = item.variableReference
-                    val newRef = when {
-                        oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                            oldRef.removeSuffix("}}") + ".$indexText}}"
-                        }
-                        oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                            oldRef.removeSuffix("]]") + ".$indexText]]"
-                        }
-                        else -> oldRef
-                    }
+                    val newRef = VariablePathParser.appendPathSegment(item.variableReference, indexText)
 
                     val newItem = item.copy(
                         variableReference = newRef,
@@ -399,16 +364,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
                     which <= properties.size -> {
                         // 选择内置属性
                         val prop = properties[which - offset]
-                        val oldRef = item.variableReference
-                        val newRef = when {
-                            oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                                oldRef.removeSuffix("}}") + ".${prop.name}}}"
-                            }
-                            oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                                oldRef.removeSuffix("]]") + ".${prop.name}]]"
-                            }
-                            else -> oldRef
-                        }
+                        val newRef = VariablePathParser.appendPathSegment(item.variableReference, prop.name)
                         val newItem = item.copy(
                             variableReference = newRef,
                             variableName = buildPropertyVariableName(item, prop.getLocalizedName(requireContext()))
@@ -440,16 +396,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
             .setPositiveButton(R.string.common_confirm) { _, _ ->
                 val indexText = editText.text.toString().trim()
                 if (indexText.isNotEmpty()) {
-                    val oldRef = item.variableReference
-                    val newRef = when {
-                        oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                            oldRef.removeSuffix("}}") + ".$indexText}}"
-                        }
-                        oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                            oldRef.removeSuffix("]]") + ".$indexText]]"
-                        }
-                        else -> oldRef
-                    }
+                    val newRef = VariablePathParser.appendPathSegment(item.variableReference, indexText)
 
                     val newItem = item.copy(
                         variableReference = newRef,
@@ -494,17 +441,7 @@ class MagicVariablePickerSheet : BottomSheetDialogFragment() {
                     onSelection?.invoke(item)
                 } else {
                     val prop = properties[which - offset]
-                    val oldRef = item.variableReference
-                    // 智能拼接属性
-                    val newRef = when {
-                        oldRef.startsWith("{{") && oldRef.endsWith("}}") -> {
-                            oldRef.removeSuffix("}}") + ".${prop.name}}}"
-                        }
-                        oldRef.startsWith("[[") && oldRef.endsWith("]]") -> {
-                            oldRef.removeSuffix("]]") + ".${prop.name}]]"
-                        }
-                        else -> oldRef
-                    }
+                    val newRef = VariablePathParser.appendPathSegment(item.variableReference, prop.name)
 
                     val newItem = item.copy(
                         variableReference = newRef,

@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.execution.ExecutionContext
 import com.chaomixian.vflow.core.execution.VariableResolver
+import com.chaomixian.vflow.core.module.isMagicVariable
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VBoolean
@@ -401,7 +402,7 @@ class OCRModule : BaseModule() {
         if (rawRegion.isNullOrBlank()) return null
 
         // 如果是变量引用，解析变量
-        val resolvedText = if (rawRegion.startsWith("{{") && rawRegion.endsWith("}}")) {
+        val resolvedText = if (rawRegion.isMagicVariable()) {
             // 变量引用：使用 VariableResolver.resolveValue 获取变量值
             val resolvedValue = VariableResolver.resolveValue(rawRegion, context)
 

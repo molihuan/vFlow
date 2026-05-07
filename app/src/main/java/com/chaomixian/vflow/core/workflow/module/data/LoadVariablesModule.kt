@@ -5,6 +5,7 @@ import com.chaomixian.vflow.core.execution.ExecutionContext
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.VObjectFactory
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.WorkflowManager
 import com.chaomixian.vflow.core.workflow.model.Workflow
 
@@ -126,9 +127,9 @@ class LoadVariablesModule : BaseModule() {
                 is String -> {
                     // 尝试解析魔法变量引用
                     if (rawValue.isMagicVariable()) {
-                        context.getVariable(rawValue.removeSurrounding("{{", "}}"))
+                        context.getVariable(VariablePathParser.parseVariableReference(rawValue).joinToString("."))
                     } else if (rawValue.isNamedVariable()) {
-                        context.getVariable(rawValue.removeSurrounding("[[", "]]"))
+                        context.getVariable(VariablePathParser.parseVariableReference(rawValue).joinToString("."))
                     } else {
                         VObjectFactory.from(rawValue)
                     }

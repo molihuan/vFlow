@@ -20,6 +20,7 @@ import com.chaomixian.vflow.core.types.basic.VBoolean
 import com.chaomixian.vflow.core.types.basic.VList
 import com.chaomixian.vflow.core.types.basic.VDictionary
 import com.chaomixian.vflow.core.types.complex.VImage
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.utils.StorageManager
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.core.workflow.model.ActionStepExecutionSettings
@@ -490,8 +491,7 @@ object WorkflowExecutor {
                     when {
                         // 1. 魔法变量 ({{...}})
                         value.isMagicVariable() -> {
-                            val content = value.removeSurrounding("{{", "}}")
-                            val parts = content.split('.')
+                            val parts = VariablePathParser.parseVariableReference(value)
                             val sourceStepId = parts.getOrNull(0)
                             val sourceOutputId = parts.getOrNull(1)
 
@@ -519,8 +519,7 @@ object WorkflowExecutor {
 
                         // 2. 命名变量 ([[...]])
                         value.isNamedVariable() -> {
-                            val content = value.removeSurrounding("[[", "]]")
-                            val parts = content.split('.')
+                            val parts = VariablePathParser.parseVariableReference(value)
                             val varName = parts[0]
 
                             if (namedVariables.containsKey(varName)) {

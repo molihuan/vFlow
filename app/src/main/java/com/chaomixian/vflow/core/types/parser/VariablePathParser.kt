@@ -20,6 +20,12 @@ package com.chaomixian.vflow.core.types.parser
  */
 object VariablePathParser {
 
+    data class ParsedVariableReference(
+        val rawReference: String,
+        val path: List<String>,
+        val isNamedVariable: Boolean
+    )
+
     /**
      * 解析变量路径为路径段列表
      *
@@ -69,16 +75,26 @@ object VariablePathParser {
      * @return 路径段列表
      */
     fun parseVariableReference(variableRef: String): List<String> {
-        val content = when {
-            variableRef.startsWith("{{") && variableRef.endsWith("}}") -> {
-                variableRef.removeSurrounding("{{", "}}")
-            }
-            variableRef.startsWith("[[") && variableRef.endsWith("]]") -> {
-                variableRef.removeSurrounding("[[", "]]")
-            }
-            else -> variableRef
-        }
-        return parsePath(content.trim())
+        return parseSingleVariableReference(variableRef)?.path ?: parsePath(variableRef.trim())
     }
 
+    fun parseSingleVariableReference(variableRef: String): ParsedVariableReference? {
+        val segments = TemplateParser(variableRef).parse()
+        if (segments.size != 1) return null
+
+        val variable = segments.single() as? TemplateSegment.Variable ?: return null
+        if (variable.rawExpression != variableRef) return null
+
+        return ParsedVariableReference(
+            rawReference = variable.rawExpression,
+            path = variable.path,
+            isNamedVariable = variable.isNamedVariable
+        )
+    }
+
+    fun appendPathSegment(variableRef: String, segment: String): String {
+        val parsed = parseSingleVariableReference(variableRef) ?: return variableRef
+        val closeToken = if (parsed.isNamedVariable) "]]" else "}}"
+        return variableRef.removeSuffix(closeToken) + ".${segment}$closeToken"
+    }
 }

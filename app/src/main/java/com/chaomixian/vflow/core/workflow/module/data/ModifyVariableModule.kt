@@ -8,6 +8,7 @@ import com.chaomixian.vflow.core.execution.VariableResolver
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VNull
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -96,7 +97,11 @@ class ModifyVariableModule : BaseModule() {
         }
 
         // 从 "[[...]]" 中提取变量名
-        val variableName = variableRef.removeSurrounding("[[", "]]")
+        val variableName = VariablePathParser.parseVariableReference(variableRef).firstOrNull()
+            ?: return ExecutionResult.Failure(
+                appContext.getString(R.string.error_vflow_variable_modify_param_error),
+                appContext.getString(R.string.error_vflow_variable_modify_invalid)
+            )
 
         // 检查变量是否存在
         val existingVar = context.getVariable(variableName)

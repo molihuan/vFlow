@@ -10,6 +10,7 @@ import com.chaomixian.vflow.core.execution.ExecutionContext
 import com.chaomixian.vflow.core.execution.VariableType
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.core.workflow.module.data.CreateVariableModule
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
@@ -293,7 +294,7 @@ class IfModule : BaseBlockModule() {
         if (variableReference == null || allSteps == null || currentStep == null) return null
 
         if (variableReference.isNamedVariable()) {
-            val varName = variableReference.removeSurrounding("[[", "]]")
+            val varName = VariablePathParser.parseVariableReference(variableReference).firstOrNull() ?: return null
             val currentIndex = allSteps.indexOf(currentStep)
             val stepsToCheck = if (currentIndex != -1) allSteps.subList(0, currentIndex) else allSteps
             val creationStep = stepsToCheck.findLast {
@@ -304,7 +305,7 @@ class IfModule : BaseBlockModule() {
         }
 
         if (variableReference.isMagicVariable()) {
-            val parts = variableReference.removeSurrounding("{{", "}}").split('.')
+            val parts = VariablePathParser.parseVariableReference(variableReference)
             val sourceStepId = parts.getOrNull(0) ?: return null
             val sourceOutputId = parts.getOrNull(1) ?: return null
             val sourceStep = allSteps.find { it.id == sourceStepId } ?: return null

@@ -9,6 +9,7 @@ import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.execution.ExecutionContext
 import com.chaomixian.vflow.core.execution.LuaExecutor
 import com.chaomixian.vflow.core.module.*
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -96,7 +97,7 @@ class LuaModule : BaseModule() {
 
         inputMappings.forEach { (varName, magicVarRef) ->
             if (magicVarRef.isMagicVariable()) {
-                val parts = magicVarRef.removeSurrounding("{{", "}}").split('.')
+                val parts = VariablePathParser.parseVariableReference(magicVarRef)
                 val sourceStepId = parts.getOrNull(0)
                 val sourceOutputId = parts.getOrNull(1)
                 if (sourceStepId != null && sourceOutputId != null) {

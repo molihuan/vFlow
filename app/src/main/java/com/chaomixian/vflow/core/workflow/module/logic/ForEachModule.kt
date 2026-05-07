@@ -10,6 +10,7 @@ import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VList
 import com.chaomixian.vflow.core.types.basic.VString
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -77,9 +78,8 @@ class ForEachModule : BaseBlockModule() {
         val inputListValue = step.parameters["input_list"] as? String ?: return null
 
         // 检查是否是魔法变量引用 (格式: {{stepId.outputId}})
-        if (inputListValue.startsWith("{{") && inputListValue.endsWith("}}")) {
-            val content = inputListValue.removeSurrounding("{{", "}}")
-            val parts = content.split('.')
+        if (inputListValue.isMagicVariable()) {
+            val parts = VariablePathParser.parseVariableReference(inputListValue)
             if (parts.size < 2) return null
 
             val sourceStepId = parts[0]
