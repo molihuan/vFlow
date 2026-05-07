@@ -60,10 +60,18 @@ object OpenCVImageMatcher {
             // 使用归一化相关系数 (对光照变化鲁棒)
             Imgproc.matchTemplate(sourceGray, templateGray, result, Imgproc.TM_CCOEFF_NORMED)
 
-            // 阈值：maxDiffPercent 0.10 (90% 相似) → threshold 0.90
-            val threshold = 1.0 - maxDiffPercent
+            val thresholdPercent = (maxDiffPercent * 100.0).coerceIn(0.0, 100.0)
+            val confidenceThreshold = ((100.0 - thresholdPercent) / 100.0).coerceIn(0.0, 1.0)
 
-            val matches = findAllMatches(result, threshold, templateGray.width(), templateGray.height())
+            val matches = findAllMatches(
+                result = result,
+                sourceColor = sourceMat,
+                templateColor = templateMat,
+                confidenceThreshold = confidenceThreshold,
+                colorDiffThreshold = thresholdPercent,
+                templateWidth = templateGray.width(),
+                templateHeight = templateGray.height()
+            )
 
             // 释放资源
             sourceMat.release()
@@ -87,7 +95,10 @@ object OpenCVImageMatcher {
      */
     private fun findAllMatches(
         result: Mat,
-        threshold: Double,
+        sourceColor: Mat,
+        templateColor: Mat,
+        confidenceThreshold: Double,
+        colorDiffThreshold: Double,
         templateWidth: Int,
         templateHeight: Int
     ): List<MatchResult> {
@@ -95,41 +106,33 @@ object OpenCVImageMatcher {
         val matches = mutableListOf<MatchResult>()
         val resultCopy = Mat()
         result.copyTo(resultCopy)
+        val templateMean = Core.mean(templateColor)
 
         while (true) {
             val minMaxLoc = Core.minMaxLoc(resultCopy)
 
-            if (minMaxLoc.maxVal < threshold) break
+            if (minMaxLoc.maxVal <= confidenceThreshold) break
 
             val loc = minMaxLoc.maxLoc
+            val x = loc.x.toInt()
+            val y = loc.y.toInt()
             val diffRatio = 1.0 - minMaxLoc.maxVal
+            val colorDiff = getColorDiff(sourceColor, x, y, templateWidth, templateHeight, templateMean)
 
-            matches.add(MatchResult(
-                x = loc.x.toInt(),
-                y = loc.y.toInt(),
-                width = templateWidth,
-                height = templateHeight,
-                diffRatio = diffRatio.coerceIn(0.0, 1.0)
-            ))
+            if (colorDiff < colorDiffThreshold) {
+                matches.add(
+                    MatchResult(
+                        x = x,
+                        y = y,
+                        width = templateWidth,
+                        height = templateHeight,
+                        diffRatio = diffRatio.coerceIn(0.0, 1.0)
+                    )
+                )
+            }
 
-            // 非极大值抑制：屏蔽周围区域
-            val suppressRadiusX = (templateWidth * 0.5).toInt().coerceAtLeast(10)
-            val suppressRadiusY = (templateHeight * 0.5).toInt().coerceAtLeast(10)
-
-            val topLeft = Point(
-                (loc.x - suppressRadiusX).coerceAtLeast(0.0),
-                (loc.y - suppressRadiusY).coerceAtLeast(0.0)
-            )
-            val bottomRight = Point(
-                (loc.x + suppressRadiusX).coerceAtMost((resultCopy.cols() - 1).toDouble()),
-                (loc.y + suppressRadiusY).coerceAtMost((resultCopy.rows() - 1).toDouble())
-            )
-
-            val rect = Rect(topLeft, bottomRight)
-            val mask = Mat.zeros(resultCopy.size(), CvType.CV_8UC1)
-            Imgproc.rectangle(mask, rect.tl(), rect.br(), Scalar(255.0), -1)
-            resultCopy.setTo(Scalar(0.0), mask)
-            mask.release()
+            // 无论颜色复核是否通过，都屏蔽当前最佳候选，继续找下一个
+            suppressMatch(resultCopy, x, y, templateWidth, templateHeight)
 
             if (Core.countNonZero(resultCopy) == 0) break
         }
@@ -137,5 +140,66 @@ object OpenCVImageMatcher {
         resultCopy.release()
 
         return matches.sortedBy { it.diffRatio }
+    }
+
+    private fun getColorDiff(
+        sourceColor: Mat,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        templateMean: Scalar
+    ): Double {
+        val left = x.coerceAtLeast(0)
+        val top = y.coerceAtLeast(0)
+        val right = (x + width).coerceAtMost(sourceColor.cols())
+        val bottom = (y + height).coerceAtMost(sourceColor.rows())
+        val validRect = org.opencv.core.Rect(
+            left,
+            top,
+            (right - left).coerceAtLeast(0),
+            (bottom - top).coerceAtLeast(0)
+        )
+        if (validRect.width <= 0 || validRect.height <= 0) return 100.0
+
+        val candidate = Mat(sourceColor, validRect)
+        return try {
+            val candidateMean = Core.mean(candidate)
+            var diff = 0.0
+            for (channel in 0..2) {
+                diff += kotlin.math.abs(candidateMean.`val`[channel] - templateMean.`val`[channel])
+            }
+            (diff * 100.0) / (255.0 * 3.0)
+        } finally {
+            candidate.release()
+        }
+    }
+
+    private fun suppressMatch(
+        result: Mat,
+        x: Int,
+        y: Int,
+        templateWidth: Int,
+        templateHeight: Int
+    ) {
+        val left = x.coerceAtLeast(0)
+        val top = y.coerceAtLeast(0)
+        val right = (x + templateWidth).coerceAtMost(result.cols())
+        val bottom = (y + templateHeight).coerceAtMost(result.rows())
+        if (right <= left || bottom <= top) return
+
+        val mask = Mat.zeros(result.size(), CvType.CV_8UC1)
+        try {
+            Imgproc.rectangle(
+                mask,
+                Point(left.toDouble(), top.toDouble()),
+                Point((right - 1).toDouble(), (bottom - 1).toDouble()),
+                Scalar(255.0),
+                -1
+            )
+            result.setTo(Scalar(0.0), mask)
+        } finally {
+            mask.release()
+        }
     }
 }
