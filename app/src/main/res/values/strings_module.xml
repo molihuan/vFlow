@@ -116,6 +116,18 @@
     <string name="summary_vflow_system_sleep_screen">关闭屏幕</string>
     <string name="msg_vflow_system_sleep_screen_running">正在关闭屏幕...</string>
     <string name="msg_vflow_system_sleep_screen_done">屏幕已关闭</string>
+    <string name="module_vflow_system_get_screen_state_name">获取屏幕状态</string>
+    <string name="module_vflow_system_get_screen_state_desc">读取屏幕是否已唤醒，以及系统是否已解锁。</string>
+    <string name="output_vflow_system_get_screen_state_enabled_name">屏幕状态</string>
+    <string name="output_vflow_system_get_screen_state_screen_on_name">屏幕是否已唤醒</string>
+    <string name="output_vflow_system_get_screen_state_unlocked_name">系统是否已解锁</string>
+    <string name="summary_vflow_system_get_screen_state">获取屏幕状态</string>
+    <string name="msg_vflow_system_get_screen_state_reading">正在读取屏幕状态...</string>
+    <string name="msg_vflow_system_get_screen_state_result">屏幕：%1$s，系统：%2$s</string>
+    <string name="value_vflow_system_get_screen_state_screen_on">已唤醒</string>
+    <string name="value_vflow_system_get_screen_state_screen_off">未唤醒</string>
+    <string name="value_vflow_system_get_screen_state_unlocked">已解锁</string>
+    <string name="value_vflow_system_get_screen_state_locked">未解锁</string>
     <string name="module_vflow_system_wake_screen_name">唤醒屏幕</string>
     <string name="module_vflow_system_wake_screen_desc">点亮息屏状态的屏幕，不执行解锁操作。需要 Shizuku 或 Root 权限。</string>
     <string name="output_vflow_system_wake_screen_success_name">是否成功</string>
@@ -1764,6 +1776,8 @@
     <string name="output_vflow_core_press_key_success_name">是否成功</string>
 
     <string name="output_vflow_core_screen_status_enabled_name">屏幕状态</string>
+    <string name="output_vflow_core_screen_status_screen_on_name">屏幕是否已唤醒</string>
+    <string name="output_vflow_core_screen_status_unlocked_name">系统是否已解锁</string>
 
     <string name="output_vflow_core_sleep_screen_success_name">是否成功</string>
 
@@ -1941,6 +1955,11 @@
     <string name="msg_vflow_core_press_key_sending">正在使用 vFlow Core 发送按键: %s...</string>
     <string name="msg_vflow_core_press_key_success">按键发送成功</string>
     <string name="msg_vflow_core_screen_status_reading">正在使用 vFlow Core 读取屏幕状态...</string>
+    <string name="msg_vflow_core_screen_status_result">屏幕：%1$s，系统：%2$s</string>
+    <string name="value_vflow_core_screen_status_screen_on">已唤醒</string>
+    <string name="value_vflow_core_screen_status_screen_off">未唤醒</string>
+    <string name="value_vflow_core_screen_status_unlocked">已解锁</string>
+    <string name="value_vflow_core_screen_status_locked">未解锁</string>
     <string name="msg_vflow_core_sleep_screen_sleeping">正在使用 vFlow Core 关闭屏幕...</string>
     <string name="msg_vflow_core_sleep_screen_success">屏幕关闭成功</string>
     <string name="msg_vflow_core_wake_screen_waking">正在使用 vFlow Core 唤醒屏幕...</string>
@@ -2070,7 +2089,7 @@
     <string name="module_vflow_core_uinput_screen_operation_name">uinput屏幕操作</string>
     <string name="module_vflow_core_uinput_screen_operation_desc">使用 vFlow Core 创建 uinput 触摸设备执行点击、长按或滑动，需要 Root 权限。</string>
     <string name="module_vflow_core_screen_status_name">屏幕状态</string>
-    <string name="module_vflow_core_screen_status_desc">使用 vFlow Core 获取屏幕状态（亮/灭）。</string>
+    <string name="module_vflow_core_screen_status_desc">使用 vFlow Core 获取屏幕是否已唤醒，以及系统是否已解锁。</string>
     <string name="module_vflow_core_set_clipboard_name">设置剪贴板</string>
     <string name="module_vflow_core_set_clipboard_desc">使用 vFlow Core 设置剪贴板文本。</string>
     <string name="module_vflow_core_shell_command_name">Shell命令</string>

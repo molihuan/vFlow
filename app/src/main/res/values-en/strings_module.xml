@@ -131,6 +131,18 @@
     <string name="summary_vflow_system_sleep_screen">Turn off screen</string>
     <string name="msg_vflow_system_sleep_screen_running">Turning off screen...</string>
     <string name="msg_vflow_system_sleep_screen_done">Screen turned off</string>
+    <string name="module_vflow_system_get_screen_state_name">Get Screen State</string>
+    <string name="module_vflow_system_get_screen_state_desc">Read whether the screen is awake and whether the device is unlocked.</string>
+    <string name="output_vflow_system_get_screen_state_enabled_name">Screen Status</string>
+    <string name="output_vflow_system_get_screen_state_screen_on_name">Screen Awake</string>
+    <string name="output_vflow_system_get_screen_state_unlocked_name">System Unlocked</string>
+    <string name="summary_vflow_system_get_screen_state">Get screen state</string>
+    <string name="msg_vflow_system_get_screen_state_reading">Reading screen state...</string>
+    <string name="msg_vflow_system_get_screen_state_result">Screen: %1$s, System: %2$s</string>
+    <string name="value_vflow_system_get_screen_state_screen_on">awake</string>
+    <string name="value_vflow_system_get_screen_state_screen_off">asleep</string>
+    <string name="value_vflow_system_get_screen_state_unlocked">unlocked</string>
+    <string name="value_vflow_system_get_screen_state_locked">locked</string>
 
     <!-- vflow.system.wake_screen - Wake Screen Module -->
     <string name="module_vflow_system_wake_screen_name">Wake Screen</string>
@@ -1278,8 +1290,10 @@
 
     <!-- vflow.core.screen_status - CoreScreenStatus Module -->
     <string name="module_vflow_core_screen_status_name">Read Screen Status</string>
-    <string name="module_vflow_core_screen_status_desc">Read current screen status using vFlow Core</string>
+    <string name="module_vflow_core_screen_status_desc">Read whether the screen is awake and whether the device is unlocked using vFlow Core</string>
     <string name="output_vflow_core_screen_status_enabled_name">Screen Status</string>
+    <string name="output_vflow_core_screen_status_screen_on_name">Screen Awake</string>
+    <string name="output_vflow_core_screen_status_unlocked_name">System Unlocked</string>
 
     <!-- vflow.core.sleep_screen - CoreSleepScreen Module -->
     <string name="module_vflow_core_sleep_screen_name">Sleep Screen</string>
@@ -2079,6 +2093,11 @@
     <string name="msg_vflow_core_uinput_screen_operation_swiping" formatted="false">Swiping via vFlow Core (uinput): (%d, %d) → (%d, %d) for %dms...</string>
     <string name="msg_vflow_core_uinput_screen_operation_swipe_success">uinput swipe succeeded</string>
     <string name="msg_vflow_core_screen_status_reading">Reading screen status via vFlow Core...</string>
+    <string name="msg_vflow_core_screen_status_result">Screen: %1$s, System: %2$s</string>
+    <string name="value_vflow_core_screen_status_screen_on">awake</string>
+    <string name="value_vflow_core_screen_status_screen_off">asleep</string>
+    <string name="value_vflow_core_screen_status_unlocked">unlocked</string>
+    <string name="value_vflow_core_screen_status_locked">locked</string>
     <string name="msg_vflow_core_set_clipboard_setting">Setting clipboard via vFlow Core...</string>
     <string name="msg_vflow_core_set_clipboard_success">Clipboard set successfully</string>
     <string name="msg_vflow_core_shell_command_executing" formatted="false">Executing via vFlow Core (%s): %s</string>
