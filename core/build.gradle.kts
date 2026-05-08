@@ -112,7 +112,7 @@ plugins {
     kotlin("jvm") // 使用标准 Kotlin JVM 插件
 }
 
-val vflowCoreVersion = 17
+val vflowCoreVersion = 18
 
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")

@@ -175,7 +175,10 @@ class IClipboardWrapper : ServiceWrapper("clipboard", "android.content.IClipboar
     }
 
     private fun emitStableClipboardEvent() {
-        val payload = buildClipboardEventPayload()
+        val payload = buildClipboardEventPayload() ?: run {
+            lastDispatchedSignature = null
+            return
+        }
         val signature = payload.optString("signature")
         synchronized(clipboardEventLock) {
             if (signature == lastDispatchedSignature) {
@@ -211,19 +214,17 @@ class IClipboardWrapper : ServiceWrapper("clipboard", "android.content.IClipboar
         }
     }
 
-    private fun buildClipboardEventPayload(): JSONObject {
+    private fun buildClipboardEventPayload(): JSONObject? {
         val manager = listenerManager
         if (manager == null || !manager.hasPrimaryClip()) {
-            return JSONObject()
-                .put("signature", "empty")
-                .put("text", "")
+            lastDispatchedSignature = null
+            return null
         }
 
         val clipData = manager.primaryClip
         if (clipData == null || clipData.itemCount <= 0) {
-            return JSONObject()
-                .put("signature", "empty")
-                .put("text", "")
+            lastDispatchedSignature = null
+            return null
         }
 
         val item = clipData.getItemAt(0)
@@ -232,8 +233,12 @@ class IClipboardWrapper : ServiceWrapper("clipboard", "android.content.IClipboar
 
         if (clipData.description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
             val text = item.text?.toString() ?: ""
-            payload.put("text", text)
-            signatureParts += "text:$text"
+            if (text.isNotBlank()) {
+                payload.put("text", text)
+                signatureParts += "text:$text"
+            } else {
+                payload.put("text", "")
+            }
         } else {
             payload.put("text", "")
         }
@@ -251,10 +256,12 @@ class IClipboardWrapper : ServiceWrapper("clipboard", "android.content.IClipboar
 
         if (signatureParts.isEmpty()) {
             val coerced = item.coerceToText(FakeContext.get())?.toString().orEmpty()
-            signatureParts += "unknown:$coerced"
-            if (payload.optString("text").isBlank()) {
-                payload.put("text", coerced)
+            if (coerced.isBlank()) {
+                lastDispatchedSignature = null
+                return null
             }
+            signatureParts += "unknown:$coerced"
+            payload.put("text", coerced)
         }
 
         payload.put("signature", signatureParts.joinToString("|"))

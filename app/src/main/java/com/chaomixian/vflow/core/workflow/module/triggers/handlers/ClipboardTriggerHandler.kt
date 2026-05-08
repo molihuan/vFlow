@@ -183,22 +183,24 @@ class ClipboardTriggerHandler : ListeningTriggerHandler() {
     private fun snapshotClipboardData(context: Context): Pair<String, Map<String, VObject>>? {
         val manager = clipboardManager ?: return null
         if (!manager.hasPrimaryClip()) {
-            return "empty" to mapOf("text_content" to VString(""))
+            lastStandardSignature = null
+            return null
         }
 
-        val clipData = manager.primaryClip ?: return "empty" to mapOf("text_content" to VString(""))
+        val clipData = manager.primaryClip ?: return null
         if (clipData.itemCount <= 0) {
-            return "empty" to mapOf("text_content" to VString(""))
+            lastStandardSignature = null
+            return null
         }
 
         val item = clipData.getItemAt(0)
         val outputs = mutableMapOf<String, VObject>("text_content" to VString(""))
         val signatureParts = mutableListOf<String>()
-
-        if (clipData.description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-            val text = item.text?.toString() ?: ""
-            outputs["text_content"] = VString(text)
-            signatureParts += "text:$text"
+        var hasImageContent = false
+        val plainText = if (clipData.description.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+            item.text?.toString().orEmpty()
+        } else {
+            ""
         }
 
         val uri = item.uri
@@ -214,14 +216,31 @@ class ClipboardTriggerHandler : ListeningTriggerHandler() {
                     }
                     outputs["image_content"] = VImage(tempFile.toURI().toString())
                     signatureParts += "image:${uri}"
+                    hasImageContent = true
                 } catch (e: Exception) {
                     DebugLogger.w(TAG, "复制剪贴板图片失败: ${e.message}")
                 }
             }
         }
 
-        if (signatureParts.isEmpty()) {
-            signatureParts += "unknown:${item.coerceToText(context)}"
+        if (plainText.isBlank() && !hasImageContent) {
+            val coercedText = item.coerceToText(context)?.toString().orEmpty()
+            if (coercedText.isBlank()) {
+                lastStandardSignature = null
+                return null
+            }
+            outputs["text_content"] = VString(coercedText)
+            signatureParts += "unknown:$coercedText"
+        } else if (plainText.isBlank() && hasImageContent) {
+            val coercedText = item.coerceToText(context)?.toString().orEmpty()
+            if (coercedText.isNotBlank()) {
+                outputs["text_content"] = VString(coercedText)
+            }
+        }
+
+        if (plainText.isNotBlank()) {
+            outputs["text_content"] = VString(plainText)
+            signatureParts += "text:$plainText"
         }
 
         return signatureParts.joinToString("|") to outputs
