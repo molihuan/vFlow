@@ -149,6 +149,7 @@ object ModuleRegistry {
         register(ImportImageModule(), context)
         register(SaveImageModule(), context)
         register(AdjustImageModule(), context)
+        register(ScaleImageModule(), context)
         register(RotateImageModule(), context)
         register(ApplyMaskModule(), context)
 

@@ -1684,6 +1684,23 @@
     <string name="msg_vflow_file_adjust_image_loading">Loading image...</string>
     <string name="msg_vflow_file_adjust_image_saving">Saving processed image...</string>
 
+    <!-- vflow.file.scale_image -->
+    <string name="module_vflow_file_scale_image_desc">Scale an image by percentage.</string>
+    <string name="module_vflow_file_scale_image_name">Scale Image</string>
+    <string name="param_vflow_file_scale_image_image_name">Source Image</string>
+    <string name="param_vflow_file_scale_image_scale_percent_name">Scale Percentage</string>
+    <string name="output_vflow_file_scale_image_image_name">Scaled Image</string>
+    <string name="summary_vflow_file_scale_image_prefix">Scale image </string>
+    <string name="summary_vflow_file_scale_image_middle"> to </string>
+    <string name="summary_vflow_file_scale_image_suffix">%</string>
+    <string name="error_vflow_file_scale_image_exception">Unknown error occurred</string>
+    <string name="error_vflow_file_scale_image_load_failed">Cannot load bitmap from URI: %s</string>
+    <string name="error_vflow_file_scale_image_not_image">Need an image variable as input.</string>
+    <string name="error_vflow_file_scale_image_invalid_scale">Scale percentage must be greater than 0.</string>
+    <string name="msg_vflow_file_scale_image_loading">Loading image...</string>
+    <string name="msg_vflow_file_scale_image_scaling">Scaling image...</string>
+    <string name="msg_vflow_file_scale_image_saving">Saving processed image...</string>
+
     <!-- vflow.file.rotate_image -->
     <string name="module_vflow_file_rotate_image_desc">Rotate image by specified angle.</string>
     <string name="module_vflow_file_rotate_image_name">Rotate Image</string>

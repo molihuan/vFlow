@@ -1684,6 +1684,23 @@
     <string name="msg_vflow_file_adjust_image_loading">正在加载图像...</string>
     <string name="msg_vflow_file_adjust_image_saving">正在保存处理后的图像...</string>
 
+    <!-- vflow.file.scale_image -->
+    <string name="module_vflow_file_scale_image_desc">按百分比缩放图片。</string>
+    <string name="module_vflow_file_scale_image_name">缩放图片</string>
+    <string name="param_vflow_file_scale_image_image_name">源图像</string>
+    <string name="param_vflow_file_scale_image_scale_percent_name">缩放比例</string>
+    <string name="output_vflow_file_scale_image_image_name">缩放后的图像</string>
+    <string name="summary_vflow_file_scale_image_prefix">将图像 </string>
+    <string name="summary_vflow_file_scale_image_middle"> 缩放为 </string>
+    <string name="summary_vflow_file_scale_image_suffix">%</string>
+    <string name="error_vflow_file_scale_image_exception">发生未知错误</string>
+    <string name="error_vflow_file_scale_image_load_failed">无法从URI加载位图：%s</string>
+    <string name="error_vflow_file_scale_image_not_image">需要一个图像变量作为输入。</string>
+    <string name="error_vflow_file_scale_image_invalid_scale">缩放比例必须大于 0。</string>
+    <string name="msg_vflow_file_scale_image_loading">正在加载图像...</string>
+    <string name="msg_vflow_file_scale_image_scaling">正在缩放图像...</string>
+    <string name="msg_vflow_file_scale_image_saving">正在保存处理后的图像...</string>
+
     <!-- vflow.file.rotate_image -->
     <string name="module_vflow_file_rotate_image_desc">将图片按指定角度旋转。</string>
     <string name="module_vflow_file_rotate_image_name">旋转图片</string>
