@@ -1597,8 +1597,8 @@
     <string name="param_vflow_system_capture_screen_mode_name">Mode</string>
     <string name="param_vflow_system_capture_screen_region_name">Region (Optional)</string>
     <string name="output_vflow_system_capture_screen_image_name">Screenshot</string>
-    <string name="summary_vflow_system_capture_screen">Screenshot </string>
-    <string name="summary_vflow_system_capture_screen_suffix">Screenshot</string>
+    <string name="summary_vflow_system_capture_screen">Capture screen using </string>
+    <string name="summary_vflow_system_capture_screen_suffix"> mode</string>
     <string name="error_vflow_system_capture_screen_invalid_param_title">Invalid Parameter</string>
     <string name="error_vflow_system_capture_screen_invalid_mode">Invalid screenshot mode</string>
     <string name="error_vflow_system_capture_screen_crop_failed">Crop Failed</string>

@@ -1597,8 +1597,8 @@
     <string name="param_vflow_system_capture_screen_mode_name">模式</string>
     <string name="param_vflow_system_capture_screen_region_name">区域 (可选)</string>
     <string name="output_vflow_system_capture_screen_image_name">截图</string>
-    <string name="summary_vflow_system_capture_screen">截屏 </string>
-    <string name="summary_vflow_system_capture_screen_suffix">截屏</string>
+    <string name="summary_vflow_system_capture_screen">使用 </string>
+    <string name="summary_vflow_system_capture_screen_suffix"> 模式截屏</string>
     <string name="error_vflow_system_capture_screen_invalid_param_title">参数错误</string>
     <string name="error_vflow_system_capture_screen_invalid_mode">无效的截屏模式</string>
     <string name="error_vflow_system_capture_screen_crop_failed">裁剪失败</string>
