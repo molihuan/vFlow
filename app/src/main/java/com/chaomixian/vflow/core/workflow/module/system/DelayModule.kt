@@ -12,6 +12,7 @@ import com.chaomixian.vflow.core.types.basic.VString
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 // 文件：DelayModule.kt
 // 描述：定义了在工作流中暂停执行一段时间的延迟模块。
@@ -21,6 +22,12 @@ import kotlinx.coroutines.delay
  * 用于在工作流执行过程中暂停指定的毫秒数。
  */
 class DelayModule : BaseModule() {
+    companion object {
+        private const val INPUT_DURATION = "duration"
+        private const val INPUT_RANDOM_ENABLED = "randomOffsetEnabled"
+        private const val INPUT_MAX_OFFSET = "maxOffset"
+    }
+
     // 模块的唯一ID
     override val id = "vflow.device.delay"
 
@@ -40,6 +47,8 @@ class DelayModule : BaseModule() {
         workflowStepDescription = "Pause for a number of milliseconds.",
         inputHints = mapOf(
             "duration" to "Delay duration in milliseconds. Use positive integers.",
+            "randomOffsetEnabled" to "Enable a random offset around the base duration.",
+            "maxOffset" to "Maximum random offset in milliseconds. Final delay is clamped to zero or above.",
         ),
         requiredInputIds = setOf("duration"),
     )
@@ -49,13 +58,32 @@ class DelayModule : BaseModule() {
      */
     override fun getInputs(): List<InputDefinition> = listOf(
         InputDefinition(
-            id = "duration",
+            id = INPUT_DURATION,
             name = "延迟时间",  // Fallback
             staticType = ParameterType.NUMBER,
             defaultValue = 1000L,
             acceptsMagicVariable = true,
             acceptedMagicVariableTypes = setOf(VTypeRegistry.NUMBER.id),
             nameStringRes = R.string.param_vflow_device_delay_duration_name
+        ),
+        InputDefinition(
+            id = INPUT_RANDOM_ENABLED,
+            name = "随机延迟",  // Fallback
+            staticType = ParameterType.BOOLEAN,
+            defaultValue = false,
+            acceptsMagicVariable = false,
+            inputStyle = InputStyle.SWITCH,
+            nameStringRes = R.string.param_vflow_device_delay_random_enabled_name
+        ),
+        InputDefinition(
+            id = INPUT_MAX_OFFSET,
+            name = "最大偏移量",  // Fallback
+            staticType = ParameterType.NUMBER,
+            defaultValue = 0L,
+            acceptsMagicVariable = true,
+            acceptedMagicVariableTypes = setOf(VTypeRegistry.NUMBER.id),
+            visibility = InputVisibility.whenTrue(INPUT_RANDOM_ENABLED),
+            nameStringRes = R.string.param_vflow_device_delay_max_offset_name
         )
     )
 
@@ -78,18 +106,40 @@ class DelayModule : BaseModule() {
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
         val inputs = getInputs()
         val durationPill = PillUtil.createPillFromParam(
-            step.parameters["duration"],
-            inputs.find { it.id == "duration" }
+            step.parameters[INPUT_DURATION],
+            inputs.find { it.id == INPUT_DURATION }
         )
+        val randomEnabled = step.parameters[INPUT_RANDOM_ENABLED] as? Boolean ?: false
+        val maxOffsetPill = if (randomEnabled) {
+            PillUtil.createPillFromParam(
+                step.parameters[INPUT_MAX_OFFSET],
+                inputs.find { it.id == INPUT_MAX_OFFSET }
+            )
+        } else {
+            null
+        }
 
         val summaryPrefix = context.getString(R.string.summary_vflow_device_delay_prefix)
         val summarySuffix = context.getString(R.string.summary_vflow_device_delay_suffix)
-        return PillUtil.buildSpannable(
-            context,
-            "$summaryPrefix ",
-            durationPill,
-            " $summarySuffix"
-        )
+        return if (randomEnabled && maxOffsetPill != null) {
+            PillUtil.buildSpannable(
+                context,
+                "$summaryPrefix ",
+                durationPill,
+                " $summarySuffix ",
+                context.getString(R.string.summary_vflow_device_delay_random_prefix),
+                " ",
+                maxOffsetPill,
+                " $summarySuffix"
+            )
+        } else {
+            PillUtil.buildSpannable(
+                context,
+                "$summaryPrefix ",
+                durationPill,
+                " $summarySuffix"
+            )
+        }
     }
 
     /**
@@ -97,33 +147,11 @@ class DelayModule : BaseModule() {
      * 确保延迟时间不为负数。
      */
     override fun validate(step: ActionStep, allSteps: List<ActionStep>): ValidationResult {
-        val duration = step.parameters["duration"]
-        // 检查参数是否为字符串（可能是魔法变量或直接输入的数字字符串）
-        if (duration is String) {
-            try {
-                // 如果不是魔法变量，尝试转换为长整型并检查是否为负
-                if (!duration.isMagicVariable() && !duration.isNamedVariable()) {
-                    if (duration.toLong() < 0) {
-                        return ValidationResult(
-                            false,
-                            appContext.getString(R.string.error_vflow_device_delay_negative_validation)
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                // 如果转换失败且不是魔法变量，则格式无效
-                if (!duration.isMagicVariable() && !duration.isNamedVariable()) {
-                    return ValidationResult(
-                        false,
-                        appContext.getString(R.string.error_vflow_device_delay_invalid_format)
-                    )
-                }
-            }
-        } else if (duration is Number && duration.toLong() < 0) {
-            return ValidationResult(
-                false,
-                appContext.getString(R.string.error_vflow_device_delay_negative_validation)
-            )
+        validateNonNegativeNumberInput(step.parameters[INPUT_DURATION])?.let { return it }
+
+        val randomEnabled = step.parameters[INPUT_RANDOM_ENABLED] as? Boolean ?: false
+        if (randomEnabled) {
+            validateNonNegativeNumberInput(step.parameters[INPUT_MAX_OFFSET])?.let { return it }
         }
         return ValidationResult(true)
     }
@@ -136,15 +164,15 @@ class DelayModule : BaseModule() {
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
         // 获取延迟时间
-        val duration = context.getVariableAsLong("duration")
+        val duration = context.getVariableAsLong(INPUT_DURATION)
 
         if (duration == null) {
-            val rawValue = context.getVariable("duration")
+            val rawValue = context.getVariable(INPUT_DURATION)
             val rawValueStr = when (rawValue) {
                 is VString -> rawValue.raw
                 is VNull -> "空值"
                 is VNumber -> rawValue.raw.toString()
-                else -> rawValue?.toString() ?: "未知"
+                else -> rawValue.toString()
             }
             return ExecutionResult.Failure(
                 appContext.getString(R.string.error_vflow_device_delay_parameter_error),
@@ -160,12 +188,68 @@ class DelayModule : BaseModule() {
             )
         }
 
+        val randomEnabled = context.getVariableAsBoolean(INPUT_RANDOM_ENABLED) ?: false
+        val maxOffset = if (randomEnabled) {
+            context.getVariableAsLong(INPUT_MAX_OFFSET) ?: return ExecutionResult.Failure(
+                appContext.getString(R.string.error_vflow_device_delay_parameter_error),
+                appContext.getString(R.string.error_vflow_device_delay_invalid_max_offset)
+            )
+        } else {
+            0L
+        }
+
+        if (maxOffset < 0) {
+            return ExecutionResult.Failure(
+                appContext.getString(R.string.error_vflow_device_delay_parameter_error),
+                appContext.getString(R.string.error_vflow_device_delay_negative)
+            )
+        }
+
+        val finalDuration = if (randomEnabled && maxOffset > 0) {
+            (duration + Random.nextLong(from = -maxOffset, until = maxOffset + 1)).coerceAtLeast(0L)
+        } else {
+            duration
+        }
+
         // 如果延迟时间大于0，则执行实际的协程延迟
-        if (duration > 0) {
-            onProgress(ProgressUpdate(String.format(appContext.getString(R.string.msg_vflow_device_delay_delaying), duration)))
-            delay(duration)
+        if (finalDuration > 0) {
+            onProgress(ProgressUpdate(String.format(appContext.getString(R.string.msg_vflow_device_delay_delaying), finalDuration)))
+            delay(finalDuration)
         }
         // 返回成功结果
         return ExecutionResult.Success(mapOf("success" to VBoolean(true)))
+    }
+
+    private fun validateNonNegativeNumberInput(value: Any?): ValidationResult? {
+        if (value is String) {
+            try {
+                if (!value.isMagicVariable() && !value.isNamedVariable()) {
+                    if (value.toLong() < 0) {
+                        return ValidationResult(false, delayNegativeValidationText())
+                    }
+                }
+            } catch (_: Exception) {
+                if (!value.isMagicVariable() && !value.isNamedVariable()) {
+                    return ValidationResult(false, delayInvalidFormatText())
+                }
+            }
+        } else if (value is Number && value.toLong() < 0) {
+            return ValidationResult(false, delayNegativeValidationText())
+        }
+        return null
+    }
+
+    private fun delayNegativeValidationText(): String = getStringOrFallback(
+        R.string.error_vflow_device_delay_negative_validation,
+        "延迟时间不能为负数"
+    )
+
+    private fun delayInvalidFormatText(): String = getStringOrFallback(
+        R.string.error_vflow_device_delay_invalid_format,
+        "无效的数字格式"
+    )
+
+    private fun getStringOrFallback(resId: Int, fallback: String): String {
+        return runCatching { appContext.getString(resId) }.getOrDefault(fallback)
     }
 }

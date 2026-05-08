@@ -177,13 +177,17 @@
     <string name="module_vflow_device_delay_name">Delay</string>
     <string name="module_vflow_device_delay_desc">Pause workflow for a period of time</string>
     <string name="param_vflow_device_delay_duration_name">Duration</string>
+    <string name="param_vflow_device_delay_random_enabled_name">Random delay</string>
+    <string name="param_vflow_device_delay_max_offset_name">Max offset</string>
     <string name="output_vflow_device_delay_success_name">Success</string>
     <string name="summary_vflow_device_delay_prefix">Delay</string>
+    <string name="summary_vflow_device_delay_random_prefix">random offset up to</string>
     <string name="summary_vflow_device_delay_suffix">ms</string>
     <string name="error_vflow_device_delay_negative">Delay cannot be negative</string>
     <string name="error_vflow_device_delay_invalid_format">Invalid number format</string>
     <string name="error_vflow_device_delay_parameter_error">Parameter error</string>
     <string name="error_vflow_device_delay_negative_validation">Delay cannot be negative</string>
+    <string name="error_vflow_device_delay_invalid_max_offset">Unable to parse max offset as a valid delay duration.</string>
     <string name="msg_vflow_device_delay_delaying">Delaying %dms...</string>
 
     <!-- vflow.device.toast -->

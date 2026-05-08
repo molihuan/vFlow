@@ -8,13 +8,13 @@ import com.chaomixian.vflow.core.types.VObjectFactory
 import com.chaomixian.vflow.core.types.basic.VNumber
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.util.Stack
 
 class DelayModuleTest {
-
     @Test
     fun validate_acceptsNamedVariableReferenceForDuration() {
         val module = DelayModule()
@@ -50,6 +50,51 @@ class DelayModuleTest {
             namedVariables = mutableMapOf(
                 "delayMs" to VNumber(0)
             ),
+            workDir = File("build/test-workdir")
+        )
+
+        val result = module.execute(context) { }
+
+        assertTrue(result is ExecutionResult.Success)
+    }
+
+    @Test
+    fun validate_rejectsNegativeRandomMaxOffset() {
+        val module = DelayModule()
+
+        val result = module.validate(
+            ActionStep(
+                moduleId = module.id,
+                parameters = mapOf(
+                    "duration" to 1000L,
+                    "randomOffsetEnabled" to true,
+                    "maxOffset" to -1L
+                )
+            ),
+            emptyList()
+        )
+
+        assertFalse(result.isValid)
+    }
+
+    @Test
+    fun execute_acceptsRandomOffsetParameters() = runBlocking {
+        val module = DelayModule()
+
+        val context = ExecutionContext(
+            applicationContext = ContextWrapper(null),
+            variables = mutableMapOf(
+                "duration" to VObjectFactory.from(0),
+                "randomOffsetEnabled" to VObjectFactory.from(true),
+                "maxOffset" to VObjectFactory.from(0)
+            ),
+            magicVariables = mutableMapOf(),
+            services = ExecutionServices(),
+            allSteps = emptyList(),
+            currentStepIndex = 0,
+            stepOutputs = mutableMapOf(),
+            loopStack = Stack(),
+            namedVariables = mutableMapOf(),
             workDir = File("build/test-workdir")
         )
 

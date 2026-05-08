@@ -177,13 +177,17 @@
     <string name="module_vflow_device_delay_name">延迟</string>
     <string name="module_vflow_device_delay_desc">暂停工作流一段时间</string>
     <string name="param_vflow_device_delay_duration_name">延迟时间</string>
+    <string name="param_vflow_device_delay_random_enabled_name">随机延迟</string>
+    <string name="param_vflow_device_delay_max_offset_name">最大偏移量</string>
     <string name="output_vflow_device_delay_success_name">是否成功</string>
     <string name="summary_vflow_device_delay_prefix">延迟</string>
+    <string name="summary_vflow_device_delay_random_prefix">随机偏移最大</string>
     <string name="summary_vflow_device_delay_suffix">毫秒</string>
     <string name="error_vflow_device_delay_negative">延迟时间不能为负数</string>
     <string name="error_vflow_device_delay_invalid_format">无效的数字格式</string>
     <string name="error_vflow_device_delay_parameter_error">参数错误</string>
     <string name="error_vflow_device_delay_negative_validation">延迟时间不能为负数</string>
+    <string name="error_vflow_device_delay_invalid_max_offset">无法将最大偏移量解析为有效的延迟时间。</string>
     <string name="msg_vflow_device_delay_delaying">正在延迟 %dms...</string>
 
     <!-- vflow.device.toast -->
