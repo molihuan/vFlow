@@ -151,6 +151,18 @@
     <string name="settings_section_debugging">Debugging</string>
     <string name="settings_switch_enable_logging">Record Debug Logs</string>
     <string name="settings_switch_enable_logging_desc">When enabled, all app logs will be recorded in memory until the app is force stopped. Slightly increases memory usage.</string>
+    <string name="settings_switch_enable_telemetry">Enable telemetry</string>
+    <string name="settings_switch_enable_telemetry_summary">Help diagnose crashes and performance issues</string>
+    <string name="settings_switch_enable_telemetry_desc">When enabled, anonymous device info, crash reports, and performance metrics are collected for troubleshooting. Data is processed by the Umeng SDK.</string>
+    <string name="onboarding_disclaimer_title">Disclaimer</string>
+    <string name="onboarding_disclaimer_agree">I have read and agree</string>
+    <string name="onboarding_disclaimer_scroll_hint">Scroll to the bottom to continue</string>
+    <string name="onboarding_telemetry_title">Telemetry Data</string>
+    <string name="onboarding_telemetry_message">If telemetry is enabled, the following anonymous data will be collected for troubleshooting:\n\n• Device information (model, OS version, etc.)\n• App crash reports\n• Performance metrics\n\nData is processed by the Umeng SDK. You can turn this off later in Settings at any time.</string>
+    <string name="onboarding_telemetry_enable">Enable telemetry</string>
+    <string name="onboarding_telemetry_disable">Not now</string>
+    <string name="toast_telemetry_enabled">Telemetry enabled</string>
+    <string name="toast_telemetry_disabled_restart">Telemetry disabled, takes effect on next launch</string>
     <string name="settings_button_export_logs">Export Logs</string>
     <string name="settings_button_export_logs_desc">Export the in-memory debug log buffer to a file.</string>
     <string name="settings_button_clear_logs">Clear Logs</string>
@@ -1195,9 +1207,12 @@
     <string name="onboarding_root_unavailable">Unable to obtain Root permission</string>
 
     <string name="onboarding_permissions_required">Required Permissions</string>
-    <string name="onboarding_permissions_desc2">For smooth automation, vFlow needs the following core permissions (cannot be skipped).</string>
+    <string name="onboarding_permissions_desc2">For smooth automation, vFlow needs the following core permissions.</string>
     <string name="onboarding_permissions_ready">All Ready, Continue</string>
     <string name="onboarding_permissions_request">Please grant all permissions first</string>
+    <string name="onboarding_permissions_skip_title">Skip permission setup?</string>
+    <string name="onboarding_permissions_skip_message">If these required permissions are missing, some automation features may work incorrectly or not work at all. Do you still want to continue?</string>
+    <string name="onboarding_permissions_skip_confirm">Continue anyway</string>
     <string name="onboarding_grant">Grant</string>
 
     <string name="onboarding_completion_title">Ready to Launch!</string>

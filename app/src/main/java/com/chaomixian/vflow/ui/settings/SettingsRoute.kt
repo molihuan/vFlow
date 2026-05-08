@@ -276,6 +276,16 @@ fun SettingsRoute(
                     }
                 )
             },
+            onSetTelemetryEnabled = { enabled ->
+                settingsViewModel.setTelemetryEnabled(context, enabled)
+                context.toast(
+                    if (enabled) {
+                        R.string.toast_telemetry_enabled
+                    } else {
+                        R.string.toast_telemetry_disabled_restart
+                    }
+                )
+            },
             onOpenCrashReports = {
                 context.startActivity(Intent(context, CrashReportsActivity::class.java))
             },

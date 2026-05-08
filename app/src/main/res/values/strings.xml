@@ -151,6 +151,18 @@
     <string name="settings_section_debugging">调试</string>
     <string name="settings_switch_enable_logging">记录调试日志</string>
     <string name="settings_switch_enable_logging_desc">开启后，应用的所有日志将被记录在内存中，直到应用被强制终止。这会略微增加内存占用。</string>
+    <string name="settings_switch_enable_telemetry">启用遥测</string>
+    <string name="settings_switch_enable_telemetry_summary">帮助开发者排查崩溃和性能问题</string>
+    <string name="settings_switch_enable_telemetry_desc">启用后将收集匿名设备信息、崩溃报告和性能指标，用于故障排查。数据由友盟 SDK 处理。</string>
+    <string name="onboarding_disclaimer_title">免责声明</string>
+    <string name="onboarding_disclaimer_agree">我已阅读并同意</string>
+    <string name="onboarding_disclaimer_scroll_hint">请滚动至底部以继续</string>
+    <string name="onboarding_telemetry_title">遥测数据</string>
+    <string name="onboarding_telemetry_message">启用遥测后，将收集以下匿名数据用于故障排查：\n\n• 设备信息（型号、系统版本等）\n• 应用崩溃报告\n• 性能指标\n\n数据由友盟 SDK 处理。您也可以稍后在设置中随时关闭。</string>
+    <string name="onboarding_telemetry_enable">启用遥测</string>
+    <string name="onboarding_telemetry_disable">暂不启用</string>
+    <string name="toast_telemetry_enabled">遥测已启用</string>
+    <string name="toast_telemetry_disabled_restart">遥测已关闭，下次启动生效</string>
     <string name="settings_button_export_logs">导出日志</string>
     <string name="settings_button_export_logs_desc">将当前内存中的调试日志导出到文件。</string>
     <string name="settings_button_clear_logs">清空日志</string>
@@ -1195,9 +1207,12 @@
     <string name="onboarding_root_unavailable">无法获取 Root 权限</string>
 
     <string name="onboarding_permissions_required">必要的权限</string>
-    <string name="onboarding_permissions_desc2">为了让自动化流畅运行，vFlow 需要以下核心权限（不可跳过）。</string>
+    <string name="onboarding_permissions_desc2">为了让自动化流畅运行，vFlow 需要以下核心权限。</string>
     <string name="onboarding_permissions_ready">全部就绪，继续</string>
     <string name="onboarding_permissions_request">请先授予所有权限</string>
+    <string name="onboarding_permissions_skip_title">跳过权限配置？</string>
+    <string name="onboarding_permissions_skip_message">如果缺少这些必要权限，部分自动化功能可能无法正常工作，甚至完全不可用。确定仍要继续吗？</string>
+    <string name="onboarding_permissions_skip_confirm">仍然继续</string>
     <string name="onboarding_grant">授权</string>
 
     <string name="onboarding_completion_title">准备起飞！</string>

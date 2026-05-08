@@ -1,0 +1,29 @@
+# 免责声明 / Disclaimer
+
+最后更新日期 / Last Updated: 2026-03-19
+
+请在使用 vFlow 前仔细阅读项目根目录中的 DISCLAIMER.md。
+
+您下载、安装、使用本软件，即表示您已充分理解、同意并接受免责声明全部条款。若不同意任何内容，请立即停止使用并删除相关文件。
+
+重点提示：
+
+1. vFlow 是开源免费软件，仅供学习、研究和合法用途使用。
+2. 本软件涉及自动化操作、Root 权限执行、系统级服务等高风险功能，可能导致设备不稳定、数据丢失、账号处罚或其他损失。
+3. 您使用本软件的一切行为及后果均由您自行承担，开发者不承担任何责任。
+4. 严禁使用本软件实施违法违规、侵权、作弊、绕过安全机制、爬取或窃取数据等行为。
+5. 本软件默认不收集个人信息；如您主动启用遥测，仅会收集匿名设备信息、崩溃报告和性能指标，用于故障排查。
+
+英文摘要：
+
+Please review DISCLAIMER.md in the project root before using vFlow.
+
+By downloading, installing, or using this software, you agree to the full disclaimer. If you do not agree, stop using it immediately.
+
+Key points:
+
+1. vFlow is open-source free software for learning, research, and lawful use only.
+2. It includes high-risk capabilities such as automation, Root execution, and system-level services.
+3. You are solely responsible for all consequences of use.
+4. Illegal, abusive, infringing, cheating, or security-bypass use is strictly prohibited.
+5. The app does not collect personal data by default; if you enable telemetry, only anonymous device info, crash reports, and performance metrics are collected for troubleshooting.

@@ -101,6 +101,7 @@ data class SettingsScreenActions(
     val onOpenPermissionManager: () -> Unit,
     val onOpenPermissionGuardian: () -> Unit,
     val onSetLoggingEnabled: (Boolean) -> Unit,
+    val onSetTelemetryEnabled: (Boolean) -> Unit,
     val onOpenCrashReports: () -> Unit,
     val onExportLogs: () -> Unit,
     val onClearLogs: () -> Unit,
@@ -222,6 +223,9 @@ fun SettingsScreen(
     val loggingTitle = stringResource(R.string.settings_switch_enable_logging)
     val loggingSubtitle = stringResource(R.string.settings_switch_enable_logging_summary)
     val loggingInfo = stringResource(R.string.settings_switch_enable_logging_desc)
+    val telemetryTitle = stringResource(R.string.settings_switch_enable_telemetry)
+    val telemetrySubtitle = stringResource(R.string.settings_switch_enable_telemetry_summary)
+    val telemetryInfo = stringResource(R.string.settings_switch_enable_telemetry_desc)
     val crashReportsTitle = stringResource(R.string.settings_button_crash_reports)
     val crashReportsSubtitle = stringResource(R.string.settings_button_crash_reports_desc)
     val exportLogsLabel = stringResource(R.string.settings_button_export_logs)
@@ -278,6 +282,7 @@ fun SettingsScreen(
     val showDebuggingSection = listOf(
         debuggingSectionTitle,
         loggingTitle, loggingSubtitle, loggingInfo,
+        telemetryTitle, telemetrySubtitle, telemetryInfo,
         crashReportsTitle, crashReportsSubtitle,
         exportLogsLabel, clearLogsLabel,
         runDiagnosticLabel, keyTesterLabel,
@@ -578,6 +583,16 @@ fun SettingsScreen(
                     checked = uiState.loggingEnabled,
                     onCheckedChange = actions.onSetLoggingEnabled,
                     infoText = loggingInfo
+                )
+                NativeSwitchRow(
+                    title = telemetryTitle,
+                    subtitle = telemetrySubtitle,
+                    icon = Icons.Default.BugReport,
+                    tone = accentTone(),
+                    position = SettingsGroupPosition.Middle,
+                    checked = uiState.telemetryEnabled,
+                    onCheckedChange = actions.onSetTelemetryEnabled,
+                    infoText = telemetryInfo
                 )
                 NativeEntryRow(
                     title = crashReportsTitle,

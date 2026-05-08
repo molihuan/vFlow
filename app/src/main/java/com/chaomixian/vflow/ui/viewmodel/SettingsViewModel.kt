@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.chaomixian.vflow.api.ApiService
 import com.chaomixian.vflow.core.locale.LocaleManager
 import com.chaomixian.vflow.core.logging.DebugLogger
+import com.chaomixian.vflow.core.telemetry.TelemetryManager
 import com.chaomixian.vflow.data.update.UpdateChecker
 import com.chaomixian.vflow.data.update.UpdateInfo
 import com.chaomixian.vflow.services.ShellManager
@@ -37,6 +38,7 @@ data class SettingsUiState(
     val allowShowOnLockScreen: Boolean = false,
     val defaultShellMode: String = "shizuku",
     val loggingEnabled: Boolean = false,
+    val telemetryEnabled: Boolean = false,
     val isShizukuActive: Boolean = false,
     val isRootAvailable: Boolean = false,
     val apiRunning: Boolean = false,
@@ -81,6 +83,7 @@ class SettingsViewModel : ViewModel() {
                     DEFAULT_SHELL_MODE
                 ) ?: DEFAULT_SHELL_MODE,
                 loggingEnabled = DebugLogger.isLoggingEnabled(),
+                telemetryEnabled = TelemetryManager.isEnabled(context),
                 isShizukuActive = ShellManager.isShizukuActive(context),
                 accessibilityDisguiseEnabled = prefs.getBoolean(KEY_ACCESSIBILITY_DISGUISE, false),
                 isRootAvailable = ShellManager.isRootAvailable()
@@ -195,6 +198,11 @@ class SettingsViewModel : ViewModel() {
     fun setLoggingEnabled(context: Context, enabled: Boolean) {
         DebugLogger.setLoggingEnabled(enabled, context)
         _uiState.update { it.copy(loggingEnabled = enabled) }
+    }
+
+    fun setTelemetryEnabled(context: Context, enabled: Boolean) {
+        TelemetryManager.setEnabled(context, enabled)
+        _uiState.update { it.copy(telemetryEnabled = enabled) }
     }
 
     fun setAccessibilityDisguiseEnabled(context: Context, enabled: Boolean) = editPref(context) {

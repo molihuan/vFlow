@@ -89,6 +89,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="um.69e62d246f259537c79bda50" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -101,6 +107,10 @@
 
         <activity
             android:name=".ui.workflow_editor.VoiceTriggerRecorderActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.onboarding.ConsentUpdateActivity"
             android:exported="false" />
 
         <activity

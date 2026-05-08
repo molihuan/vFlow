@@ -199,6 +199,10 @@ dependencies {
 
     // OpenCV for image matching
     implementation(libs.opencv)
+
+    // Umeng analytics / crash telemetry
+    implementation("com.umeng.umsdk:common:9.9.1")
+    implementation("com.umeng.umsdk:asms:1.8.7.2")
 }
 
 afterEvaluate {

@@ -20,6 +20,7 @@ import com.chaomixian.vflow.core.logging.DebugLogger
 import com.chaomixian.vflow.core.logging.LogManager
 import com.chaomixian.vflow.core.module.ModuleRegistry
 import com.chaomixian.vflow.core.opencv.OpenCVManager
+import com.chaomixian.vflow.core.telemetry.TelemetryManager
 import com.chaomixian.vflow.core.workflow.WorkflowPermissionRecovery
 import com.chaomixian.vflow.core.workflow.module.scripted.ModuleManager
 import com.chaomixian.vflow.core.workflow.module.triggers.handlers.TriggerHandlerRegistry
@@ -30,6 +31,8 @@ import com.chaomixian.vflow.services.TriggerService
 import com.chaomixian.vflow.services.VoiceTriggerService
 import com.chaomixian.vflow.ui.common.AppearanceManager
 import com.chaomixian.vflow.ui.common.BaseActivity
+import com.chaomixian.vflow.ui.onboarding.ConsentUpdateActivity
+import com.chaomixian.vflow.ui.onboarding.OnboardingActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,6 +49,8 @@ class MainActivity : BaseActivity() {
     companion object {
         const val PREFS_NAME = "vFlowPrefs"
         const val LOG_PREFS_NAME = "vFlowLogPrefs"
+        const val KEY_IS_FIRST_RUN = "is_first_run"
+        const val KEY_DISCLAIMER_ACCEPTED = "disclaimer_accepted"
         private const val EXTRA_INITIAL_MAIN_TAB_TAG = "initial_main_tab_tag"
         private const val STATE_CURRENT_MAIN_TAB_TAG = "current_main_tab_tag"
 
@@ -99,9 +104,22 @@ class MainActivity : BaseActivity() {
         initialWorkflowSortMode = resolveInitialWorkflowSortMode()
         currentMainTabTag = null
 
-        // 检查首次运行
-        if (prefs.getBoolean("is_first_run", true)) {
-            startActivity(Intent(this, com.chaomixian.vflow.ui.onboarding.OnboardingActivity::class.java))
+        val isFirstRun = prefs.getBoolean(KEY_IS_FIRST_RUN, true)
+        val disclaimerAccepted = prefs.getBoolean(KEY_DISCLAIMER_ACCEPTED, false)
+
+        if (isFirstRun) {
+            startActivity(
+                OnboardingActivity.createIntent(
+                    context = this,
+                    skipDisclaimerPage = disclaimerAccepted
+                )
+            )
+            finish()
+            return
+        }
+
+        if (!disclaimerAccepted) {
+            startActivity(Intent(this, ConsentUpdateActivity::class.java))
             finish()
             return
         }
@@ -119,6 +137,13 @@ class MainActivity : BaseActivity() {
         }
 
         continueStartup()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (TelemetryManager.isEnabled(this)) {
+            TelemetryManager.onKillProcess(this)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
