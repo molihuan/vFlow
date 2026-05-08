@@ -32,6 +32,7 @@ object OpenCVImageMatcher {
         // 检查 OpenCV 是否已初始化
         if (!OpenCVManager.isInitialized) {
             DebugLogger.w(TAG, "OpenCV not initialized, using legacy matcher")
+            @Suppress("DEPRECATION")
             return ImageMatcher.findAll(source, template, maxDiffPercent)
         }
 
@@ -85,6 +86,7 @@ object OpenCVImageMatcher {
 
         } catch (e: Exception) {
             DebugLogger.e(TAG, "OpenCV matching failed, falling back to legacy matcher", e)
+            @Suppress("DEPRECATION")
             return ImageMatcher.findAll(source, template, maxDiffPercent)
         }
     }

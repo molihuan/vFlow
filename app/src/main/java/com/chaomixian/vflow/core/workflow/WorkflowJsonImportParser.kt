@@ -69,23 +69,31 @@ class WorkflowJsonImportParser(
     }
 
     private fun sanitizeWorkflow(workflow: Workflow): Workflow {
+        val description: String? = workflow.description
+        val author: String? = workflow.author
+        val homepage: String? = workflow.homepage
+        val tags: List<String>? = workflow.tags
+        val triggers: List<com.chaomixian.vflow.core.workflow.model.ActionStep>? = workflow.triggers
+        val steps: List<com.chaomixian.vflow.core.workflow.model.ActionStep>? = workflow.steps
+        val reentryBehavior: WorkflowReentryBehavior? = workflow.reentryBehavior
+
         return workflow.copy(
-            id = workflow.id?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString(),
-            name = workflow.name?.takeIf { it.isNotBlank() } ?: "未命名工作流",
-            triggers = workflow.triggers ?: emptyList(),
-            steps = workflow.steps ?: emptyList(),
+            id = workflow.id.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString(),
+            name = workflow.name.takeIf { it.isNotBlank() } ?: "未命名工作流",
+            triggers = triggers ?: emptyList(),
+            steps = steps ?: emptyList(),
             folderId = workflow.folderId?.takeIf { it.isNotBlank() },
             cardIconRes = WorkflowVisuals.normalizeIconResName(workflow.cardIconRes),
             cardThemeColor = WorkflowVisuals.normalizeThemeColorHex(workflow.cardThemeColor),
             modifiedAt = workflow.modifiedAt.takeIf { it > 0 } ?: System.currentTimeMillis(),
-            version = workflow.version?.takeIf { it.isNotBlank() } ?: "1.0.0",
+            version = workflow.version.takeIf { it.isNotBlank() } ?: "1.0.0",
             vFlowLevel = workflow.vFlowLevel.takeIf { it > 0 } ?: 1,
-            description = workflow.description ?: "",
-            author = workflow.author ?: "",
-            homepage = workflow.homepage ?: "",
-            tags = workflow.tags ?: emptyList(),
+            description = description?.takeIf { it.isNotBlank() } ?: "",
+            author = author?.takeIf { it.isNotBlank() } ?: "",
+            homepage = homepage?.takeIf { it.isNotBlank() } ?: "",
+            tags = tags ?: emptyList(),
             reentryBehavior = WorkflowReentryBehavior.fromStoredValue(
-                workflow.reentryBehavior?.storedValue
+                reentryBehavior?.storedValue
             )
         )
     }

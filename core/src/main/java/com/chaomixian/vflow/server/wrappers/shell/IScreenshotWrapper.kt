@@ -198,7 +198,7 @@ class IScreenshotWrapper : IWrapper {
             Thread.sleep(200) // 等待Surface准备就绪
 
             // 6. 获取图像数据
-            val imageData = ImageReaderHelper.acquireLatestImage(imageReader!!, format, quality)
+            val imageData = ImageReaderHelper.acquireLatestImage(imageReader, format, quality)
                 ?: return null
 
             return ScreenshotResult(

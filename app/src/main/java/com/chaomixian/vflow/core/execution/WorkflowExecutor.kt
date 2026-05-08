@@ -381,7 +381,7 @@ object WorkflowExecutor {
                 executionContext.stepOutputs[triggerStep.id] = VObjectFactory.fromMapAny(result.outputs)
             }
             is ExecutionResult.Failure -> {
-                throw IllegalStateException(result.errorMessage ?: "触发器执行失败")
+                throw IllegalStateException(result.errorMessage)
             }
             else -> Unit
         }

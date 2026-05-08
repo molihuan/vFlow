@@ -478,7 +478,7 @@
     <string name="dialog_module_exists_title">Module Already Exists</string>
     <string name="dialog_module_exists_message">A module with ID \"%s\" already exists.\n\nDo you want to overwrite it?</string>
     <string name="dialog_module_dependency_title">Dependency Exists</string>
-    <string name="dialog_module_dependency_message">Warning: %d workflow(s) are using this module:\n\n%sForcibly deleting will cause these workflows to malfunction.</string>
+    <string name="dialog_module_dependency_message" formatted="false">Warning: %d workflow(s) are using this module:\n\n%sForcibly deleting will cause these workflows to malfunction.</string>
     <string name="dialog_button_force_delete">Force Delete</string>
     <string name="dialog_delete_module_title">Delete Module</string>
     <string name="dialog_delete_module_message">Are you sure you want to delete module \"%s\"?</string>
@@ -596,7 +596,7 @@
     <string name="pose_trigger_current_pose_title">Current Pose</string>
     <string name="pose_trigger_current_pose_waiting">Waiting for sensor data…</string>
     <string name="pose_trigger_current_gravity_waiting">Waiting for gravity data…</string>
-    <string name="pose_trigger_record_tip">Tip: higher thresholds are stricter. Around 90% fits stable poses, around 80% is better for handheld triggering.</string>
+    <string name="pose_trigger_record_tip" formatted="false">Tip: higher thresholds are stricter. Around 90% fits stable poses, around 80% is better for handheld triggering.</string>
     <string name="pose_trigger_sensor_unavailable">This device does not support pose sensors</string>
     <string name="pose_trigger_gravity_sensor_unavailable">This device does not support gravity sensors</string>
     <string name="pose_trigger_record_empty">No pose data captured yet, please try again</string>
@@ -950,7 +950,7 @@
     <string name="button_add_app_activity">Add App/Activity</string>
     <string name="text_not_selected">Not selected</string>
     <string name="text_app_selected">Selected: %s</string>
-    <string name="text_activity_selected">Selected: %s / %s</string>
+    <string name="text_activity_selected" formatted="false">Selected: %s / %s</string>
     <string name="label_workflow">Workflow</string>
     <string name="text_no_favorite_workflows">No favorite workflows</string>
     <string name="desc_details">Details</string>

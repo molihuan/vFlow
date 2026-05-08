@@ -323,7 +323,7 @@
     <string name="workflow_execute_delay_5s">5 秒后执行</string>
     <string name="workflow_execute_delay_15s">15 秒后执行</string>
     <string name="workflow_execute_delay_1min">1 分钟后执行</string>
-    <string name="workflow_execute_delayed">%s 后执行: %s</string>
+    <string name="workflow_execute_delayed" formatted="false">%s 后执行: %s</string>
     <string name="workflow_execute_delay_seconds">%d 秒</string>
     <string name="workflow_action_run">执行</string>
     <string name="workflow_action_stop">停止</string>
@@ -466,7 +466,7 @@
     <string name="dialog_overlay_permission_message">为了显示收藏工作流的快速控制面板，需要授予悬浮窗权限。</string>
     <string name="dialog_button_go_to_settings">去设置</string>
     <string name="dialog_import_conflict_title">导入冲突</string>
-    <string name="dialog_import_conflict_message">已存在一个名为 \'%s\' 的工作流 (ID: %s...)。您想如何处理来自文件中的 \'%s\'?</string>
+    <string name="dialog_import_conflict_message" formatted="false">已存在一个名为 \'%s\' 的工作流 (ID: %s...)。您想如何处理来自文件中的 \'%s\'?</string>
     <string name="dialog_button_keep_both">保留两者</string>
     <string name="dialog_button_replace">替换</string>
     <string name="dialog_button_skip">跳过</string>
@@ -478,7 +478,7 @@
     <string name="dialog_module_exists_title">模块已存在</string>
     <string name="dialog_module_exists_message">检测到 ID 为 \"%s\" 的模块已存在。\n\n是否覆盖安装？</string>
     <string name="dialog_module_dependency_title">存在依赖关系</string>
-    <string name="dialog_module_dependency_message">警告：以下 %d 个工作流正在使用此模块：\n\n%s\n强制删除会导致这些工作流失效。</string>
+    <string name="dialog_module_dependency_message" formatted="false">警告：以下 %d 个工作流正在使用此模块：\n\n%s\n强制删除会导致这些工作流失效。</string>
     <string name="dialog_button_force_delete">强制删除</string>
     <string name="dialog_delete_module_title">删除模块</string>
     <string name="dialog_delete_module_message">确定要删除模块 \"%s\" 吗？</string>
@@ -526,14 +526,14 @@
     <string name="text_load_failed">加载失败: %s</string>
     <string name="toast_load_failed">加载失败: %s</string>
     <string name="dialog_download_module_title">下载模块</string>
-    <string name="dialog_download_module_message">确定要下载 \'%s\' 吗？\n\n描述: %s\n\n版本: v%s\n分类: %s\n权限: %s</string>
+    <string name="dialog_download_module_message" formatted="false">确定要下载 \'%s\' 吗？\n\n描述: %s\n\n版本: v%s\n分类: %s\n权限: %s</string>
     <string name="dialog_button_download">下载</string>
     <string name="toast_downloading">正在下载: %s</string>
     <string name="toast_download_failed">下载失败: %s</string>
     <string name="toast_install_success">安装成功: %s</string>
     <string name="toast_install_failed">安装失败: %s</string>
     <string name="dialog_module_conflict_title">模块冲突</string>
-    <string name="dialog_module_conflict_message">已存在一个ID为 \'%s\' 的模块。您想如何处理来自仓库的 \'%s\'?</string>
+    <string name="dialog_module_conflict_message" formatted="false">已存在一个ID为 \'%s\' 的模块。您想如何处理来自仓库的 \'%s\'?</string>
     <string name="toast_module_replaced">\'%s\' 已替换</string>
     <string name="label_no_permissions">无</string>
     <string name="repo_author">作者: %s</string>
@@ -596,7 +596,7 @@
     <string name="pose_trigger_current_pose_title">当前姿态</string>
     <string name="pose_trigger_current_pose_waiting">等待传感器数据…</string>
     <string name="pose_trigger_current_gravity_waiting">等待重力数据…</string>
-    <string name="pose_trigger_record_tip">提示：匹配度越高越严格。90% 适合稳定姿态，80% 左右更适合手持触发。</string>
+    <string name="pose_trigger_record_tip" formatted="false">提示：匹配度越高越严格。90% 适合稳定姿态，80% 左右更适合手持触发。</string>
     <string name="pose_trigger_sensor_unavailable">当前设备不支持姿态传感器</string>
     <string name="pose_trigger_gravity_sensor_unavailable">当前设备不支持重力加速度传感器</string>
     <string name="pose_trigger_record_empty">尚未采集到姿态数据，请重试</string>
@@ -605,11 +605,11 @@
     <!-- Repository workflows -->
     <string name="text_no_workflows">暂无工作流</string>
     <string name="dialog_download_workflow_title">下载工作流</string>
-    <string name="dialog_download_workflow_message">确定要下载 \'%s\' 吗？\n\n%s</string>
+    <string name="dialog_download_workflow_message" formatted="false">确定要下载 \'%s\' 吗？\n\n%s</string>
     <string name="toast_download_workflow_success">下载成功: %s</string>
     <string name="toast_workflow_downloaded_as_copy">\'%s\' 已作为副本下载</string>
     <string name="dialog_workflow_conflict_title">工作流冲突</string>
-    <string name="dialog_workflow_conflict_message">已存在一个名为 \'%s\' 的工作流 (ID: %s...)。您想如何处理来自仓库的 \'%s\'?</string>
+    <string name="dialog_workflow_conflict_message" formatted="false">已存在一个名为 \'%s\' 的工作流 (ID: %s...)。您想如何处理来自仓库的 \'%s\'?</string>
     <string name="label_workflow_from_repo">(仓库)</string>
 
     <!-- ActionEditorSheet -->
@@ -669,7 +669,7 @@
 
     <!-- Module Management -->
     <string name="install_module">安装模块</string>
-    <string name="module_author_version">作者: %s   版本: v%s</string>
+    <string name="module_author_version" formatted="false">作者: %s   版本: v%s</string>
 
     <!-- Category Names -->
     <!-- Note: category_template and category_trigger are already defined in strings_module.xml -->
@@ -950,7 +950,7 @@
     <string name="button_add_app_activity">添加应用或Activity</string>
     <string name="text_not_selected">尚未选择</string>
     <string name="text_app_selected">已选择: %s</string>
-    <string name="text_activity_selected">已选择: %s / %s</string>
+    <string name="text_activity_selected" formatted="false">已选择: %s / %s</string>
     <string name="label_workflow">工作流</string>
     <string name="text_no_favorite_workflows">暂无收藏的工作流</string>
     <string name="desc_details">详情</string>

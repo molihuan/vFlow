@@ -23,28 +23,28 @@ object JsValueConverter {
 
             // --- 基础类型 ---
             is String -> value
-            is Boolean -> java.lang.Boolean.valueOf(value)
+            is Boolean -> value
             is Char -> value.toString()
 
             // --- 数字类型 ---
-            is Int -> Integer.valueOf(value)
-            is Long -> java.lang.Long.valueOf(value)
-            is Float -> java.lang.Float.valueOf(value)
-            is Double -> java.lang.Double.valueOf(value)
+            is Int -> value
+            is Long -> value
+            is Float -> value
+            is Double -> value
 
             // --- VObject 类型拆箱 ---
             is VString -> value.raw
             is VNumber -> {
                 val raw = value.raw
                 when (raw) {
-                    is Int -> Integer.valueOf(raw)
-                    is Long -> java.lang.Long.valueOf(raw)
-                    is Float -> java.lang.Float.valueOf(raw)
-                    is Double -> java.lang.Double.valueOf(raw)
+                    is Int -> raw
+                    is Long -> raw
+                    is Float -> raw
+                    is Double -> raw
                     else -> raw
                 }
             }
-            is VBoolean -> java.lang.Boolean.valueOf(value.raw)
+            is VBoolean -> value.raw
             is VList -> {
                 val jsArray = context.newArray(scope, value.raw.size)
                 value.raw.forEachIndexed { index, item ->
@@ -111,12 +111,12 @@ object JsValueConverter {
             is org.mozilla.javascript.Undefined -> null
 
             // --- 基础类型 ---
-            is java.lang.Boolean -> value.booleanValue()
-            is java.lang.String -> value
-            is java.lang.Integer -> value.toInt()
-            is java.lang.Long -> value.toLong()
-            is java.lang.Float -> value.toFloat()
-            is java.lang.Double -> value.toDouble()
+            is Boolean -> value
+            is String -> value
+            is Int -> value
+            is Long -> value
+            is Float -> value
+            is Double -> value
 
             // --- NativeArray (JS 数组) ---
             is NativeArray -> {

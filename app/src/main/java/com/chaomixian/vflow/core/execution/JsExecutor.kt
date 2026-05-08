@@ -26,6 +26,7 @@ class JsExecutor(private val executionContext: ExecutionContext) {
         val context = Context.enter()
         try {
             // 设置优化级别，-1 表示解释模式，0+ 表示优化模式
+            @Suppress("DEPRECATION")
             context.optimizationLevel = -1
 
             // 创建标准作用域
@@ -67,7 +68,12 @@ class JsExecutor(private val executionContext: ExecutionContext) {
             // 处理结果
             return when (result) {
                 is NativeObject, is ScriptableObject -> {
-                    JsValueConverter.coerceToKotlin(result) as? Map<String, Any?> ?: emptyMap()
+                    val kotlinResult = JsValueConverter.coerceToKotlin(result)
+                    if (kotlinResult is Map<*, *>) {
+                        kotlinResult.entries.associate { (key, value) -> key.toString() to value }
+                    } else {
+                        emptyMap()
+                    }
                 }
                 is NativeArray -> {
                     val listResult = JsValueConverter.coerceToKotlin(result) as? List<*>
@@ -187,7 +193,7 @@ class JsModuleWrapperFunction(
         // 将结果转换回 JavaScript
         return when (executionResult) {
             is ExecutionResult.Success -> {
-                val outputs = (executionResult as ExecutionResult.Success).outputs
+                val outputs = executionResult.outputs
                 if (outputs.isEmpty()) {
                     org.mozilla.javascript.Context.getUndefinedValue()
                 } else if (outputs.size == 1 && outputs.containsKey("result")) {
@@ -197,7 +203,7 @@ class JsModuleWrapperFunction(
                 }
             }
             is ExecutionResult.Failure -> {
-                val fail = executionResult as ExecutionResult.Failure
+                val fail = executionResult
                 // 抛出 JavaScript 错误，脚本可以用 try-catch 捕获
                 throw org.mozilla.javascript.JavaScriptException(
                     "${fail.errorTitle}: ${fail.errorMessage}",

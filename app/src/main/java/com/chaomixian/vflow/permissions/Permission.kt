@@ -34,8 +34,8 @@ data class Permission(
     val description: String,
     val type: PermissionType,
     val runtimePermissions: List<String> = emptyList(),
-    @StringRes val nameStringRes: Int? = null,
-    @StringRes val descriptionStringRes: Int? = null
+    @param:StringRes val nameStringRes: Int? = null,
+    @param:StringRes val descriptionStringRes: Int? = null
 ) : Parcelable {
     /**
      * 获取本地化的权限名称

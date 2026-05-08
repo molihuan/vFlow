@@ -5,6 +5,7 @@ import android.os.Parcelable
 import com.chaomixian.vflow.core.types.EnhancedBaseVObject
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.properties.PropertyRegistry
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -13,7 +14,9 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class VBoolean(override val raw: Boolean) : EnhancedBaseVObject(), Parcelable {
+    @IgnoredOnParcel
     override val type = VTypeRegistry.BOOLEAN
+    @IgnoredOnParcel
     override val propertyRegistry: PropertyRegistry = VBooleanCompanion.registry
 
     override fun asString(): String = raw.toString()

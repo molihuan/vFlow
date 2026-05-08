@@ -256,7 +256,7 @@ class ApiService private constructor(
                 val addresses = networkInterface.inetAddresses
                 for (address in addresses.toList()) {
                     if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
-                        return address.hostAddress
+                        address.hostAddress?.let { return it }
                     }
                 }
             }

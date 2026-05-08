@@ -50,11 +50,11 @@ class IPowerManagerWrapper : ServiceWrapper("power", "android.os.IPowerManager\$
                 val paramType = paramTypes[i]
                 args[i] = when {
                     // int 基本类型
-                    paramType.isPrimitive && paramType == Int::class.javaPrimitiveType -> Integer.valueOf(0)
+                    paramType.isPrimitive && paramType == Int::class.javaPrimitiveType -> 0
                     // long 基本类型
                     paramType.isPrimitive && paramType == Long::class.javaPrimitiveType -> time
                     // Integer 对象类型
-                    paramType == Integer::class.java -> Integer.valueOf(0)
+                    paramType == Int::class.javaObjectType -> 0
                     // Long 对象类型
                     paramType == Long::class.java -> time
                     // String 类型（使用空字符串而不是 null）
@@ -82,11 +82,11 @@ class IPowerManagerWrapper : ServiceWrapper("power", "android.os.IPowerManager\$
                 val paramType = paramTypes[i]
                 args[i] = when {
                     // int 基本类型
-                    paramType.isPrimitive && paramType == Int::class.javaPrimitiveType -> Integer.valueOf(0)
+                    paramType.isPrimitive && paramType == Int::class.javaPrimitiveType -> 0
                     // long 基本类型
                     paramType.isPrimitive && paramType == Long::class.javaPrimitiveType -> time
                     // Integer 对象类型
-                    paramType == Integer::class.java -> Integer.valueOf(0)
+                    paramType == Int::class.javaObjectType -> 0
                     // Long 对象类型
                     paramType == Long::class.java -> time
                     // String 类型（oddo 魔改不允许 null）
@@ -115,8 +115,8 @@ class IPowerManagerWrapper : ServiceWrapper("power", "android.os.IPowerManager\$
                 for (i in args.indices) {
                     val paramType = paramTypes[i]
                     args[i] = when {
-                        paramType.isPrimitive && paramType == Int::class.javaPrimitiveType -> Integer.valueOf(0)
-                        paramType == Integer::class.java -> Integer.valueOf(0)
+                        paramType.isPrimitive && paramType == Int::class.javaPrimitiveType -> 0
+                        paramType == Int::class.javaObjectType -> 0
                         else -> null
                     }
                 }

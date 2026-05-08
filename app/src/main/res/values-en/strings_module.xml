@@ -813,7 +813,7 @@
     <string name="output_vflow_trigger_location_longitude_name">Current Longitude</string>
     <string name="output_vflow_trigger_location_accuracy_name">Accuracy</string>
     <string name="summary_vflow_trigger_location_prefix">When</string>
-    <string name="summary_vflow_trigger_location_coordinates">%.6f, %.6f (%dm)</string>
+    <string name="summary_vflow_trigger_location_coordinates" formatted="false">%.6f, %.6f (%dm)</string>
     <string name="msg_vflow_trigger_location_triggered">Location event triggered</string>
     <string name="option_vflow_trigger_location_event_enter">Enter</string>
     <string name="option_vflow_trigger_location_event_exit">Exit</string>
@@ -831,7 +831,7 @@
     <string name="output_vflow_system_location_range_check_accuracy_name">Accuracy</string>
     <string name="output_vflow_system_location_range_check_distance_name">Distance to Target</string>
     <string name="summary_vflow_system_location_range_check_prefix">Check whether current location is inside</string>
-    <string name="summary_vflow_system_location_range_check_coordinates">%.6f, %.6f (%dm)</string>
+    <string name="summary_vflow_system_location_range_check_coordinates" formatted="false">%.6f, %.6f (%dm)</string>
 
     <!-- vflow.variable.create -->
     <string name="module_vflow_variable_create_name">Create Variable</string>
@@ -2738,7 +2738,7 @@
     <string name="summary_vflow_device_vibration_once">Once %d ms</string>
     <string name="summary_vflow_device_vibration_notification">Notification</string>
     <string name="summary_vflow_device_vibration_ringtone">Ringtone</string>
-    <string name="summary_vflow_device_vibration_pattern">Custom: %d ms vib / %d ms pause × %d</string>
+    <string name="summary_vflow_device_vibration_pattern" formatted="false">Custom: %d ms vib / %d ms pause × %d</string>
     <string name="error_vflow_device_vibration_not_supported">Vibration not supported</string>
     <string name="error_vflow_device_vibration_no_vibrator">Device has no vibrator</string>
     <string name="error_vflow_device_vibration_invalid_mode">Invalid vibration mode</string>

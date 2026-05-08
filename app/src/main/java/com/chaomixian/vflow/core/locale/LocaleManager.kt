@@ -101,7 +101,7 @@ object LocaleManager {
     fun applyLanguage(context: Context, languageCode: String): Context {
         val locale = when(languageCode) {
             "zh" -> Locale.SIMPLIFIED_CHINESE
-            else -> Locale(languageCode)
+            else -> Locale.forLanguageTag(languageCode)
         }
         Locale.setDefault(locale)
 

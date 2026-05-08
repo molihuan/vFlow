@@ -7,8 +7,8 @@ import com.chaomixian.vflow.R
 
 data class ModuleCategorySpec(
     val id: String,
-    @StringRes val labelRes: Int?,
-    @ColorRes val colorRes: Int,
+    @param:StringRes val labelRes: Int?,
+    @param:ColorRes val colorRes: Int,
     val sortOrder: Int,
     val defaultLabel: String
 )

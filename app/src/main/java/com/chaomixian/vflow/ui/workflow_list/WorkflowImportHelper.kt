@@ -89,15 +89,19 @@ class WorkflowImportHelper(
      * 确保工作流元数据字段有默认值
      */
     private fun applyWorkflowDefaults(wf: Workflow): Workflow {
+        val description: String? = wf.description
+        val author: String? = wf.author
+        val homepage: String? = wf.homepage
+        val tags: List<String>? = wf.tags
         return wf.copy(
-            id = wf.id?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString(),
-            name = wf.name?.takeIf { it.isNotBlank() } ?: context.getString(R.string.workflow_name_untitled),
-            version = wf.version?.takeIf { it.isNotEmpty() } ?: "1.0.0",
+            id = wf.id.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString(),
+            name = wf.name.takeIf { it.isNotBlank() } ?: context.getString(R.string.workflow_name_untitled),
+            version = wf.version.takeIf { it.isNotEmpty() } ?: "1.0.0",
             vFlowLevel = if (wf.vFlowLevel == 0) 1 else wf.vFlowLevel,
-            description = wf.description ?: "",
-            author = wf.author ?: "",
-            homepage = wf.homepage ?: "",
-            tags = wf.tags ?: emptyList(),
+            description = description?.takeIf { it.isNotBlank() } ?: "",
+            author = author?.takeIf { it.isNotBlank() } ?: "",
+            homepage = homepage?.takeIf { it.isNotBlank() } ?: "",
+            tags = tags ?: emptyList(),
             cardIconRes = WorkflowVisuals.normalizeIconResName(wf.cardIconRes),
             cardThemeColor = WorkflowVisuals.normalizeThemeColorHex(wf.cardThemeColor),
             modifiedAt = if (wf.modifiedAt == 0L) System.currentTimeMillis() else wf.modifiedAt,
@@ -108,13 +112,17 @@ class WorkflowImportHelper(
     private fun startImportProcess(workflows: List<Workflow>) {
         // 确保所有工作流的元数据字段有默认值
         val workflowsWithDefaults = workflows.map { wf ->
+            val description: String? = wf.description
+            val author: String? = wf.author
+            val homepage: String? = wf.homepage
+            val tags: List<String>? = wf.tags
             wf.copy(
-                version = wf.version?.takeIf { it.isNotEmpty() } ?: "1.0.0",
+                version = wf.version.takeIf { it.isNotEmpty() } ?: "1.0.0",
                 vFlowLevel = if (wf.vFlowLevel == 0) 1 else wf.vFlowLevel,
-                description = wf.description ?: "",
-                author = wf.author ?: "",
-                homepage = wf.homepage ?: "",
-                tags = wf.tags ?: emptyList(),
+                description = description?.takeIf { it.isNotBlank() } ?: "",
+                author = author?.takeIf { it.isNotBlank() } ?: "",
+                homepage = homepage?.takeIf { it.isNotBlank() } ?: "",
+                tags = tags ?: emptyList(),
                 cardIconRes = WorkflowVisuals.normalizeIconResName(wf.cardIconRes),
                 cardThemeColor = WorkflowVisuals.normalizeThemeColorHex(wf.cardThemeColor),
                 modifiedAt = if (wf.modifiedAt == 0L) System.currentTimeMillis() else wf.modifiedAt

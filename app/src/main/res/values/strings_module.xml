@@ -402,15 +402,15 @@
     <string name="summary_vflow_device_click_prefix">点击 </string>
     <string name="error_vflow_device_click_service_not_running">服务未运行</string>
     <string name="msg_vflow_device_click_element">正在点击找到的元素</string>
-    <string name="msg_vflow_device_click_coordinate">正在点击坐标: (%d, %d)</string>
+    <string name="msg_vflow_device_click_coordinate" formatted="false">正在点击坐标: (%d, %d)</string>
     <string name="msg_vflow_device_click_viewid">正在点击视图ID: %s</string>
     <string name="msg_vflow_device_click_invalid_target">点击失败：目标无效</string>
     <string name="msg_vflow_device_click_viewid_not_found">视图ID \'%s\' 未找到</string>
     <string name="msg_vflow_device_click_action_failed">视图ID \'%s\' ACTION_CLICK 失败，尝试手势点击</string>
     <string name="msg_vflow_device_click_action_success">已通过 ACTION_CLICK 成功点击视图ID \'%s\'</string>
-    <string name="msg_vflow_device_click_invalid_coord">手势点击失败：坐标 (%d, %d) 无效</string>
-    <string name="msg_vflow_device_click_gesture_success">已通过手势成功点击坐标: (%d, %d)</string>
-    <string name="msg_vflow_device_click_gesture_failed">手势点击坐标 (%d, %d) 失败或被取消</string>
+    <string name="msg_vflow_device_click_invalid_coord" formatted="false">手势点击失败：坐标 (%d, %d) 无效</string>
+    <string name="msg_vflow_device_click_gesture_success" formatted="false">已通过手势成功点击坐标: (%d, %d)</string>
+    <string name="msg_vflow_device_click_gesture_failed" formatted="false">手势点击坐标 (%d, %d) 失败或被取消</string>
 
     <!-- vflow.interaction.input_text -->
     <string name="module_vflow_interaction_input_text_name">输入文本</string>
@@ -494,9 +494,9 @@
     <string name="summary_vflow_network_get_ip_suffix"> 地址</string>
     <string name="summary_vflow_network_get_ip">获取 IP 地址</string>
     <string name="error_vflow_network_get_ip_fetch_failed">获取失败</string>
-    <string name="error_vflow_network_get_ip_not_found">未能找到符合条件的 %s %s 地址。</string>
+    <string name="error_vflow_network_get_ip_not_found" formatted="false">未能找到符合条件的 %s %s 地址。</string>
     <string name="error_vflow_network_get_ip_exception">执行异常</string>
-    <string name="msg_vflow_network_get_ip_fetching">正在获取 %s %s 地址...</string>
+    <string name="msg_vflow_network_get_ip_fetching" formatted="false">正在获取 %s %s 地址...</string>
     <string name="option_vflow_network_get_ip_type_local">本地</string>
     <string name="option_vflow_network_get_ip_type_external">外部</string>
     <string name="option_vflow_network_get_ip_version_ipv4">IPv4</string>
@@ -813,7 +813,7 @@
     <string name="output_vflow_trigger_location_longitude_name">当前经度</string>
     <string name="output_vflow_trigger_location_accuracy_name">精度</string>
     <string name="summary_vflow_trigger_location_prefix">当</string>
-    <string name="summary_vflow_trigger_location_coordinates">%.6f, %.6f (%d米)</string>
+    <string name="summary_vflow_trigger_location_coordinates" formatted="false">%.6f, %.6f (%d米)</string>
     <string name="msg_vflow_trigger_location_triggered">位置事件已触发</string>
     <string name="option_vflow_trigger_location_event_enter">进入时</string>
     <string name="option_vflow_trigger_location_event_exit">离开时</string>
@@ -831,7 +831,7 @@
     <string name="output_vflow_system_location_range_check_accuracy_name">定位精度</string>
     <string name="output_vflow_system_location_range_check_distance_name">距离目标点</string>
     <string name="summary_vflow_system_location_range_check_prefix">检查当前位置是否在</string>
-    <string name="summary_vflow_system_location_range_check_coordinates">%.6f, %.6f (%d米)</string>
+    <string name="summary_vflow_system_location_range_check_coordinates" formatted="false">%.6f, %.6f (%d米)</string>
 
     <!-- vflow.variable.create -->
     <string name="module_vflow_variable_create_name">创建变量</string>
@@ -1183,7 +1183,7 @@
     <string name="error_vflow_network_http_request_unknown_network">未知网络错误</string>
     <string name="error_vflow_network_http_request_execution_failed">执行失败</string>
     <string name="error_vflow_network_http_request_unknown_error">发生未知错误</string>
-    <string name="msg_vflow_network_http_request_sending">正在发送 %s 请求到 %s</string>
+    <string name="msg_vflow_network_http_request_sending" formatted="false">正在发送 %s 请求到 %s</string>
     <string name="msg_vflow_network_http_request_received">收到响应，状态码: %s</string>
     <string name="option_vflow_network_http_request_body_none">无</string>
     <string name="option_vflow_network_http_request_body_json">JSON</string>
@@ -1641,12 +1641,12 @@
     <string name="error_vflow_device_find_text_empty">目标文本不能为空。</string>
     <string name="error_vflow_device_find_text_exception">执行异常</string>
     <string name="error_vflow_device_find_text_need_service">查找文本需要无障碍服务，但该服务当前未运行。</string>
-    <string name="error_vflow_device_find_text_no_match">未在屏幕上找到匹配的文本：\'%s\' (匹配模式：%s)</string>
+    <string name="error_vflow_device_find_text_no_match" formatted="false">未在屏幕上找到匹配的文本：\'%s\' (匹配模式：%s)</string>
     <string name="error_vflow_device_find_text_no_root">无法获取到当前窗口的根节点。</string>
     <string name="error_vflow_device_find_text_not_found">未找到文本</string>
     <string name="error_vflow_device_find_text_service_not_running">服务未运行</string>
     <string name="error_vflow_device_find_text_unknown">发生了未知错误</string>
-    <string name="msg_vflow_device_find_text_searching">正在以 [%s] 模式查找文本：\'%s\'</string>
+    <string name="msg_vflow_device_find_text_searching" formatted="false">正在以 [%s] 模式查找文本：\'%s\'</string>
     <string name="option_vflow_device_find_text_match_contains">包含</string>
     <string name="option_vflow_device_find_text_match_exact">完全匹配</string>
     <string name="option_vflow_device_find_text_match_regex">正则</string>
@@ -1934,7 +1934,7 @@
     <string name="output_vflow_shizuku_shell_command_exit_code_name">返回值</string>
     <string name="error_vflow_shizuku_shell_command_empty">要执行的命令不能为空。</string>
     <string name="error_vflow_shizuku_shell_command_failed">执行失败</string>
-    <string name="msg_vflow_shizuku_shell_command_executing">Executing via %s: %s</string>
+    <string name="msg_vflow_shizuku_shell_command_executing" formatted="false">Executing via %s: %s</string>
     <string name="option_vflow_shizuku_shell_command_mode_auto">自动</string>
     <string name="option_vflow_shizuku_shell_command_mode_root">Root</string>
     <string name="option_vflow_shizuku_shell_command_mode_shizuku">Shizuku</string>
@@ -2098,7 +2098,7 @@
     <string name="error_vflow_ui_activity_show_config_error">配置错误</string>
     <string name="error_vflow_ui_activity_show_empty_elements">组件列表为空</string>
     <string name="error_vflow_ui_activity_show_session_lost">会话丢失</string>
-    <string name="msg_vflow_ui_activity_show_event">Event received: %s - %s</string>
+    <string name="msg_vflow_ui_activity_show_event" formatted="false">Event received: %s - %s</string>
     <string name="msg_vflow_ui_activity_show_launched">活动已启动，等待操作...</string>
     <string name="msg_vflow_ui_activity_show_launching">正在启动活动...</string>
     <string name="msg_vflow_ui_activity_show_waiting">等待用户操作...</string>
@@ -2402,11 +2402,11 @@
     <string name="error_vflow_core_screen_operation_invalid_type">未知的操作类型: %s</string>
     <string name="error_vflow_core_screen_operation_target_empty">目标位置为空。请确保已设置坐标或连接了上游模块的坐标输出。</string>
     <string name="error_vflow_core_screen_operation_target_invalid">目标位置格式错误。需要 Coordinate 类型的坐标或 \"x,y\" 格式的字符串。</string>
-    <string name="msg_vflow_core_screen_operation_clicking">正在使用 vFlow Core 点击坐标 (%d, %d)...</string>
+    <string name="msg_vflow_core_screen_operation_clicking" formatted="false">正在使用 vFlow Core 点击坐标 (%d, %d)...</string>
     <string name="msg_vflow_core_screen_operation_click_success">点击成功</string>
-    <string name="msg_vflow_core_screen_operation_long_pressing">正在使用 vFlow Core 长按坐标 (%d, %d) %dms...</string>
+    <string name="msg_vflow_core_screen_operation_long_pressing" formatted="false">正在使用 vFlow Core 长按坐标 (%d, %d) %dms...</string>
     <string name="msg_vflow_core_screen_operation_long_press_success">长按成功</string>
-    <string name="msg_vflow_core_screen_operation_swiping">正在使用 vFlow Core 执行滑动: (%d, %d) → (%d, %d) %dms...</string>
+    <string name="msg_vflow_core_screen_operation_swiping" formatted="false">正在使用 vFlow Core 执行滑动: (%d, %d) → (%d, %d) %dms...</string>
     <string name="msg_vflow_core_screen_operation_swipe_success">滑动成功</string>
     <string name="option_vflow_core_screen_operation_click">点击</string>
     <string name="option_vflow_core_screen_operation_long_press">长按</string>
@@ -2480,7 +2480,7 @@
     <string name="error_vflow_core_shell_command_empty">要执行的命令不能为空。</string>
     <string name="error_vflow_core_shell_command_permission_denied">权限不足</string>
     <string name="error_vflow_core_shell_command_root_required">此操作需要 Root 权限，但当前 Core 以 Shell 权限运行。</string>
-    <string name="msg_vflow_core_shell_command_executing">正在通过 vFlow Core (%s) 执行: %s</string>
+    <string name="msg_vflow_core_shell_command_executing" formatted="false">正在通过 vFlow Core (%s) 执行: %s</string>
     <string name="option_vflow_core_shell_command_mode_shell">Shell权限</string>
     <string name="option_vflow_core_shell_command_mode_root">Root权限</string>
     <string name="option_vflow_core_shell_command_mode_auto">自动</string>
@@ -2656,7 +2656,7 @@
     <string name="summary_vflow_interaction_get_current_activity">获取当前活动信息</string>
     <string name="error_vflow_interaction_get_current_activity_service_not_running">无障碍服务未运行</string>
     <string name="error_vflow_interaction_get_current_activity_not_available">无法获取当前活动</string>
-    <string name="msg_vflow_interaction_get_current_activity_current">当前活动: %s (%s)</string>
+    <string name="msg_vflow_interaction_get_current_activity_current" formatted="false">当前活动: %s (%s)</string>
 
     <!-- vflow.device.call_phone -->
     <string name="module_vflow_device_call_phone_name">拨打电话</string>
@@ -2738,7 +2738,7 @@
     <string name="summary_vflow_device_vibration_once">单次 %d ms</string>
     <string name="summary_vflow_device_vibration_notification">通知模式</string>
     <string name="summary_vflow_device_vibration_ringtone">铃声模式</string>
-    <string name="summary_vflow_device_vibration_pattern">自定义: %d ms 振 / %d ms 停 × %d</string>
+    <string name="summary_vflow_device_vibration_pattern" formatted="false">自定义: %d ms 振 / %d ms 停 × %d</string>
     <string name="error_vflow_device_vibration_not_supported">设备不支持振动</string>
     <string name="error_vflow_device_vibration_no_vibrator">当前设备没有振动器</string>
     <string name="error_vflow_device_vibration_invalid_mode">无效的振动模式</string>

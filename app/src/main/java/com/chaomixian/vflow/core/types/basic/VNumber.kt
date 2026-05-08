@@ -5,6 +5,7 @@ import android.os.Parcelable
 import com.chaomixian.vflow.core.types.EnhancedBaseVObject
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.properties.PropertyRegistry
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlin.math.roundToInt
 
@@ -16,7 +17,9 @@ import kotlin.math.roundToInt
  */
 @Parcelize
 data class VNumber(override val raw: Number) : EnhancedBaseVObject(), Parcelable {
+    @IgnoredOnParcel
     override val type = VTypeRegistry.NUMBER
+    @IgnoredOnParcel
     override val propertyRegistry: PropertyRegistry = VNumberCompanion.registry
 
     override fun asString(): String {

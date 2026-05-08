@@ -1,7 +1,9 @@
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
@@ -47,7 +49,10 @@ abstract class BuildDexTask : DefaultTask() {
     abstract val androidJar: RegularFileProperty
 
     @get:Input
-    abstract val d8Path: Property<String>
+    abstract val javaExecutablePath: Property<String>
+
+    @get:Classpath
+    abstract val r8Classpath: ConfigurableFileCollection
 
     @get:Input
     abstract val coreVersion: Property<Int>
@@ -76,7 +81,9 @@ abstract class BuildDexTask : DefaultTask() {
 
         execOperations.exec {
             commandLine(
-                d8Path.get(),
+                javaExecutablePath.get(),
+                "-cp", r8Classpath.singleFile.absolutePath,
+                "com.android.tools.r8.D8",
                 "--lib", androidJarFile.absolutePath,
                 "--output", tempDex.absolutePath,
                 inputJar.get().asFile.absolutePath
@@ -118,10 +125,11 @@ checkNotNull(sdkDir) { "未找到 Android SDK 路径，请在 local.properties �
 // 指定编译用的 android.jar (仅用于存根，不打包)
 val androidJar = "$sdkDir/platforms/android-36/android.jar"
 
-// 指定构建工具版本 (d8 所在位置)
-val buildToolsVersion = "36.1.0"
-val d8ExecutablePath = "$sdkDir/build-tools/$buildToolsVersion/d8" +
-        if (System.getProperty("os.name").lowercase().contains("windows")) ".bat" else ""
+val currentJavaExecutablePath = System.getProperty("java.home") + "/bin/java"
+val r8Version = providers.gradleProperty("android.tools.r8.version")
+    .orElse("8.13.19")
+
+val r8Configuration = configurations.create("r8")
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -157,6 +165,8 @@ dependencies {
 
     // JSON 解析库 (运行时需要，会被打入 dex)
     implementation("org.json:json:20251224")
+
+    add(r8Configuration.name, "com.android.tools:r8:${r8Version.get()}")
 }
 
 tasks.jar {
@@ -185,7 +195,8 @@ tasks.register<BuildDexTask>("buildDex") {
 
     inputJar.set(tasks.jar.flatMap { it.archiveFile })
     androidJar.set(androidJarFile)
-    d8Path.set(d8ExecutablePath)
+    javaExecutablePath.set(currentJavaExecutablePath)
+    r8Classpath.from(r8Configuration)
     coreVersion.set(vflowCoreVersion)
     tempDexDir.set(layout.buildDirectory.dir("dex"))
     targetDex.set(rootProject.file("app/src/main/assets/vFlowCore.dex"))

@@ -6,6 +6,7 @@ import com.chaomixian.vflow.core.types.EnhancedBaseVObject
 import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.properties.PropertyRegistry
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -16,7 +17,9 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class VString(override val raw: String) : EnhancedBaseVObject(), Parcelable {
+    @IgnoredOnParcel
     override val type = VTypeRegistry.STRING
+    @IgnoredOnParcel
     override val propertyRegistry: PropertyRegistry = VStringCompanion.registry
 
     override fun asString(): String = raw

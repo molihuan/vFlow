@@ -237,7 +237,7 @@ class IBluetoothManagerWrapper : ServiceWrapper("bluetooth_manager", "android.bl
                         val paramType = isEnabledMethod!!.parameterTypes[i]
                         args[i] = when {
                             paramType == String::class.java -> "com.android.shell"
-                            paramType == Int::class.javaPrimitiveType || paramType == Integer::class.java -> 0
+                            paramType == Int::class.javaPrimitiveType || paramType == Int::class.javaObjectType -> 0
                             else -> null
                         }
                     }

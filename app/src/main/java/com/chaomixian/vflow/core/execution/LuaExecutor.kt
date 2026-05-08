@@ -59,7 +59,10 @@ class LuaExecutor(private val executionContext: ExecutionContext) {
 
             // 处理结果
             if (result.istable()) {
-                return LuaValueConverter.coerceToKotlin(result) as? Map<String, Any?> ?: emptyMap()
+                val kotlinResult = LuaValueConverter.coerceToKotlin(result)
+                if (kotlinResult is Map<*, *>) {
+                    return kotlinResult.entries.associate { (key, value) -> key.toString() to value }
+                }
             }
             return emptyMap()
 
@@ -163,7 +166,7 @@ class ModuleWrapperFunction(
         // 将结果转换回 Lua
         return when (executionResult) {
             is ExecutionResult.Success -> {
-                val outputs = (executionResult as ExecutionResult.Success).outputs
+                val outputs = executionResult.outputs
                 if (outputs.isEmpty()) {
                     LuaValue.TRUE // 成功但无返回值
                 } else if (outputs.size == 1 && outputs.containsKey("result")) {
@@ -175,7 +178,7 @@ class ModuleWrapperFunction(
                 }
             }
             is ExecutionResult.Failure -> {
-                val fail = executionResult as ExecutionResult.Failure
+                val fail = executionResult
                 // 抛出 Lua 错误，脚本可以用 pcall 捕获
                 error("Module Error: ${fail.errorTitle} - ${fail.errorMessage}")
             }

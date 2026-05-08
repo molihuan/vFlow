@@ -79,7 +79,8 @@ data class VCoordinateRegion(
 
             // 布尔检查
             register("is_empty", "isEmpty", getter = { host ->
-                VBoolean((host as VCoordinateRegion).width <= 0 || (host as VCoordinateRegion).height <= 0)
+                val region = host as VCoordinateRegion
+                VBoolean(region.width <= 0 || region.height <= 0)
             })
             register("is_valid", "isValid", getter = { host ->
                 val region = host as VCoordinateRegion

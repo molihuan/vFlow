@@ -24,7 +24,7 @@ enum class ExecutionStatus {
 data class ExecuteWorkflowRequest(
     @SerializedName("input_variables")
     val inputVariables: Map<String, VObjectDto>? = null,
-    val async: Boolean = true,
+    val async: Boolean? = true,
     val timeout: Int? = null
 )
 

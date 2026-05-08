@@ -89,13 +89,17 @@ class ImportQueueProcessor(
 
     private fun handleKeepBoth(toImport: Workflow) {
         // 先确保元数据字段有默认值，避免 copy 时 NPE
+        val description: String? = toImport.description
+        val author: String? = toImport.author
+        val homepage: String? = toImport.homepage
+        val tags: List<String>? = toImport.tags
         val workflowWithDefaults = toImport.copy(
-            version = toImport.version?.takeIf { it.isNotEmpty() } ?: "1.0.0",
+            version = toImport.version.takeIf { it.isNotEmpty() } ?: "1.0.0",
             vFlowLevel = if (toImport.vFlowLevel == 0) 1 else toImport.vFlowLevel,
-            description = toImport.description ?: "",
-            author = toImport.author ?: "",
-            homepage = toImport.homepage ?: "",
-            tags = toImport.tags ?: emptyList(),
+            description = description?.takeIf { it.isNotBlank() } ?: "",
+            author = author?.takeIf { it.isNotBlank() } ?: "",
+            homepage = homepage?.takeIf { it.isNotBlank() } ?: "",
+            tags = tags ?: emptyList(),
             cardIconRes = WorkflowVisuals.normalizeIconResName(toImport.cardIconRes),
             cardThemeColor = WorkflowVisuals.normalizeThemeColorHex(toImport.cardThemeColor),
             modifiedAt = if (toImport.modifiedAt == 0L) System.currentTimeMillis() else toImport.modifiedAt

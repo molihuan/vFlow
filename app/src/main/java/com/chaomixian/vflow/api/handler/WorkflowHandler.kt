@@ -65,11 +65,11 @@ class WorkflowHandler(
             }
             // 启用工作流
             isEnable && method == NanoHTTPD.Method.POST -> {
-                handleEnableWorkflow(workflowId!!, tokenInfo)
+                handleEnableWorkflow(workflowId, tokenInfo)
             }
             // 禁用工作流
             isDisable && method == NanoHTTPD.Method.POST -> {
-                handleDisableWorkflow(workflowId!!, tokenInfo)
+                handleDisableWorkflow(workflowId, tokenInfo)
             }
             // 批量操作
             uri == "/api/v1/workflows/batch" && method == NanoHTTPD.Method.POST -> {
@@ -81,7 +81,7 @@ class WorkflowHandler(
             }
             // 获取魔法变量
             isMagicVariables && method == NanoHTTPD.Method.GET -> {
-                handleGetMagicVariables(workflowId!!, tokenInfo)
+                handleGetMagicVariables(workflowId, tokenInfo)
             }
             else -> errorResponse(404, "Endpoint not found")
         }
@@ -113,7 +113,7 @@ class WorkflowHandler(
         if (!search.isNullOrBlank()) {
             workflows = workflows.filter {
                 it.name.contains(search, ignoreCase = true) ||
-                (it.description?.contains(search, ignoreCase = true) ?: false)
+                it.description.contains(search, ignoreCase = true)
             }
         }
 
@@ -125,7 +125,7 @@ class WorkflowHandler(
         // 按标签筛选
         if (!tags.isNullOrEmpty()) {
             workflows = workflows.filter { wf ->
-                val wfTags = wf.tags ?: emptyList()
+                val wfTags = wf.tags
                 tags.any { tag -> wfTags.contains(tag) }
             }
         }
@@ -152,7 +152,7 @@ class WorkflowHandler(
             WorkflowSummary(
                 id = wf.id,
                 name = wf.name,
-                description = wf.description ?: "",
+                description = wf.description,
                 isEnabled = wf.isEnabled,
                 isFavorite = wf.isFavorite,
                 folderId = wf.folderId,
@@ -160,8 +160,8 @@ class WorkflowHandler(
                 stepCount = wf.steps.size,
                 triggerCount = wf.triggers.size,
                 modifiedAt = wf.modifiedAt,
-                tags = wf.tags ?: emptyList(),
-                version = wf.version ?: "1.0.0"
+                tags = wf.tags,
+                version = wf.version
             )
         }
 
@@ -433,7 +433,7 @@ class WorkflowHandler(
 
         // 从每个步骤的输出中提取变量
         workflow.steps.forEachIndexed { index, step ->
-            val stepId = step.id ?: "step-$index"
+            val stepId = step.id
             val stepName = step.moduleId
 
             // 为每个可能的输出添加变量引用

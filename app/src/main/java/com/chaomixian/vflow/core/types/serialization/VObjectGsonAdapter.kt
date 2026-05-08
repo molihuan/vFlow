@@ -54,7 +54,7 @@ class VObjectGsonAdapter : TypeAdapter<VObject>() {
                 out.endObject()
             }
 
-            is VImage -> out.name("value").value(value.raw.toString())
+            is VImage -> out.name("value").value(value.raw)
             is VCoordinate -> {
                 out.name("value").beginObject()
                 out.name("x").value(value.x)

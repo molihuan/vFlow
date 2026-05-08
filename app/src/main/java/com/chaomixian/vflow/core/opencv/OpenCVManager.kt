@@ -25,6 +25,7 @@ object OpenCVManager {
         if (isInitialized) return true
 
         val success = try {
+            @Suppress("DEPRECATION")
             OpenCVLoader.initDebug()
         } catch (e: Exception) {
             DebugLogger.e(TAG, "OpenCV initialization failed", e)

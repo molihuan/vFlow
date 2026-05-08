@@ -6,6 +6,7 @@ import com.chaomixian.vflow.core.types.EnhancedBaseVObject
 import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.properties.PropertyRegistry
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 
@@ -17,7 +18,9 @@ import kotlinx.parcelize.RawValue
  */
 @Parcelize
 data class VList(override val raw: @RawValue List<VObject>) : EnhancedBaseVObject(), Parcelable {
+    @IgnoredOnParcel
     override val type = VTypeRegistry.LIST
+    @IgnoredOnParcel
     override val propertyRegistry: PropertyRegistry = VListCompanion.registry
 
     override fun asString(): String {
