@@ -112,6 +112,7 @@ class LegacyEnumNormalizationTest {
 
     @Test
     fun `variable type recognizes complex vtype ids`() {
+        assertEquals(VariableType.FILE, VariableType.fromStoredValue(VTypeRegistry.FILE.id))
         assertEquals(VariableType.NOTIFICATION, VariableType.fromStoredValue(VTypeRegistry.NOTIFICATION.id))
         assertEquals(VariableType.UI_COMPONENT, VariableType.fromStoredValue(VTypeRegistry.UI_COMPONENT.id))
         assertEquals(VariableType.EVENT, VariableType.fromStoredValue(VTypeRegistry.EVENT.id))

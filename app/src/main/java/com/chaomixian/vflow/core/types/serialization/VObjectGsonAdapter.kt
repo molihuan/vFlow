@@ -55,6 +55,7 @@ class VObjectGsonAdapter : TypeAdapter<VObject>() {
             }
 
             is VImage -> out.name("value").value(value.raw)
+            is VFile -> out.name("value").value(value.raw)
             is VCoordinate -> {
                 out.name("value").beginObject()
                 out.name("x").value(value.x)
@@ -234,6 +235,7 @@ class VObjectGsonAdapter : TypeAdapter<VObject>() {
                 }
             }
             VTypeRegistry.IMAGE.id -> VImage(rawValue?.toString() ?: "")
+            VTypeRegistry.FILE.id -> VFile(rawValue?.toString() ?: "")
             VTypeRegistry.DATE.id -> VDate(rawValue?.toString() ?: "")
             VTypeRegistry.TIME.id -> VTime(rawValue?.toString() ?: "")
             VTypeRegistry.COORDINATE.id -> {

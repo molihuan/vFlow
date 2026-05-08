@@ -2,6 +2,7 @@
 package com.chaomixian.vflow.core.types
 
 import com.chaomixian.vflow.core.types.basic.*
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
 import org.junit.Assert.*
 import org.junit.Test
@@ -158,6 +159,54 @@ class VObjectPropertyTest {
     fun `test VImage base64 property metadata`() {
         assertTrue(VTypeRegistry.IMAGE.properties.any { it.name == "base64" })
         assertEquals(VTypeRegistry.STRING, VTypeRegistry.getPropertyType(VTypeRegistry.IMAGE.id, "base64"))
+    }
+
+    @Test
+    fun `test VFile properties`() {
+        val file = File.createTempFile("vflow-file-property", ".txt")
+        file.writeText("hello")
+        try {
+            val vFile = VFile(file.toURI().toString(), "text/plain")
+
+            assertEquals(file.path, vFile.getProperty("path")?.asString())
+            assertEquals(file.name, vFile.getProperty("name")?.asString())
+            assertEquals("txt", vFile.getProperty("extension")?.asString())
+            assertEquals("text/plain", vFile.getProperty("mimeType")?.asString())
+            assertEquals(5.0, vFile.getProperty("size")?.asNumber() ?: 0.0, 0.01)
+            assertEquals(Base64.getEncoder().encodeToString("hello".toByteArray()), vFile.getProperty("base64")?.asString())
+            assertEquals("hello", vFile.getProperty("content")?.asString())
+            assertEquals("hello", vFile.getProperty("文件内容")?.asString())
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun `test VFile properties from absolute path`() {
+        val file = File.createTempFile("vflow-file-property-path", ".txt")
+        file.writeText("hello")
+        try {
+            val vFile = VFile(file.absolutePath)
+
+            assertEquals(file.absolutePath, vFile.asString())
+            assertEquals(file.absolutePath, vFile.getProperty("path")?.asString())
+            assertEquals(file.name, vFile.getProperty("name")?.asString())
+            assertEquals("txt", vFile.getProperty("extension")?.asString())
+            assertEquals("text/plain", vFile.getProperty("mimeType")?.asString())
+            assertEquals(5.0, vFile.getProperty("size")?.asNumber() ?: 0.0, 0.01)
+            assertEquals(Base64.getEncoder().encodeToString("hello".toByteArray()), vFile.getProperty("base64")?.asString())
+            assertEquals("hello", vFile.getProperty("content")?.asString())
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun `test VFile property metadata`() {
+        assertTrue(VTypeRegistry.FILE.properties.any { it.name == "base64" })
+        assertEquals(VTypeRegistry.STRING, VTypeRegistry.getPropertyType(VTypeRegistry.FILE.id, "base64"))
+        assertEquals(VTypeRegistry.STRING, VTypeRegistry.getPropertyType(VTypeRegistry.FILE.id, "content"))
+        assertEquals(VTypeRegistry.NUMBER, VTypeRegistry.getPropertyType(VTypeRegistry.FILE.id, "size"))
     }
 
     @Test

@@ -70,6 +70,7 @@ data class JsonOutput(
             "list" -> VTypeRegistry.LIST.id
             "dictionary" -> VTypeRegistry.DICTIONARY.id
             "image" -> VTypeRegistry.IMAGE.id
+            "file" -> VTypeRegistry.FILE.id
             else -> VTypeRegistry.STRING.id
         }
         return OutputDefinition(id, name, typeName)

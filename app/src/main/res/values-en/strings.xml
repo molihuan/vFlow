@@ -703,6 +703,7 @@
     <string name="dictionary_key_required">Please enter a key name first</string>
     <string name="list_item_hint">Item %1$d</string>
     <string name="action_select">Select</string>
+    <string name="toast_file_picker_local_file_only">Only local files are supported. Please choose a file from local storage.</string>
     <string name="share_no_matching_workflow">No workflow can handle this shared content</string>
     <string name="share_workflow_started">Started workflow via share: %1$s</string>
     <string name="import_error_cannot_get_file">Cannot access file</string>

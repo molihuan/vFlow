@@ -703,6 +703,7 @@
     <string name="dictionary_key_required">请先填写键的名称</string>
     <string name="list_item_hint">项目 %1$d</string>
     <string name="action_select">选择</string>
+    <string name="toast_file_picker_local_file_only">仅支持本地文件，请选择本地存储中的文件</string>
     <string name="share_no_matching_workflow">没有找到可处理分享的工作流</string>
     <string name="share_workflow_started">已通过分享启动工作流: %1$s</string>
     <string name="import_error_cannot_get_file">无法获取文件</string>

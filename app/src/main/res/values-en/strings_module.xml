@@ -855,6 +855,7 @@
     <string name="option_vflow_variable_create_type_dictionary">Dictionary</string>
     <string name="option_vflow_variable_create_type_list">List</string>
     <string name="option_vflow_variable_create_type_image">Image</string>
+    <string name="option_vflow_variable_create_type_file">File</string>
     <string name="option_vflow_variable_create_type_coordinate">Coordinate</string>
 
     <!-- vflow.variable.load -->
@@ -919,6 +920,7 @@
     <string name="param_vflow_data_file_operation_file_name_name">File Name</string>
     <string name="param_vflow_data_file_operation_create_content_name">File Content</string>
     <string name="output_vflow_data_file_operation_content_name">File Content</string>
+    <string name="output_vflow_data_file_operation_file_name">File</string>
     <string name="output_vflow_data_file_operation_file_name_name">File Name</string>
     <string name="output_vflow_data_file_operation_mime_type_name">MIME Type</string>
     <string name="output_vflow_data_file_operation_size_name">File Size</string>
@@ -1078,6 +1080,7 @@
     <string name="param_vflow_data_base64_source_text_name">Source Text</string>
     <string name="param_vflow_data_base64_text_encoding_name">Text Encoding</string>
     <string name="output_vflow_data_base64_result_text_name">Result Text</string>
+    <string name="output_vflow_data_base64_result_file_name">Result File</string>
     <string name="output_vflow_data_base64_result_image_name">Result Image</string>
     <string name="error_vflow_data_base64_decode_failed">Decode Failed</string>
     <string name="error_vflow_data_base64_invalid_format">Input text is not a valid Base64 encoded format</string>

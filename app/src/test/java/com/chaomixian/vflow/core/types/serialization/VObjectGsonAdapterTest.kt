@@ -3,6 +3,7 @@ package com.chaomixian.vflow.core.types.serialization
 import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.basic.VDictionary
 import com.chaomixian.vflow.core.types.basic.VList
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VNotification
 import com.chaomixian.vflow.core.types.complex.VUiComponent
 import com.chaomixian.vflow.core.workflow.module.notification.NotificationObject
@@ -60,5 +61,16 @@ class VObjectGsonAdapterTest {
         assertTrue(component is VUiComponent)
         assertEquals("btn_submit", (component as VUiComponent).element.id)
         assertEquals("Submit", component.element.label)
+    }
+
+    @Test
+    fun `round trip preserves file wrapper`() {
+        val source: VObject = VFile("file:///tmp/demo.pdf")
+
+        val json = gson.toJson(source, VObject::class.java)
+        val restored = gson.fromJson(json, VObject::class.java)
+
+        assertTrue(restored is VFile)
+        assertEquals("file:///tmp/demo.pdf", (restored as VFile).uriString)
     }
 }

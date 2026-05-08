@@ -156,6 +156,7 @@ class LoadVariablesModule : BaseModule() {
             CreateVariableModule.TYPE_DICTIONARY -> VObjectFactory.from(emptyMap<String, Any>())
             CreateVariableModule.TYPE_LIST -> VObjectFactory.from(emptyList<Any>())
             CreateVariableModule.TYPE_IMAGE -> VObjectFactory.from("")
+            CreateVariableModule.TYPE_FILE -> VObjectFactory.from("")
             CreateVariableModule.TYPE_COORDINATE -> VObjectFactory.from(mapOf("x" to 0, "y" to 0))
             else -> VObjectFactory.from("")
         }

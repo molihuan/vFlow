@@ -31,6 +31,7 @@ class ModuleOutputEnumNormalizationTest {
             step("vflow.data.file_operation", "operation", "创建")
         )
 
+        assertTrue(outputs.any { it.id == "file" && it.typeName == VTypeRegistry.FILE.id })
         assertTrue(outputs.any { it.id == "file_path" })
         assertTrue(outputs.any { it.id == "file_name" })
     }

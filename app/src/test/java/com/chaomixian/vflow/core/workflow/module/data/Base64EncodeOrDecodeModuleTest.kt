@@ -8,6 +8,7 @@ import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.VObjectFactory
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VString
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import kotlinx.coroutines.runBlocking
@@ -32,8 +33,8 @@ class Base64EncodeOrDecodeModuleTest {
             )
         )
 
-        val imageOutput = outputs.first { it.id == "result_image" }
-        assertEquals(VTypeRegistry.IMAGE.id, imageOutput.typeName)
+        assertEquals(VTypeRegistry.FILE.id, outputs.first { it.id == "result_file" }.typeName)
+        assertEquals(VTypeRegistry.IMAGE.id, outputs.first { it.id == "result_image" }.typeName)
     }
 
     @Test
@@ -55,6 +56,9 @@ class Base64EncodeOrDecodeModuleTest {
         assertTrue(result is ExecutionResult.Success)
         val outputs = (result as ExecutionResult.Success).outputs
         assertEquals(Base64.getEncoder().encodeToString(sourceBytes), (outputs["result_text"] as VString).raw)
+
+        val file = outputs["result_file"] as VFile
+        assertArrayEquals(sourceBytes, File(java.net.URI(file.uriString)).readBytes())
 
         val image = outputs["result_image"] as VImage
         assertArrayEquals(sourceBytes, File(java.net.URI(image.uriString)).readBytes())

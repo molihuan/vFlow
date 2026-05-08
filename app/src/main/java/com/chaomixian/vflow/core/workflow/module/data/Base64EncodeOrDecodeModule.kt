@@ -7,6 +7,7 @@ import com.chaomixian.vflow.core.execution.VariableResolver
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VString
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
@@ -112,6 +113,12 @@ class Base64EncodeOrDecodeModule : BaseModule() {
             ))
             if (operation == OP_DECODE) {
                 add(OutputDefinition(
+                    id = "result_file",
+                    name = "结果文件",
+                    nameStringRes = R.string.output_vflow_data_base64_result_file_name,
+                    typeName = VTypeRegistry.FILE.id
+                ))
+                add(OutputDefinition(
                     id = "result_image",
                     name = "结果图片",
                     nameStringRes = R.string.output_vflow_data_base64_result_image_name,
@@ -176,6 +183,7 @@ class Base64EncodeOrDecodeModule : BaseModule() {
                 ExecutionResult.Success(
                     mapOf(
                         "result_text" to VString(result),
+                        "result_file" to VFile(outputFile.toURI().toString()),
                         "result_image" to VImage(outputFile.toURI().toString())
                     )
                 )

@@ -855,6 +855,7 @@
     <string name="option_vflow_variable_create_type_dictionary">字典</string>
     <string name="option_vflow_variable_create_type_list">列表</string>
     <string name="option_vflow_variable_create_type_image">图像</string>
+    <string name="option_vflow_variable_create_type_file">文件</string>
     <string name="option_vflow_variable_create_type_coordinate">坐标</string>
 
     <!-- vflow.variable.load -->
@@ -919,6 +920,7 @@
     <string name="param_vflow_data_file_operation_file_name_name">文件名</string>
     <string name="param_vflow_data_file_operation_create_content_name">文件内容</string>
     <string name="output_vflow_data_file_operation_content_name">文件内容</string>
+    <string name="output_vflow_data_file_operation_file_name">文件</string>
     <string name="output_vflow_data_file_operation_file_name_name">文件名</string>
     <string name="output_vflow_data_file_operation_mime_type_name">MIME类型</string>
     <string name="output_vflow_data_file_operation_size_name">文件大小</string>
@@ -1078,6 +1080,7 @@
     <string name="param_vflow_data_base64_source_text_name">源文本</string>
     <string name="param_vflow_data_base64_text_encoding_name">文本编码</string>
     <string name="output_vflow_data_base64_result_text_name">结果文本</string>
+    <string name="output_vflow_data_base64_result_file_name">结果文件</string>
     <string name="output_vflow_data_base64_result_image_name">结果图片</string>
     <string name="error_vflow_data_base64_decode_failed">解码失败</string>
     <string name="error_vflow_data_base64_invalid_format">输入的文本不是有效的 Base64 编码格式</string>

@@ -11,6 +11,7 @@ import com.chaomixian.vflow.core.types.VObjectFactory
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.*
 import com.chaomixian.vflow.core.types.complex.VCoordinate
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
@@ -23,6 +24,7 @@ class CreateVariableModule : BaseModule() {
         const val TYPE_DICTIONARY = "dictionary"
         const val TYPE_LIST = "list"
         const val TYPE_IMAGE = "image"
+        const val TYPE_FILE = "file"
         const val TYPE_COORDINATE = "coordinate"
 
         val TYPE_OPTIONS = listOf(
@@ -32,6 +34,7 @@ class CreateVariableModule : BaseModule() {
             TYPE_DICTIONARY,
             TYPE_LIST,
             TYPE_IMAGE,
+            TYPE_FILE,
             TYPE_COORDINATE
         )
 
@@ -50,6 +53,7 @@ class CreateVariableModule : BaseModule() {
                 R.string.option_vflow_variable_create_type_dictionary,
                 R.string.option_vflow_variable_create_type_list,
                 R.string.option_vflow_variable_create_type_image,
+                R.string.option_vflow_variable_create_type_file,
                 R.string.option_vflow_variable_create_type_coordinate
             ),
             legacyValueMap = mapOf(
@@ -80,6 +84,7 @@ class CreateVariableModule : BaseModule() {
                 TYPE_DICTIONARY -> context.getString(R.string.option_vflow_variable_create_type_dictionary)
                 TYPE_LIST -> context.getString(R.string.option_vflow_variable_create_type_list)
                 TYPE_IMAGE -> context.getString(R.string.option_vflow_variable_create_type_image)
+                TYPE_FILE -> context.getString(R.string.option_vflow_variable_create_type_file)
                 TYPE_COORDINATE -> context.getString(R.string.option_vflow_variable_create_type_coordinate)
                 else -> context.getString(R.string.option_vflow_variable_create_type_string)
             }
@@ -102,7 +107,7 @@ class CreateVariableModule : BaseModule() {
         workflowStepDescription = "Create a new variable value and optionally store it under a named variable for later steps.",
         inputHints = mapOf(
             "variableName" to "Optional stable variable name without surrounding brackets.",
-            "type" to "Choose the canonical variable type such as string, number, boolean, list, dictionary, image, or coordinate.",
+            "type" to "Choose the canonical variable type such as string, number, boolean, list, dictionary, image, file, or coordinate.",
             "value" to "Initial value for the variable. It can reference previous outputs or named variables."
         ),
         requiredInputIds = setOf("type")
@@ -134,6 +139,7 @@ class CreateVariableModule : BaseModule() {
             TYPE_DICTIONARY -> VTypeRegistry.DICTIONARY.id
             TYPE_LIST -> VTypeRegistry.LIST.id
             TYPE_IMAGE -> VTypeRegistry.IMAGE.id
+            TYPE_FILE -> VTypeRegistry.FILE.id
             TYPE_COORDINATE -> VTypeRegistry.COORDINATE.id
             else -> VTypeRegistry.STRING.id
         }
@@ -245,7 +251,10 @@ class CreateVariableModule : BaseModule() {
                 coerceList(rawValue)
             }
             TYPE_IMAGE -> {
-                VImage(rawValue.asString())
+                VImage(VariableResolver.resolve(rawValue.asString(), context))
+            }
+            TYPE_FILE -> {
+                if (rawValue is VFile) rawValue else VFile(VariableResolver.resolve(rawValue.asString(), context))
             }
             TYPE_COORDINATE -> {
                 // 如果已经是 VCoordinate，直接使用

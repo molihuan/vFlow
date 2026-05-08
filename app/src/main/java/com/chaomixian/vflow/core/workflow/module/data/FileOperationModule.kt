@@ -17,6 +17,7 @@ import com.chaomixian.vflow.core.module.ProgressUpdate
 import com.chaomixian.vflow.core.module.ParameterType
 import com.chaomixian.vflow.core.execution.VariableResolver
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.permissions.Permission
 import com.chaomixian.vflow.permissions.PermissionManager
@@ -233,6 +234,7 @@ class FileOperationModule : BaseModule() {
         return when (operation) {
             OP_READ -> listOf(
                 OutputDefinition("content", "文件内容", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_content_name),
+                OutputDefinition("file", "文件", VTypeRegistry.FILE.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name),
                 OutputDefinition("file_name", "文件名", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name_name),
                 OutputDefinition("mime_type", "MIME类型", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_mime_type_name),
                 OutputDefinition("size", "文件大小", VTypeRegistry.NUMBER.id, nameStringRes = R.string.output_vflow_data_file_operation_size_name)
@@ -240,12 +242,14 @@ class FileOperationModule : BaseModule() {
             OP_CREATE -> listOf(
                 OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_success_name),
                 OutputDefinition("message", "操作信息", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_message_name),
+                OutputDefinition("file", "文件", VTypeRegistry.FILE.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name),
                 OutputDefinition("file_path", "文件路径", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_file_path_name),
                 OutputDefinition("file_name", "文件名", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name_name)
             )
             else -> listOf(
                 OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_success_name),
-                OutputDefinition("message", "操作信息", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_message_name)
+                OutputDefinition("message", "操作信息", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_message_name),
+                OutputDefinition("file", "文件", VTypeRegistry.FILE.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name)
             )
         }
     }
@@ -455,6 +459,7 @@ class FileOperationModule : BaseModule() {
 
                     ExecutionResult.Success(mapOf(
                         "content" to content.toString(),
+                        "file" to VFile(file.toURI().toString(), mimeType),
                         "file_name" to fileName,
                         "mime_type" to mimeType,
                         "size" to size
@@ -512,7 +517,8 @@ class FileOperationModule : BaseModule() {
 
             ExecutionResult.Success(mapOf(
                 "success" to true,
-                "message" to "$message: $filePath"
+                "message" to "$message: $filePath",
+                "file" to VFile(file.toURI().toString(), getMimeType(file))
             ))
         } catch (e: java.io.UnsupportedEncodingException) {
             ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_encoding_error), context.getString(R.string.error_vflow_data_file_operation_unsupported_encoding, encoding))
@@ -571,7 +577,8 @@ class FileOperationModule : BaseModule() {
             onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_delete_complete), 100))
             ExecutionResult.Success(mapOf(
                 "success" to true,
-                "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, filePath)
+                "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, filePath),
+                "file" to VFile(file.toURI().toString(), getMimeType(file))
             ))
         } else {
             ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_delete_failed), context.getString(R.string.error_vflow_data_file_operation_cannot_delete, filePath))
@@ -650,6 +657,7 @@ class FileOperationModule : BaseModule() {
         return ExecutionResult.Success(mapOf(
             "success" to true,
             "message" to context.getString(R.string.message_vflow_data_file_operation_created, fileName),
+            "file" to VFile(newFile.toURI().toString(), getMimeType(newFile)),
             "file_path" to newFile.absolutePath,
             "file_name" to fileName
         ))
@@ -720,6 +728,7 @@ class FileOperationModule : BaseModule() {
         return ExecutionResult.Success(
             mapOf(
                 "content" to content,
+                "file" to VFile(file.toURI().toString(), getMimeType(file)),
                 "file_name" to file.name.ifBlank { "unknown" },
                 "mime_type" to getMimeType(file),
                 "size" to content.length
@@ -778,7 +787,8 @@ class FileOperationModule : BaseModule() {
         return ExecutionResult.Success(
             mapOf(
                 "success" to true,
-                "message" to "$message: $normalizedPath"
+                "message" to "$message: $normalizedPath",
+                "file" to VFile(File(normalizedPath).toURI().toString(), getMimeType(File(normalizedPath)))
             )
         )
     }
@@ -801,7 +811,8 @@ class FileOperationModule : BaseModule() {
             ExecutionResult.Success(
                 mapOf(
                     "success" to true,
-                    "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, normalizedPath)
+                    "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, normalizedPath),
+                    "file" to VFile(File(normalizedPath).toURI().toString(), getMimeType(File(normalizedPath)))
                 )
             )
         } else {
@@ -860,6 +871,7 @@ class FileOperationModule : BaseModule() {
             mapOf(
                 "success" to true,
                 "message" to context.getString(R.string.message_vflow_data_file_operation_created, fileName),
+                "file" to VFile(File(targetPath).toURI().toString(), getMimeType(File(targetPath))),
                 "file_path" to targetPath,
                 "file_name" to fileName
             )

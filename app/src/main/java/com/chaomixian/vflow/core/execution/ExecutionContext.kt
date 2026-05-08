@@ -9,6 +9,7 @@ import com.chaomixian.vflow.core.types.basic.*
 import com.chaomixian.vflow.core.types.complex.VCoordinate
 import com.chaomixian.vflow.core.types.complex.VCoordinateRegion
 import com.chaomixian.vflow.core.types.complex.VEvent
+import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
 import com.chaomixian.vflow.core.types.complex.VNotification
 import com.chaomixian.vflow.core.types.complex.VUiComponent
@@ -188,6 +189,10 @@ data class ExecutionContext(
 
     fun getVariableAsImage(key: String): VImage? {
         return getVariable(key) as? VImage
+    }
+
+    fun getVariableAsFile(key: String): VFile? {
+        return getVariable(key) as? VFile
     }
 
     fun getVariableAsCoordinate(key: String): VCoordinate? {

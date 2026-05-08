@@ -3,6 +3,7 @@ package com.chaomixian.vflow.core.workflow.module.data
 
 import android.content.Context
 import android.content.Intent
+import android.app.Activity
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +24,7 @@ import com.chaomixian.vflow.ui.workflow_editor.ListItemAdapter
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 import com.chaomixian.vflow.ui.workflow_editor.RichTextView
 import com.chaomixian.vflow.ui.workflow_editor.PillRenderer
+import com.chaomixian.vflow.ui.workflow_editor.StableFilePathResolver
 import com.chaomixian.vflow.ui.workflow_editor.StandardControlFactory
 import com.chaomixian.vflow.ui.workflow_editor.VariableValueUIProvider
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -135,7 +137,7 @@ class VariableModuleUIProvider(
                 val oldType = holder.typeSpinner.tag as? String ?: currentType
                 if (selectedType != oldType) {
                     holder.typeSpinner.tag = selectedType
-                    updateValueInputView(context, holder, selectedType, null)
+                    updateValueInputView(context, holder, selectedType, null, onParametersChanged, onStartActivityForResult)
                     onParametersChanged()
                 }
             },
@@ -143,7 +145,7 @@ class VariableModuleUIProvider(
         )
         holder.typeSpinner.tag = currentType
 
-        updateValueInputView(context, holder, currentType, currentParameters["value"])
+        updateValueInputView(context, holder, currentType, currentParameters["value"], onParametersChanged, onStartActivityForResult)
 
         view.addView(typeSpinner)
         view.addView(valueContainer)
@@ -221,6 +223,15 @@ class VariableModuleUIProvider(
                     textInputLayout?.editText?.text?.toString() ?: ""
                 }
             }
+            CreateVariableModule.TYPE_FILE -> {
+                val row = h.valueInputView as? ViewGroup
+                row?.findViewById<RichTextView>(R.id.rich_text_view)?.getRawText()
+                    ?: run {
+                        val valueContainer = h.valueInputView?.findViewById<ViewGroup>(R.id.input_value_container)
+                        val textInputLayout = valueContainer?.children?.find { it is TextInputLayout } as? TextInputLayout
+                        textInputLayout?.editText?.text?.toString() ?: ""
+                    }
+            }
             else -> {
                 val textInputLayout = h.valueInputView as? TextInputLayout
                 textInputLayout?.editText?.text?.toString() ?: ""
@@ -230,7 +241,14 @@ class VariableModuleUIProvider(
     }
 
 
-    private fun updateValueInputView(context: Context, holder: VariableEditorViewHolder, type: String, currentValue: Any?) {
+    private fun updateValueInputView(
+        context: Context,
+        holder: VariableEditorViewHolder,
+        type: String,
+        currentValue: Any?,
+        onParametersChanged: () -> Unit,
+        onStartActivityForResult: ((Intent, (Int, Intent?) -> Unit) -> Unit)?
+    ) {
         holder.valueContainer.removeAllViews()
         holder.valueContainer.tag = null
         holder.dictionaryAdapter = null
@@ -242,7 +260,7 @@ class VariableModuleUIProvider(
         val horizontalSpacing = (16 * context.resources.displayMetrics.density).toInt()
 
         // 检查是否为整个列表/字典/坐标赋值了变量
-        if (type != CreateVariableModule.TYPE_STRING && currentValue is String && (currentValue.isMagicVariable() || currentValue.isNamedVariable())) {
+        if (type != CreateVariableModule.TYPE_STRING && type != CreateVariableModule.TYPE_FILE && currentValue is String && (currentValue.isMagicVariable() || currentValue.isNamedVariable())) {
             val pill = LayoutInflater.from(context).inflate(R.layout.magic_variable_pill, holder.valueContainer, false)
             val pillText = pill.findViewById<TextView>(R.id.pill_text)
             pillText.text = PillRenderer.resolveDisplayName(context, currentValue, holder.allSteps ?: emptyList())
@@ -482,7 +500,7 @@ class VariableModuleUIProvider(
             CreateVariableModule.TYPE_IMAGE -> {
                 // 图像类型使用 row_editor_input 布局，支持变量选择
                 val row = LayoutInflater.from(context).inflate(R.layout.row_editor_input, holder.valueContainer, false)
-                row.findViewById<TextView>(R.id.input_name).text = "值"
+                row.findViewById<TextView>(R.id.input_name).text = context.getString(R.string.label_value)
 
                 val valueContainer = row.findViewById<ViewGroup>(R.id.input_value_container)
                 val magicButton = row.findViewById<ImageButton>(R.id.button_magic_variable)
@@ -497,19 +515,76 @@ class VariableModuleUIProvider(
                     context = context,
                     isNumber = false,
                     currentValue = currentValue,
-                    hint = "值"
+                    hint = context.getString(R.string.label_value)
                 )
                 valueContainer.addView(inputLayout)
                 row
             }
+            CreateVariableModule.TYPE_FILE -> createFileValueInputRow(
+                context = context,
+                holder = holder,
+                currentValue = currentValue,
+                onParametersChanged = onParametersChanged,
+                onStartActivityForResult = onStartActivityForResult
+            )
             else -> StandardControlFactory.createTextInputLayout(
                 context = context,
                 isNumber = false,
                 currentValue = currentValue,
-                hint = "值"
+                hint = context.getString(R.string.label_value)
             )
         }
         holder.valueInputView = valueView
         holder.valueContainer.addView(valueView)
+    }
+
+    private fun createFileValueInputRow(
+        context: Context,
+        holder: VariableEditorViewHolder,
+        currentValue: Any?,
+        onParametersChanged: () -> Unit,
+        onStartActivityForResult: ((Intent, (Int, Intent?) -> Unit) -> Unit)?
+    ): View {
+        val row = LayoutInflater.from(context).inflate(R.layout.row_editor_input, holder.valueContainer, false)
+        row.findViewById<TextView>(R.id.input_name).text = context.getString(R.string.label_value)
+
+        val valueContainer = row.findViewById<ViewGroup>(R.id.input_value_container)
+        val magicButton = row.findViewById<ImageButton>(R.id.button_magic_variable)
+        val pickerButton = row.findViewById<ImageButton>(R.id.button_picker)
+
+        magicButton.isVisible = true
+        magicButton.setOnClickListener {
+            holder.onMagicVariableRequested?.invoke("value")
+        }
+
+        pickerButton.isVisible = onStartActivityForResult != null
+        pickerButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "*/*"
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            onStartActivityForResult?.invoke(intent) { resultCode, data ->
+                val uri = data?.data
+                if (resultCode == Activity.RESULT_OK && uri != null) {
+                    val value = StableFilePathResolver.resolveFilePath(context, uri)
+                    if (value != null) {
+                        row.findViewById<RichTextView>(R.id.rich_text_view)?.setRichText(value, holder.allSteps ?: emptyList())
+                        onParametersChanged()
+                    } else {
+                        Toast.makeText(context, R.string.toast_file_picker_local_file_only, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        valueContainer.removeAllViews()
+        val richEditorLayout = LayoutInflater.from(context).inflate(R.layout.rich_text_editor, valueContainer, false)
+        val richTextView = richEditorLayout.findViewById<RichTextView>(R.id.rich_text_view)
+        richTextView.setRichText(currentValue?.toString() ?: "", holder.allSteps ?: emptyList())
+        richTextView.hint = context.getString(R.string.param_vflow_data_file_operation_file_path_name)
+        richTextView.tag = "value"
+        valueContainer.addView(richEditorLayout)
+
+        return row
     }
 }

@@ -10,6 +10,7 @@ import com.chaomixian.vflow.core.types.basic.VList
 import com.chaomixian.vflow.core.types.basic.VNumber
 import com.chaomixian.vflow.core.types.basic.VString
 import com.chaomixian.vflow.core.types.complex.VCoordinate
+import com.chaomixian.vflow.core.types.complex.VFile
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -119,6 +120,45 @@ class CreateVariableModuleTest {
         val list = (result as ExecutionResult.Success).outputs["variable"] as? VList
         assertNotNull(list)
         assertEquals(listOf("a", "2", "true"), list?.raw?.map { it.asString() })
+    }
+
+    @Test
+    fun execute_createsFileVariable() = runBlocking {
+        val module = CreateVariableModule()
+        val context = createContext(
+            variables = mutableMapOf(
+                "type" to VObjectFactory.from(CreateVariableModule.TYPE_FILE),
+                "value" to VObjectFactory.from("file:///tmp/demo.txt")
+            )
+        )
+
+        val result = module.execute(context) { }
+
+        assertTrue(result is ExecutionResult.Success)
+        val file = (result as ExecutionResult.Success).outputs["variable"] as? VFile
+        assertNotNull(file)
+        assertEquals("file:///tmp/demo.txt", file?.uriString)
+    }
+
+    @Test
+    fun execute_resolvesFileVariablePathTemplate() = runBlocking {
+        val module = CreateVariableModule()
+        val context = createContext(
+            variables = mutableMapOf(
+                "type" to VObjectFactory.from(CreateVariableModule.TYPE_FILE),
+                "value" to VObjectFactory.from("/tmp/{{fileName.variable}}")
+            ),
+            stepOutputs = mutableMapOf(
+                "fileName" to mapOf("variable" to VString("demo.txt"))
+            )
+        )
+
+        val result = module.execute(context) { }
+
+        assertTrue(result is ExecutionResult.Success)
+        val file = (result as ExecutionResult.Success).outputs["variable"] as? VFile
+        assertNotNull(file)
+        assertEquals("/tmp/demo.txt", file?.uriString)
     }
 
     private fun createContext(

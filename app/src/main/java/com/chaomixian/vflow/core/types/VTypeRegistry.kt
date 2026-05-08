@@ -51,6 +51,17 @@ object VTypeRegistry {
         VPropertyDef("base64", "Base64", STRING, R.string.vtype_image_base64)
     ))
 
+    val FILE = SimpleVType("vflow.type.file", "文件", ANY, listOf(
+        VPropertyDef("path", "文件路径", STRING, R.string.vtype_file_path),
+        VPropertyDef("uri", "URI地址", STRING, R.string.vtype_file_uri),
+        VPropertyDef("name", "文件名", STRING, R.string.vtype_file_name),
+        VPropertyDef("extension", "扩展名", STRING, R.string.vtype_file_extension),
+        VPropertyDef("mimeType", "MIME 类型", STRING, R.string.vtype_file_mime_type),
+        VPropertyDef("size", "文件大小", NUMBER, R.string.vtype_file_size),
+        VPropertyDef("base64", "Base64", STRING, R.string.vtype_file_base64),
+        VPropertyDef("content", "文件内容", STRING, R.string.vtype_file_content)
+    ))
+
     val DATE = SimpleVType("vflow.type.date", "日期", ANY, listOf(
         VPropertyDef("year", "年", ANY, R.string.vtype_date_year),
         VPropertyDef("month", "月", ANY, R.string.vtype_date_month),
@@ -207,6 +218,14 @@ object VTypeRegistry {
                     else -> null
                 }
             }
+            FILE.id -> {
+                when (propertyName) {
+                    "size", "文件大小" -> NUMBER
+                    "path", "文件路径", "uri", "URI地址", "name", "文件名",
+                    "extension", "扩展名", "mimeType", "mime_type", "mime", "base64" -> STRING
+                    else -> null
+                }
+            }
             DATE.id -> {
                 when (propertyName) {
                     "year", "年", "month", "月", "day", "日", "weekday", "星期", "timestamp", "时间戳" -> NUMBER
@@ -316,6 +335,7 @@ object VTypeRegistry {
             LIST.id -> LIST
             DICTIONARY.id -> DICTIONARY
             IMAGE.id -> IMAGE
+            FILE.id -> FILE
             DATE.id -> DATE
             TIME.id -> TIME
             SCREEN_ELEMENT.id -> SCREEN_ELEMENT

@@ -20,6 +20,7 @@ enum class VariableType(val displayName: String, val typeId: String, val storedV
     DICTIONARY("字典", VTypeRegistry.DICTIONARY.id, "dictionary"),
     LIST("列表", VTypeRegistry.LIST.id, "list"),
     IMAGE("图像", VTypeRegistry.IMAGE.id, "image"),
+    FILE("文件", VTypeRegistry.FILE.id, "file"),
     COORDINATE("坐标", VTypeRegistry.COORDINATE.id, "coordinate"),
     COORDINATE_REGION("坐标区域", VTypeRegistry.COORDINATE_REGION.id, VTypeRegistry.COORDINATE_REGION.id),
     NOTIFICATION("通知", VTypeRegistry.NOTIFICATION.id, VTypeRegistry.NOTIFICATION.id),

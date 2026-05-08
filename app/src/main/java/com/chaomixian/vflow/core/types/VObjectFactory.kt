@@ -7,6 +7,7 @@ import com.chaomixian.vflow.core.types.complex.*
 import com.chaomixian.vflow.core.workflow.module.notification.NotificationObject
 import com.chaomixian.vflow.core.workflow.module.ui.UiEvent
 import com.chaomixian.vflow.core.workflow.module.ui.model.UiElement
+import java.io.File
 
 /**
  * 工厂类：负责将任意对象包装为 VObject。
@@ -33,6 +34,7 @@ object VObjectFactory {
             is Float -> VNumber(value)
             is Double -> VNumber(value)
             is Boolean -> VBoolean(value)
+            is File -> VFile(value.toURI().toString())
 
             // --- 业务对象 ---
             is NotificationObject -> VNotification(value)
