@@ -131,16 +131,13 @@ class PickerHandler(
     /**
      * 处理文件选择结果
      */
-    fun handleFilePickerResult(uri: Uri?) {
+    fun handleFilePickerResult(uri: Uri?, data: Intent? = null) {
         // 优先使用 currentInputDef，如果为空则使用 pendingFileInputDef
         val inputDef = currentInputDef ?: pendingFileInputDef
         if (uri != null && inputDef != null) {
-            val value = StableFilePathResolver.resolveFilePath(activity, uri)
-            if (value != null) {
-                onUpdateParameters(mapOf(inputDef.id to value))
-            } else {
-                Toast.makeText(activity, "仅支持本地文件，请选择本地存储中的文件", Toast.LENGTH_SHORT).show()
-            }
+            StableFilePathResolver.persistReadPermissionIfPossible(activity, uri, data)
+            val value = StableFilePathResolver.resolveFilePathOrUri(activity, uri)
+            onUpdateParameters(mapOf(inputDef.id to value))
         } else if (uri == null) {
             android.util.Log.d("PickerHandler", "文件选择已取消或失败")
         } else if (inputDef == null) {
@@ -288,6 +285,8 @@ class PickerHandler(
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
         filePickerLauncher.launch(intent)
     }

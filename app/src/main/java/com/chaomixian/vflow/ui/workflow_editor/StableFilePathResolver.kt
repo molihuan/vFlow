@@ -1,6 +1,7 @@
 package com.chaomixian.vflow.ui.workflow_editor
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
@@ -19,6 +20,25 @@ object StableFilePathResolver {
         }
 
         return null
+    }
+
+    fun resolveFilePathOrUri(context: Context, uri: Uri): String {
+        return resolveFilePath(context, uri) ?: uri.toString()
+    }
+
+    fun persistReadPermissionIfPossible(context: Context, uri: Uri, data: Intent?) {
+        val flags = data?.flags ?: return
+        val permissionFlags = flags and (
+            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        )
+        if (permissionFlags == 0) return
+
+        runCatching {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                permissionFlags
+            )
+        }
     }
 
     fun resolveDirectoryPath(context: Context, uri: Uri): String? {

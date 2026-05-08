@@ -2,6 +2,8 @@
 package com.chaomixian.vflow.core.workflow.module.data
 
 import android.content.Context
+import android.net.Uri
+import android.provider.DocumentsContract
 import android.util.Base64
 import android.webkit.MimeTypeMap
 import com.chaomixian.vflow.R
@@ -431,6 +433,10 @@ class FileOperationModule : BaseModule() {
             return executeReadViaShell(context, filePath, encoding, mode, onProgress)
         }
 
+        if (filePath.startsWith("content://")) {
+            return executeReadContentUri(context, filePath, encoding, bufferSize, onProgress)
+        }
+
         val file = resolveLocalFile(filePath)
             ?: return ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_execution_error), context.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
         if (!file.exists() || !file.isFile) {
@@ -471,6 +477,50 @@ class FileOperationModule : BaseModule() {
         }
     }
 
+    private suspend fun executeReadContentUri(
+        context: Context,
+        uriString: String,
+        encoding: String,
+        bufferSize: Int,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        return try {
+            val uri = Uri.parse(uriString)
+            val mimeType = context.contentResolver.getType(uri).orEmpty()
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                BufferedReader(InputStreamReader(inputStream, encoding)).use { reader ->
+                    val content = StringBuilder()
+                    val buffer = CharArray(bufferSize)
+                    var bytesRead: Int
+
+                    while (reader.read(buffer).also { bytesRead = it } != -1) {
+                        content.append(buffer, 0, bytesRead)
+                    }
+
+                    onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_read_complete), 100))
+
+                    ExecutionResult.Success(mapOf(
+                        "content" to content.toString(),
+                        "file" to VFile(uriString, mimeType),
+                        "file_name" to uri.lastPathSegment.orEmpty().ifBlank { "unknown" },
+                        "mime_type" to mimeType,
+                        "size" to content.length
+                    ))
+                }
+            } ?: ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_open_failed)
+            )
+        } catch (e: java.io.UnsupportedEncodingException) {
+            ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_encoding_error), context.getString(R.string.error_vflow_data_file_operation_unsupported_encoding, encoding))
+        } catch (_: Exception) {
+            ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_open_failed)
+            )
+        }
+    }
+
     /**
      * 执行文件写入操作
      */
@@ -488,6 +538,10 @@ class FileOperationModule : BaseModule() {
 
         if (mode != MODE_LOCAL) {
             return executeWriteViaShell(context, filePath, content, encoding, overwrite, mode, onProgress)
+        }
+
+        if (filePath.startsWith("content://")) {
+            return executeWriteContentUri(context, filePath, content, encoding, overwrite, onProgress)
         }
 
         val file = resolveLocalFile(filePath)
@@ -522,6 +576,48 @@ class FileOperationModule : BaseModule() {
             ))
         } catch (e: java.io.UnsupportedEncodingException) {
             ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_encoding_error), context.getString(R.string.error_vflow_data_file_operation_unsupported_encoding, encoding))
+        }
+    }
+
+    private suspend fun executeWriteContentUri(
+        context: Context,
+        uriString: String,
+        content: String,
+        encoding: String,
+        overwrite: Boolean,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        return try {
+            val uri = Uri.parse(uriString)
+            val mode = if (overwrite) "wt" else "wa"
+            context.contentResolver.openOutputStream(uri, mode)?.use { stream ->
+                OutputStreamWriter(stream, encoding).use { writer ->
+                    writer.write(content)
+                }
+            } ?: return ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_open_for_write_failed)
+            )
+
+            val message = if (overwrite) {
+                context.getString(R.string.progress_vflow_data_file_operation_write_complete)
+            } else {
+                context.getString(R.string.progress_vflow_data_file_operation_append_complete)
+            }
+            onProgress(ProgressUpdate(message, 100))
+
+            ExecutionResult.Success(mapOf(
+                "success" to true,
+                "message" to "$message: $uriString",
+                "file" to VFile(uriString, context.contentResolver.getType(uri).orEmpty())
+            ))
+        } catch (e: java.io.UnsupportedEncodingException) {
+            ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_encoding_error), context.getString(R.string.error_vflow_data_file_operation_unsupported_encoding, encoding))
+        } catch (_: Exception) {
+            ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_execution_error),
+                context.getString(R.string.error_vflow_data_file_operation_open_for_write_failed)
+            )
         }
     }
 
@@ -564,6 +660,10 @@ class FileOperationModule : BaseModule() {
             return executeDeleteViaShell(context, filePath, mode, onProgress)
         }
 
+        if (filePath.startsWith("content://")) {
+            return executeDeleteContentUri(context, filePath, onProgress)
+        }
+
         val file = resolveLocalFile(filePath)
             ?: return ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_execution_error), context.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
 
@@ -582,6 +682,32 @@ class FileOperationModule : BaseModule() {
             ))
         } else {
             ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_delete_failed), context.getString(R.string.error_vflow_data_file_operation_cannot_delete, filePath))
+        }
+    }
+
+    private suspend fun executeDeleteContentUri(
+        context: Context,
+        uriString: String,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        val deleted = try {
+            DocumentsContract.deleteDocument(context.contentResolver, Uri.parse(uriString))
+        } catch (_: Exception) {
+            false
+        }
+
+        return if (deleted) {
+            onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_delete_complete), 100))
+            ExecutionResult.Success(mapOf(
+                "success" to true,
+                "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, uriString),
+                "file" to VFile(uriString)
+            ))
+        } else {
+            ExecutionResult.Failure(
+                context.getString(R.string.error_vflow_data_file_operation_delete_failed),
+                context.getString(R.string.error_vflow_data_file_operation_cannot_delete, uriString)
+            )
         }
     }
 

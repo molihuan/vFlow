@@ -149,7 +149,7 @@ class WorkflowEditorActivity : BaseActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val uri = result.data?.data
-        pickerHandler?.handleFilePickerResult(uri)
+        pickerHandler?.handleFilePickerResult(uri, result.data)
     }
 
     // 目录选择器 launcher - 使用 OpenDocumentTree 选择本地目录

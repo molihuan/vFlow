@@ -562,17 +562,16 @@ class VariableModuleUIProvider(
             val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                 type = "*/*"
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
             }
             onStartActivityForResult?.invoke(intent) { resultCode, data ->
                 val uri = data?.data
                 if (resultCode == Activity.RESULT_OK && uri != null) {
-                    val value = StableFilePathResolver.resolveFilePath(context, uri)
-                    if (value != null) {
-                        row.findViewById<RichTextView>(R.id.rich_text_view)?.setRichText(value, holder.allSteps ?: emptyList())
-                        onParametersChanged()
-                    } else {
-                        Toast.makeText(context, R.string.toast_file_picker_local_file_only, Toast.LENGTH_SHORT).show()
-                    }
+                    StableFilePathResolver.persistReadPermissionIfPossible(context, uri, data)
+                    val value = StableFilePathResolver.resolveFilePathOrUri(context, uri)
+                    row.findViewById<RichTextView>(R.id.rich_text_view)?.setRichText(value, holder.allSteps ?: emptyList())
+                    onParametersChanged()
                 }
             }
         }
