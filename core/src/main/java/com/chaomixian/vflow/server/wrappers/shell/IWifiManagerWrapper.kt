@@ -1,4 +1,4 @@
-// 文件: server/src/main/java/com/chaomixian/vflow/server/wrappers/IWifiManagerWrapper.kt
+// 文件: server/src/main/java/com/chaomixian/vflow/server/wrappers/shell/IWifiManagerWrapper.kt
 package com.chaomixian.vflow.server.wrappers.shell
 
 import com.chaomixian.vflow.server.wrappers.ServiceWrapper

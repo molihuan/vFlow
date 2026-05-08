@@ -66,6 +66,7 @@ object Config {
         "screenshot" to WorkerType.SHELL,
 
         // 必须 Root 权限
+        "hotspot" to WorkerType.ROOT,
         "uinput" to WorkerType.ROOT,
         "system_root" to WorkerType.ROOT
     )

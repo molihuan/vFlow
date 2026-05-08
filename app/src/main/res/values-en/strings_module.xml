@@ -2577,6 +2577,29 @@
     <string name="option_vflow_core_wifi_disable">Disable</string>
     <string name="option_vflow_core_wifi_toggle">Toggle</string>
 
+    <!-- vflow.core.hotspot -->
+    <string name="module_vflow_core_hotspot_name">Hotspot Control</string>
+    <string name="module_vflow_core_hotspot_desc">Control Wi-Fi hotspot state using vFlow Core (enable/disable/toggle).</string>
+    <string name="module_vflow_core_hotspot_state_name">Get Hotspot State</string>
+    <string name="module_vflow_core_hotspot_state_desc">Use vFlow Core to read the current Wi-Fi hotspot switch state.</string>
+    <string name="param_vflow_core_hotspot_action_name">Action</string>
+    <string name="option_vflow_core_hotspot_enable">Enable</string>
+    <string name="option_vflow_core_hotspot_disable">Disable</string>
+    <string name="option_vflow_core_hotspot_toggle">Toggle</string>
+    <string name="summary_vflow_core_set_hotspot">Hotspot</string>
+    <string name="summary_vflow_core_hotspot_state">Get Hotspot State</string>
+    <string name="output_vflow_core_hotspot_success_name">Success</string>
+    <string name="output_vflow_core_hotspot_enabled_name">Resulting State</string>
+    <string name="output_vflow_core_hotspot_state_enabled_name">Hotspot State</string>
+    <string name="msg_vflow_core_hotspot_enabling">Enabling hotspot via vFlow Core...</string>
+    <string name="msg_vflow_core_hotspot_disabling">Disabling hotspot via vFlow Core...</string>
+    <string name="msg_vflow_core_hotspot_toggling">Toggling hotspot via vFlow Core...</string>
+    <string name="msg_vflow_core_hotspot_state_changed">Hotspot state changed to: %1$s</string>
+    <string name="error_vflow_core_hotspot_permission_denied">Permission denied</string>
+    <string name="error_vflow_core_hotspot_root_required">Hotspot control requires vFlow Core to run in Root mode.</string>
+    <string name="error_vflow_core_hotspot_invalid_action">Invalid hotspot action: %1$s</string>
+    <string name="error_vflow_core_hotspot_failed">vFlow Core hotspot operation failed</string>
+
     <!-- vflow.core.volume -->
     <string name="module_vflow_core_volume_name">Volume Control</string>
     <string name="module_vflow_core_volume_desc">Control volume for different audio streams using vFlow Core (music/notification/ring etc).</string>

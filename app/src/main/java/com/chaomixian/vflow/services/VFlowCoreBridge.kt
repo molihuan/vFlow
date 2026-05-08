@@ -784,6 +784,30 @@ object VFlowCoreBridge {
         return res?.optBoolean("enabled", false) ?: false
     }
 
+    fun setHotspotEnabled(enabled: Boolean): Boolean {
+        val req = JSONObject()
+            .put("target", "hotspot")
+            .put("method", "setEnabled")
+            .put("params", JSONObject().put("enabled", enabled))
+        return sendRaw(req)?.optBoolean("success", false) ?: false
+    }
+
+    fun isHotspotEnabled(): Boolean {
+        val req = JSONObject()
+            .put("target", "hotspot")
+            .put("method", "isEnabled")
+        val res = sendRaw(req)
+        return res?.optBoolean("enabled", false) ?: false
+    }
+
+    fun toggleHotspot(): Boolean {
+        val req = JSONObject()
+            .put("target", "hotspot")
+            .put("method", "toggle")
+        val res = sendRaw(req)
+        return res?.optBoolean("enabled", false) ?: false
+    }
+
     // Bluetooth Management APIs
     fun setBluetoothEnabled(enabled: Boolean): Boolean {
         val req = JSONObject()

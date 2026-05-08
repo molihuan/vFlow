@@ -2577,6 +2577,29 @@
     <string name="option_vflow_core_wifi_disable">关闭</string>
     <string name="option_vflow_core_wifi_toggle">切换</string>
 
+    <!-- vflow.core.hotspot -->
+    <string name="module_vflow_core_hotspot_name">热点控制</string>
+    <string name="module_vflow_core_hotspot_desc">使用 vFlow Core 控制 Wi-Fi 热点开关状态（开启/关闭/切换）。</string>
+    <string name="module_vflow_core_hotspot_state_name">读取热点状态</string>
+    <string name="module_vflow_core_hotspot_state_desc">使用 vFlow Core 读取当前 Wi-Fi 热点开关状态。</string>
+    <string name="param_vflow_core_hotspot_action_name">操作</string>
+    <string name="option_vflow_core_hotspot_enable">开启</string>
+    <string name="option_vflow_core_hotspot_disable">关闭</string>
+    <string name="option_vflow_core_hotspot_toggle">切换</string>
+    <string name="summary_vflow_core_set_hotspot">热点</string>
+    <string name="summary_vflow_core_hotspot_state">读取热点状态</string>
+    <string name="output_vflow_core_hotspot_success_name">是否成功</string>
+    <string name="output_vflow_core_hotspot_enabled_name">切换后的状态</string>
+    <string name="output_vflow_core_hotspot_state_enabled_name">热点状态</string>
+    <string name="msg_vflow_core_hotspot_enabling">正在使用 vFlow Core 开启热点...</string>
+    <string name="msg_vflow_core_hotspot_disabling">正在使用 vFlow Core 关闭热点...</string>
+    <string name="msg_vflow_core_hotspot_toggling">正在使用 vFlow Core 切换热点...</string>
+    <string name="msg_vflow_core_hotspot_state_changed">热点状态已切换为：%1$s</string>
+    <string name="error_vflow_core_hotspot_permission_denied">权限不足</string>
+    <string name="error_vflow_core_hotspot_root_required">热点控制需要 vFlow Core 以 Root 模式运行。</string>
+    <string name="error_vflow_core_hotspot_invalid_action">无效的热点操作: %1$s</string>
+    <string name="error_vflow_core_hotspot_failed">vFlow Core 热点操作失败</string>
+
     <!-- vflow.core.volume -->
     <string name="module_vflow_core_volume_name">音量控制</string>
     <string name="module_vflow_core_volume_desc">使用 vFlow Core 控制不同音频流的音量（音乐/通知/铃声等）。</string>
