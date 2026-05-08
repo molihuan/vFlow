@@ -177,17 +177,16 @@ class PlayAudioModule : BaseModule() {
         context: ExecutionContext,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
-        val step = context.allSteps[context.currentStepIndex]
-        val audioType = step.parameters["audioType"] as? String ?: "system"
-        val volumePercent = step.parameters["volume"] as? Number ?: 100
-        val awaitComplete = step.parameters["await"] as? Boolean ?: true
+        val audioType = context.getVariableAsString("audioType", "system")
+        val volumePercent = context.getVariableAsNumber("volume") ?: 100.0
+        val awaitComplete = context.getVariableAsBoolean("await") ?: true
 
         val mediaPlayer = MediaPlayer()
 
         return try {
             val audioUri: Uri? = when (audioType) {
                 "local" -> {
-                    val filePath = step.parameters["localFile"] as? String ?: ""
+                    val filePath = context.getVariableAsString("localFile", "")
                     if (filePath.isBlank()) {
                         mediaPlayer.release()
                         return ExecutionResult.Failure(
@@ -205,7 +204,7 @@ class PlayAudioModule : BaseModule() {
                     }
                     Uri.fromFile(file)
                 }
-                else -> getSystemSoundUri(audioType, step.parameters["systemSound"] as? String ?: "notification")
+                else -> getSystemSoundUri(audioType, context.getVariableAsString("systemSound", "notification"))
             }
 
             if (audioUri == null) {

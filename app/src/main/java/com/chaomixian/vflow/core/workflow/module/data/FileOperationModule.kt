@@ -336,8 +336,10 @@ class FileOperationModule : BaseModule() {
 
         return when (operation) {
             OP_CREATE -> {
-                val directoryPath = currentStep.parameters["directory_path"] as? String
+                val rawDirectoryPath = currentStep.parameters["directory_path"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_directory_missing))
+                val directoryPath = resolvePathInput(rawDirectoryPath) { VariableResolver.resolve(it, context) }
+                    ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_invalid_directory_path, rawDirectoryPath))
                 val rawFileName = currentStep.parameters["file_name"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_name_missing))
                 val fileName = VariableResolver.resolve(rawFileName, context)
@@ -357,8 +359,10 @@ class FileOperationModule : BaseModule() {
                 )
             }
             OP_READ -> {
-                val filePath = currentStep.parameters["file_path"] as? String
+                val rawFilePath = currentStep.parameters["file_path"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_path_missing))
+                val filePath = resolvePathInput(rawFilePath) { VariableResolver.resolve(it, context) }
+                    ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
                 val encoding = currentStep.parameters["encoding_read"] as? String ?: "UTF-8"
                 val bufferSize = (currentStep.parameters["buffer_size"] as? Number)?.toInt() ?: 8192
                 val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
@@ -366,8 +370,10 @@ class FileOperationModule : BaseModule() {
                 executeRead(context.applicationContext, filePath, encoding, bufferSize, mode, onProgress)
             }
             OP_WRITE -> {
-                val filePath = currentStep.parameters["file_path"] as? String
+                val rawFilePath = currentStep.parameters["file_path"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_path_missing))
+                val filePath = resolvePathInput(rawFilePath) { VariableResolver.resolve(it, context) }
+                    ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
                 val encoding = currentStep.parameters["encoding"] as? String ?: "UTF-8"
                 val rawContent = currentStep.parameters["content"] as? String ?: ""
                 val content = VariableResolver.resolve(rawContent, context)
@@ -377,8 +383,10 @@ class FileOperationModule : BaseModule() {
                 executeWrite(context.applicationContext, filePath, content, encoding, overwrite, mode, onProgress)
             }
             OP_APPEND -> {
-                val filePath = currentStep.parameters["file_path"] as? String
+                val rawFilePath = currentStep.parameters["file_path"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_path_missing))
+                val filePath = resolvePathInput(rawFilePath) { VariableResolver.resolve(it, context) }
+                    ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
                 val encoding = currentStep.parameters["encoding"] as? String ?: "UTF-8"
                 val rawContent = currentStep.parameters["content"] as? String ?: ""
                 val content = VariableResolver.resolve(rawContent, context)
@@ -387,8 +395,10 @@ class FileOperationModule : BaseModule() {
                 executeAppend(context.applicationContext, filePath, content, encoding, mode, onProgress)
             }
             OP_DELETE -> {
-                val filePath = currentStep.parameters["file_path"] as? String
+                val rawFilePath = currentStep.parameters["file_path"] as? String
                     ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_file_path_missing))
+                val filePath = resolvePathInput(rawFilePath) { VariableResolver.resolve(it, context) }
+                    ?: return ExecutionResult.Failure(appContext.getString(R.string.error_vflow_data_file_operation_execution_error), appContext.getString(R.string.error_vflow_data_file_operation_invalid_file_path))
                 val mode = getExecutionMode(currentStep.parameters["mode"] as? String)
 
                 executeDelete(context.applicationContext, filePath, mode, onProgress)
@@ -661,6 +671,11 @@ class FileOperationModule : BaseModule() {
         } catch (e: Exception) {
             null
         }
+    }
+
+    internal fun resolvePathInput(rawPath: String, resolver: (String) -> String): String? {
+        val resolved = resolver(rawPath).trim()
+        return resolved.takeIf { it.isNotEmpty() }
     }
 
     private fun getMimeType(file: File): String {
