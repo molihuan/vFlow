@@ -1697,6 +1697,9 @@
     <string name="summary_vflow_file_scale_image_prefix">Scale image </string>
     <string name="summary_vflow_file_scale_image_middle"> to </string>
     <string name="summary_vflow_file_scale_image_suffix">%</string>
+    <string name="error_vflow_file_scale_image_param_error">Parameter Error</string>
+    <string name="error_vflow_file_scale_image_load_error">Image Load Failed</string>
+    <string name="error_vflow_file_scale_image_exception_title">Image Processing Error</string>
     <string name="error_vflow_file_scale_image_exception">Unknown error occurred</string>
     <string name="error_vflow_file_scale_image_load_failed">Cannot load bitmap from URI: %s</string>
     <string name="error_vflow_file_scale_image_not_image">Need an image variable as input.</string>

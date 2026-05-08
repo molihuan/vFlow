@@ -71,7 +71,12 @@ class ScaleImageModule : BaseModule() {
     )
 
     override fun getOutputs(step: ActionStep?): List<OutputDefinition> = listOf(
-        OutputDefinition("image", "缩放后的图像", VTypeRegistry.IMAGE.id)
+        OutputDefinition(
+            id = "image",
+            name = "缩放后的图像",
+            typeName = VTypeRegistry.IMAGE.id,
+            nameStringRes = R.string.output_vflow_file_scale_image_image_name
+        )
     )
 
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
@@ -93,15 +98,21 @@ class ScaleImageModule : BaseModule() {
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
         val imageVar = context.getVariableAsImage("image")
-            ?: return ExecutionResult.Failure("参数错误", "需要一个图像变量作为输入。")
+            ?: return ExecutionResult.Failure(
+                appContext.getString(R.string.error_vflow_file_scale_image_param_error),
+                appContext.getString(R.string.error_vflow_file_scale_image_not_image)
+            )
         val scalePercent = context.getVariableAsNumber("scale_percent")?.toFloat() ?: 100f
 
         if (scalePercent <= 0f) {
-            return ExecutionResult.Failure("参数错误", "缩放比例必须大于 0。")
+            return ExecutionResult.Failure(
+                appContext.getString(R.string.error_vflow_file_scale_image_param_error),
+                appContext.getString(R.string.error_vflow_file_scale_image_invalid_scale)
+            )
         }
 
         val appContext = context.applicationContext
-        onProgress(ProgressUpdate("正在加载图像..."))
+        onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_file_scale_image_loading)))
 
         return try {
             val request = ImageRequest.Builder(appContext)
@@ -110,15 +121,18 @@ class ScaleImageModule : BaseModule() {
                 .build()
             val result = Coil.imageLoader(appContext).execute(request)
             val originalBitmap = result.drawable?.toBitmap()
-                ?: return ExecutionResult.Failure("图像加载失败", "无法从 URI 加载位图: ${imageVar.uriString}")
+                ?: return ExecutionResult.Failure(
+                    appContext.getString(R.string.error_vflow_file_scale_image_load_error),
+                    appContext.getString(R.string.error_vflow_file_scale_image_load_failed, imageVar.uriString)
+                )
 
-            onProgress(ProgressUpdate("正在缩放图像..."))
+            onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_file_scale_image_scaling)))
 
             val targetWidth = (originalBitmap.width * scalePercent / 100f).roundToInt().coerceAtLeast(1)
             val targetHeight = (originalBitmap.height * scalePercent / 100f).roundToInt().coerceAtLeast(1)
             val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
 
-            onProgress(ProgressUpdate("正在保存处理后的图像..."))
+            onProgress(ProgressUpdate(appContext.getString(R.string.msg_vflow_file_scale_image_saving)))
             val outputFile = File(context.workDir, "scaled_${UUID.randomUUID()}.png")
             FileOutputStream(outputFile).use {
                 scaledBitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
@@ -130,7 +144,10 @@ class ScaleImageModule : BaseModule() {
 
             ExecutionResult.Success(mapOf("image" to VImage(Uri.fromFile(outputFile).toString())))
         } catch (e: Exception) {
-            ExecutionResult.Failure("图像处理异常", e.localizedMessage ?: "发生未知错误")
+            ExecutionResult.Failure(
+                appContext.getString(R.string.error_vflow_file_scale_image_exception_title),
+                e.localizedMessage ?: appContext.getString(R.string.error_vflow_file_scale_image_exception)
+            )
         }
     }
 }

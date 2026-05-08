@@ -1697,6 +1697,9 @@
     <string name="summary_vflow_file_scale_image_prefix">将图像 </string>
     <string name="summary_vflow_file_scale_image_middle"> 缩放为 </string>
     <string name="summary_vflow_file_scale_image_suffix">%</string>
+    <string name="error_vflow_file_scale_image_param_error">参数错误</string>
+    <string name="error_vflow_file_scale_image_load_error">图像加载失败</string>
+    <string name="error_vflow_file_scale_image_exception_title">图像处理异常</string>
     <string name="error_vflow_file_scale_image_exception">发生未知错误</string>
     <string name="error_vflow_file_scale_image_load_failed">无法从URI加载位图：%s</string>
     <string name="error_vflow_file_scale_image_not_image">需要一个图像变量作为输入。</string>

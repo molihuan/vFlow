@@ -113,7 +113,11 @@ class DiscordPushModule : BaseModule() {
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
         val inputs = getInputs()
         val contentPill = PillUtil.createPillFromParam(step.parameters["content"], inputs.find { it.id == "content" })
-        return PillUtil.buildSpannable(context, "Discord 推送", contentPill)
+        return PillUtil.buildSpannable(
+            context,
+            context.getString(R.string.module_vflow_network_discord_push_name),
+            contentPill
+        )
     }
 
     override fun validate(step: ActionStep, allSteps: List<ActionStep>): ValidationResult {
