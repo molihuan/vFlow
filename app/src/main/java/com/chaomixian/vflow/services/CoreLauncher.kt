@@ -21,6 +21,12 @@ object CoreLauncher {
     private const val TAG = "CoreLauncher"
     private const val CORE_CLASS = "com.chaomixian.vflow.server.VFlowCore"
 
+    data class ForceStopResult(
+        val success: Boolean,
+        val killedPids: List<Int> = emptyList(),
+        val error: String? = null
+    )
+
     /**
      * 启动模式
      */
@@ -190,6 +196,52 @@ object CoreLauncher {
         return launch(context, mode, forceRestart = true)
     }
 
+    /**
+     * 强制结束残留的 vFlowCore 进程。
+     * 通过 shell 搜索包含 Core 主类名的 app_process 命令行，并执行 kill -9。
+     */
+    suspend fun forceStop(context: Context, mode: LaunchMode = LaunchMode.AUTO): ForceStopResult {
+        val finalMode = resolveLaunchMode(context, mode)
+        val shellMode = finalMode.toShellMode()
+        val findCommand = buildFindCorePidCommand()
+
+        return try {
+            val findResult = ShellManager.execShellCommandWithResult(context, findCommand, shellMode)
+            if (!findResult.success) {
+                DebugLogger.e(TAG, "搜索 vFlowCore 进程失败: ${findResult.output}")
+                return ForceStopResult(success = false, error = findResult.output)
+            }
+
+            val pids = findResult.output
+                .lineSequence()
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .mapNotNull { it.toIntOrNull() }
+                .distinct()
+                .toList()
+
+            if (pids.isEmpty()) {
+                VFlowCoreBridge.disconnect()
+                DebugLogger.i(TAG, "未找到存活的 vFlowCore 进程")
+                return ForceStopResult(success = true)
+            }
+
+            val killCommand = "kill -9 ${pids.joinToString(" ")}"
+            val killResult = ShellManager.execShellCommandWithResult(context, killCommand, shellMode)
+            if (!killResult.success) {
+                DebugLogger.e(TAG, "强制结束 vFlowCore 进程失败: ${killResult.output}")
+                return ForceStopResult(success = false, killedPids = pids, error = killResult.output)
+            }
+
+            VFlowCoreBridge.disconnect()
+            DebugLogger.w(TAG, "已强制结束 vFlowCore 进程: ${pids.joinToString(", ")}")
+            ForceStopResult(success = true, killedPids = pids)
+        } catch (e: Exception) {
+            DebugLogger.e(TAG, "强制结束 vFlowCore 进程时发生异常", e)
+            ForceStopResult(success = false, error = e.message)
+        }
+    }
+
     private fun resolveLaunchMode(context: Context, mode: LaunchMode): LaunchMode {
         if (mode != LaunchMode.AUTO) {
             return mode
@@ -209,6 +261,11 @@ object CoreLauncher {
 
     private fun shellQuote(value: String): String {
         return "'${value.replace("'", "'\\''")}'"
+    }
+
+    private fun buildFindCorePidCommand(): String {
+        val classPattern = shellQuote(CORE_CLASS)
+        return "ps -A -o PID=,ARGS= | grep -F $classPattern | grep app_process | grep -v grep | awk '{print \$1}'"
     }
 
     /**

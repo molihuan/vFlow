@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.material.icons.filled.Laptop
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -60,6 +61,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.chaomixian.vflow.core.logging.DebugLogger
 import com.chaomixian.vflow.core.utils.StorageManager
+import com.chaomixian.vflow.services.CoreLauncher
 import com.chaomixian.vflow.services.CoreManagementService
 import com.chaomixian.vflow.services.ShellManager
 import com.chaomixian.vflow.services.VFlowCoreBridge
@@ -100,6 +102,7 @@ class CoreManagementActivity : BaseActivity() {
                     onStartServer = { startServer() },
                     onStartServerWithMode = { mode -> startServerWithMode(mode) },
                     onStopServer = { stopServer() },
+                    onForceStopServer = { mode -> forceStopServer(mode) },
                     onLoadLogs = { loadServerLogs(this) },
                     autoStart = autoStartRequested
                 )
@@ -224,6 +227,20 @@ class CoreManagementActivity : BaseActivity() {
     }
 
     /**
+     * 强制结束残留的 vFlowCore 进程
+     */
+    private suspend fun forceStopServer(mode: ShellManager.ShellMode?): CoreLauncher.ForceStopResult {
+        return withContext(Dispatchers.IO) {
+            val launchMode = when (mode) {
+                ShellManager.ShellMode.ROOT -> CoreLauncher.LaunchMode.ROOT
+                ShellManager.ShellMode.SHIZUKU -> CoreLauncher.LaunchMode.SHIZUKU
+                else -> CoreLauncher.LaunchMode.AUTO
+            }
+            CoreLauncher.forceStop(this@CoreManagementActivity, launchMode)
+        }
+    }
+
+    /**
      * 加载 vFlowCore 日志
      */
     private suspend fun loadServerLogs(context: Context): String {
@@ -262,6 +279,7 @@ private fun CoreManagementScreen(
     onStartServer: suspend () -> Boolean,
     onStartServerWithMode: suspend (ShellManager.ShellMode) -> Boolean,
     onStopServer: suspend () -> Boolean,
+    onForceStopServer: suspend (ShellManager.ShellMode?) -> CoreLauncher.ForceStopResult,
     onLoadLogs: suspend () -> String,
     autoStart: Boolean = false
 ) {
@@ -274,6 +292,7 @@ private fun CoreManagementScreen(
     var logsExpanded by remember { mutableStateOf(false) }
     var coreVersionSummary by remember { mutableStateOf("") }
     var coreUpdateAvailable by remember { mutableStateOf(false) }
+    var showForceStopDialog by remember { mutableStateOf(false) }
 
     // 保存的启动方式和自动启动设置
     var selectedLaunchMode by remember { mutableStateOf<ShellManager.ShellMode?>(null) }
@@ -365,6 +384,17 @@ private fun CoreManagementScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { showForceStopDialog = true },
+                        enabled = !isChecking
+                    ) {
+                        Icon(
+                            Icons.Default.PowerOff,
+                            contentDescription = stringResource(R.string.action_force_stop_core)
+                        )
                     }
                 }
             )
@@ -805,6 +835,78 @@ private fun CoreManagementScreen(
             // 底部间距
             Spacer(Modifier.height(16.dp))
         }
+    }
+
+    if (showForceStopDialog) {
+        AlertDialog(
+            onDismissRequest = { showForceStopDialog = false },
+            title = { Text(stringResource(R.string.dialog_force_stop_core_title)) },
+            text = { Text(stringResource(R.string.dialog_force_stop_core_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showForceStopDialog = false
+                        statusDetail = context.getString(R.string.status_force_stopping_core)
+                        isChecking = true
+                        coroutineScope.launch {
+                            val result = onForceStopServer(selectedLaunchMode)
+                            val running = onCheckStatus()
+                            isChecking = false
+                            isServerRunning = running
+                            refreshCoreVersionState(isServerRunning)
+                            logs = onLoadLogs()
+
+                            val killedPidSummary = if (result.killedPids.isNotEmpty()) {
+                                result.killedPids.joinToString(", ")
+                            } else {
+                                ""
+                            }
+
+                            if (result.success) {
+                                if (result.killedPids.isEmpty()) {
+                                    showToast(context.getString(R.string.toast_core_force_stopped_none))
+                                    statusDetail = context.getString(R.string.status_core_not_running)
+                                } else {
+                                    showToast(
+                                        context.getString(
+                                            R.string.toast_core_force_stopped,
+                                            killedPidSummary
+                                        )
+                                    )
+                                    statusDetail = context.getString(
+                                        R.string.status_core_force_stopped,
+                                        killedPidSummary
+                                    )
+                                }
+                            } else {
+                                val message = result.error?.takeIf { it.isNotBlank() }
+                                    ?: context.getString(R.string.toast_core_force_stop_failed_generic)
+                                showToast(
+                                    context.getString(
+                                        R.string.toast_core_force_stop_failed,
+                                        message
+                                    )
+                                )
+                                statusDetail = context.getString(
+                                    R.string.status_core_force_stop_failed,
+                                    message
+                                )
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.action_force_stop_core))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showForceStopDialog = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            }
+        )
     }
 }
 
