@@ -1078,6 +1078,7 @@
     <string name="param_vflow_data_base64_source_text_name">Source Text</string>
     <string name="param_vflow_data_base64_text_encoding_name">Text Encoding</string>
     <string name="output_vflow_data_base64_result_text_name">Result Text</string>
+    <string name="output_vflow_data_base64_result_image_name">Result Image</string>
     <string name="error_vflow_data_base64_decode_failed">Decode Failed</string>
     <string name="error_vflow_data_base64_invalid_format">Input text is not a valid Base64 encoded format</string>
     <string name="error_vflow_data_base64_execution_error">Execution Error</string>

@@ -540,6 +540,7 @@
     <string name="repo_module_permissions_count">%d permissions</string>
     <string name="repo_workflow_tags">Tags: %s</string>
     <string name="overlay_ui_quick_view_title">Quick View</string>
+    <string name="overlay_ui_quick_view_truncated">[Content is too long and was truncated. Showing the first %1$d of %2$d characters]</string>
     <string name="overlay_ui_image_preview_title">Image Preview</string>
     <string name="overlay_ui_input_time_title">Select Time</string>
     <string name="overlay_ui_input_date_title">Select Date</string>

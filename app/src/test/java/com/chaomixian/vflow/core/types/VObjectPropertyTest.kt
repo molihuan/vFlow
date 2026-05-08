@@ -2,8 +2,11 @@
 package com.chaomixian.vflow.core.types
 
 import com.chaomixian.vflow.core.types.basic.*
+import com.chaomixian.vflow.core.types.complex.VImage
 import org.junit.Assert.*
 import org.junit.Test
+import java.io.File
+import java.util.Base64
 
 /**
  * VObject 属性系统测试
@@ -130,6 +133,31 @@ class VObjectPropertyTest {
         val str = VString("Hello")
         val nonExistent = str.getProperty("nonExistentProperty")
         assertNull(nonExistent)
+    }
+
+    @Test
+    fun `test VImage base64 property`() {
+        val file = File.createTempFile("vflow-image-property", ".png")
+        file.writeBytes(byteArrayOf(0x01, 0x23, 0x45, 0x67))
+        try {
+            val image = VImage(file.toURI().toString())
+            val base64 = image.getProperty("base64")
+
+            assertNotNull(base64)
+            assertTrue(base64 is VString)
+            assertEquals(
+                Base64.getEncoder().encodeToString(byteArrayOf(0x01, 0x23, 0x45, 0x67)),
+                (base64 as VString).raw
+            )
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun `test VImage base64 property metadata`() {
+        assertTrue(VTypeRegistry.IMAGE.properties.any { it.name == "base64" })
+        assertEquals(VTypeRegistry.STRING, VTypeRegistry.getPropertyType(VTypeRegistry.IMAGE.id, "base64"))
     }
 
     @Test

@@ -540,6 +540,7 @@
     <string name="repo_module_permissions_count">权限: %d 项</string>
     <string name="repo_workflow_tags">标签: %s</string>
     <string name="overlay_ui_quick_view_title">快速查看</string>
+    <string name="overlay_ui_quick_view_truncated">[内容过长，已截断，仅显示前 %1$d 个字符，共 %2$d 个字符]</string>
     <string name="overlay_ui_image_preview_title">图片预览</string>
     <string name="overlay_ui_input_time_title">请选择时间</string>
     <string name="overlay_ui_input_date_title">请选择日期</string>

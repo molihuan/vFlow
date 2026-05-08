@@ -32,6 +32,7 @@
     <string name="vtype_image_uri">URI地址</string>
     <string name="vtype_image_size">文件大小</string>
     <string name="vtype_image_name">文件名</string>
+    <string name="vtype_image_base64">Base64 编码</string>
 
     <string name="vtype_date_year">年</string>
     <string name="vtype_date_month">月</string>

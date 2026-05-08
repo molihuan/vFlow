@@ -7,10 +7,12 @@ import com.chaomixian.vflow.core.execution.VariableResolver
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
 import com.chaomixian.vflow.core.types.basic.VString
+import com.chaomixian.vflow.core.types.complex.VImage
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
-import java.nio.charset.Charset
+import java.io.File
 import java.util.Base64
+import java.util.UUID
 
 /**
  * Base64 编解码模块。
@@ -99,14 +101,25 @@ class Base64EncodeOrDecodeModule : BaseModule() {
         )
     )
 
-    override fun getOutputs(step: ActionStep?): List<OutputDefinition> = listOf(
-        OutputDefinition(
+    override fun getOutputs(step: ActionStep?): List<OutputDefinition> {
+        val operation = CryptoModuleSupport.getOperation(step, OP_ENCODE)
+        return buildList {
+            add(OutputDefinition(
             id = "result_text",
             name = "结果文本",
             nameStringRes = R.string.output_vflow_data_base64_result_text_name,
             typeName = VTypeRegistry.STRING.id
-        )
-    )
+            ))
+            if (operation == OP_DECODE) {
+                add(OutputDefinition(
+                    id = "result_image",
+                    name = "结果图片",
+                    nameStringRes = R.string.output_vflow_data_base64_result_image_name,
+                    typeName = VTypeRegistry.IMAGE.id
+                ))
+            }
+        }
+    }
 
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
         val inputs = getInputs()
@@ -144,20 +157,29 @@ class Base64EncodeOrDecodeModule : BaseModule() {
         val source = VariableResolver.resolve(rawSource, context)
 
         return try {
-            val result = if (operation == OP_ENCODE) {
+            if (operation == OP_ENCODE) {
                 val bytes = CryptoModuleSupport.decodeByEncoding(
                     source,
                     context.getVariableAsString("text_encoding", CryptoModuleSupport.ENCODING_UTF8)
                 )
-                Base64.getEncoder().encodeToString(bytes)
+                val result = Base64.getEncoder().encodeToString(bytes)
+                ExecutionResult.Success(mapOf("result_text" to VString(result)))
             } else {
                 val decodedBytes = Base64.getDecoder().decode(source)
-                CryptoModuleSupport.encodeByEncoding(
+                val result = CryptoModuleSupport.encodeByEncoding(
                     decodedBytes,
                     context.getVariableAsString("text_encoding", CryptoModuleSupport.ENCODING_UTF8)
                 )
+                val outputFile = File(context.workDir, "base64_decoded_${UUID.randomUUID()}.png")
+                outputFile.parentFile?.mkdirs()
+                outputFile.writeBytes(decodedBytes)
+                ExecutionResult.Success(
+                    mapOf(
+                        "result_text" to VString(result),
+                        "result_image" to VImage(outputFile.toURI().toString())
+                    )
+                )
             }
-            ExecutionResult.Success(mapOf("result_text" to VString(result)))
         } catch (e: IllegalArgumentException) {
             ExecutionResult.Failure("解码失败", "输入的文本不是有效的 Base64 编码格式。")
         } catch (e: Exception) {

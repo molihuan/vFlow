@@ -38,7 +38,21 @@ class ExecutionUIService(private val context: Context) {
         var inputCompletable: CompletableDeferred<Any?>? = null
         private const val INTERACTIVE_CHANNEL_ID = "vflow_interactive_notifications"
         private const val INTERACTIVE_CHANNEL_NAME = "交互式请求"
+        private const val QUICK_VIEW_TEXT_LIMIT = 50_000
         private val notificationIdCounter = AtomicInteger(1000)
+
+        internal fun limitQuickViewContentForIntent(
+            content: String,
+            formatTruncationNotice: (Int, Int) -> String
+        ): String {
+            if (content.length <= QUICK_VIEW_TEXT_LIMIT) return content
+
+            return buildString {
+                append(content.take(QUICK_VIEW_TEXT_LIMIT))
+                append("\n\n")
+                append(formatTruncationNotice(QUICK_VIEW_TEXT_LIMIT, content.length))
+            }
+        }
     }
 
     private val gson = Gson()
@@ -206,12 +220,15 @@ class ExecutionUIService(private val context: Context) {
      * @param content 要显示的文本内容。
      */
     suspend fun showQuickView(title: String, content: String) {
+        val limitedContent = limitQuickViewContentForIntent(content) { limit, total ->
+            context.getString(R.string.overlay_ui_quick_view_truncated, limit, total)
+        }
         val intent = Intent(context, OverlayUIActivity::class.java).apply {
             putExtra("request_type", "quick_view")
             putExtra("title", title)
-            putExtra("content", content)
+            putExtra("content", limitedContent)
         }
-        startActivityAndAwaitResult(intent, title, content.take(50)).await()
+        startActivityAndAwaitResult(intent, title, limitedContent.take(50)).await()
     }
 
     /**

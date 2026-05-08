@@ -47,7 +47,8 @@ object VTypeRegistry {
         VPropertyDef("path", "文件路径", ANY, R.string.vtype_image_path),
         VPropertyDef("uri", "URI地址", ANY, R.string.vtype_image_uri),
         VPropertyDef("size", "文件大小", ANY, R.string.vtype_image_size),
-        VPropertyDef("name", "文件名", ANY, R.string.vtype_image_name)
+        VPropertyDef("name", "文件名", ANY, R.string.vtype_image_name),
+        VPropertyDef("base64", "Base64", STRING, R.string.vtype_image_base64)
     ))
 
     val DATE = SimpleVType("vflow.type.date", "日期", ANY, listOf(
@@ -202,7 +203,7 @@ object VTypeRegistry {
             IMAGE.id -> {
                 when (propertyName) {
                     "width", "宽度", "height", "高度", "size", "文件大小" -> NUMBER
-                    "path", "文件路径", "uri", "URI地址", "name", "文件名" -> STRING
+                    "path", "文件路径", "uri", "URI地址", "name", "文件名", "base64" -> STRING
                     else -> null
                 }
             }

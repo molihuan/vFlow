@@ -14,6 +14,7 @@ import com.chaomixian.vflow.core.types.properties.PropertyRegistry
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import java.io.File
+import java.util.Base64
 import androidx.core.net.toUri
 
 /**
@@ -103,6 +104,21 @@ data class VImage(val uriString: String) : EnhancedBaseVObject(), Parcelable {
                 val img = host as VImage
                 val name = img.uriString.toUri().lastPathSegment ?: "unknown.jpg"
                 VString(name)
+            })
+            register("base64", getter = { host ->
+                val img = host as VImage
+                val bytes = try {
+                    val javaUri = runCatching { java.net.URI(img.uriString) }.getOrNull()
+                    if (javaUri?.scheme == "file") {
+                        File(javaUri).readBytes()
+                    } else {
+                        val uri = Uri.parse(img.uriString)
+                        LogManager.applicationContext.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+                bytes?.let { VString(Base64.getEncoder().encodeToString(it)) } ?: VNull
             })
         }
     }
