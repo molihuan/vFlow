@@ -21,6 +21,7 @@ class CallWorkflowModuleUIProvider : ModuleUIProvider {
     class ViewHolder(view: View) : CustomEditorViewHolder(view) {
         val selectedWorkflowText: TextView = view.findViewById(R.id.text_selected_workflow)
         val selectButton: Button = view.findViewById(R.id.button_select_workflow)
+        var selectedWorkflowId: String? = null
     }
 
     override fun getHandledInputIds(): Set<String> = setOf("workflow_id")
@@ -37,6 +38,9 @@ class CallWorkflowModuleUIProvider : ModuleUIProvider {
         val view = LayoutInflater.from(context).inflate(R.layout.partial_call_workflow_editor, parent, false)
         val holder = ViewHolder(view)
         val workflowManager = WorkflowManager(context)
+        val workflowId = currentParameters["workflow_id"] as? String
+
+        holder.selectedWorkflowId = workflowId
 
         fun updateSelectedWorkflowText(workflowId: String?) {
             holder.selectedWorkflowText.text = if (workflowId != null) {
@@ -46,7 +50,7 @@ class CallWorkflowModuleUIProvider : ModuleUIProvider {
             }
         }
 
-        updateSelectedWorkflowText(currentParameters["workflow_id"] as? String)
+        updateSelectedWorkflowText(workflowId)
 
         holder.selectButton.setOnClickListener {
             val allWorkflows = workflowManager.getAllWorkflows()
@@ -56,8 +60,8 @@ class CallWorkflowModuleUIProvider : ModuleUIProvider {
                 items = allWorkflows.map { WorkflowDialogItem(id = it.id, name = it.name) },
                 onSelected = {
                     val selectedId = it.id
+                    holder.selectedWorkflowId = selectedId
                     updateSelectedWorkflowText(selectedId)
-                    (currentParameters as MutableMap<String, Any?>)["workflow_id"] = selectedId
                     onParametersChanged()
                 }
             )
@@ -67,8 +71,8 @@ class CallWorkflowModuleUIProvider : ModuleUIProvider {
     }
 
     override fun readFromEditor(holder: CustomEditorViewHolder): Map<String, Any?> {
-        // workflow_id 在点击对话框时就已经被设置，这里不需要额外读取
-        return emptyMap()
+        val h = holder as ViewHolder
+        return mapOf("workflow_id" to h.selectedWorkflowId)
     }
 
     override fun createPreview(
