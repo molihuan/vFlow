@@ -16,6 +16,16 @@ import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 // 文件：LoopModule.kt
 // 描述：定义循环 (Loop/EndLoop) 模块，实现重复执行逻辑。
 
+private fun parseLoopCountFromString(raw: String): Long? {
+    raw.toLongOrNull()?.let { return it }
+
+    val number = raw.toDoubleOrNull() ?: return null
+    if (!number.isFinite()) return null
+
+    val asLong = number.toLong()
+    return if (number == asLong.toDouble()) asLong else null
+}
+
 // --- 循环模块常量定义 ---
 const val LOOP_PAIRING_ID = "loop" // Loop块的配对ID
 const val LOOP_START_ID = "vflow.logic.loop.start" // Loop模块ID
@@ -85,7 +95,7 @@ class LoopModule : BaseBlockModule() {
     override fun validate(step: ActionStep, allSteps: List<ActionStep>): ValidationResult {
         val count = step.parameters["count"]
         if (count is String && !count.isMagicVariable()) { // 非魔法变量字符串
-            val countAsLong = count.toLongOrNull()
+            val countAsLong = parseLoopCountFromString(count)
             if (countAsLong == null) return ValidationResult(false, "无效的数字格式")
             if (countAsLong <= 0) return ValidationResult(false, "循环次数必须大于0")
         } else if (count is Number) { // 数字类型
@@ -102,7 +112,7 @@ class LoopModule : BaseBlockModule() {
         val countVar = context.getVariable("count")
         val actualCount: Long? = when (countVar) {
             is VNumber -> countVar.raw.toLong()
-            is VString -> countVar.raw.toLongOrNull()
+            is VString -> parseLoopCountFromString(countVar.raw)
             is VNull -> null
             else -> null
         }
