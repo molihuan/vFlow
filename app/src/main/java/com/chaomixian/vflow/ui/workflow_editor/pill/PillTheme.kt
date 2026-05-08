@@ -3,7 +3,6 @@
 package com.chaomixian.vflow.ui.workflow_editor.pill
 
 import android.content.Context
-import android.os.Build
 import androidx.core.content.ContextCompat
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.module.ModuleCategories
@@ -28,11 +27,7 @@ object PillTheme {
     fun getCategoryColor(category: String): Int {
         val colorRes = ModuleCategories.getSpec(category)?.colorRes
         if (colorRes != null) return colorRes
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            com.google.android.material.R.color.material_dynamic_neutral30
-        } else {
-            R.color.static_pill_color
-        }
+        return R.color.static_pill_color
     }
 
     /**
