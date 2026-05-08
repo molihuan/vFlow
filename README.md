@@ -1,49 +1,58 @@
-# vFlow - 强大的 Android 可视化工作流自动化工具
-[English](README_EN.md) | 简体中文
-<div>
+<p align="center">
+  <img src="docs/readme_app_icon.svg" width="112" alt="vFlow App Icon" />
+</p>
 
-  <a href="https://discord.gg/7AMqhjdUH6" target="_blank">
-    <img src="https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord"/>
-  </a>
-  <a href="https://qm.qq.com/q/5OhnIUNHzO" target="_blank" style="margin-left: 6px;">
-    <img src="https://img.shields.io/badge/Join%20QQ%20Group-%230366CC?style=for-the-badge&logo=qq&logoColor=white" alt="Join QQ Group"/>
-  </a>
+<h1 align="center">vFlow</h1>
 
-</div>
+<p align="center">
+  Android 可视化自动化工具，让点击、识别、判断与系统操作串成高效、易用的工作流
+</p>
 
-[![Latest Release](https://img.shields.io/github/v/release/ChaoMixian/vFlow?display_name=tag&style=flat-square)](https://github.com/ChaoMixian/vFlow/releases/latest)
-[![GitHub Stars](https://img.shields.io/github/stars/ChaoMixian/vFlow?style=flat-square)](https://github.com/ChaoMixian/vFlow/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/ChaoMixian/vFlow?style=flat-square)](https://github.com/ChaoMixian/vFlow/network/members)
-[![GitHub Issues](https://img.shields.io/github/issues/ChaoMixian/vFlow?style=flat-square)](https://github.com/ChaoMixian/vFlow/issues)
-[![License](https://img.shields.io/github/license/ChaoMixian/vFlow?style=flat-square)](LICENSE)
-[![API](https://img.shields.io/badge/API-21%2B-brightgreen?style=flat-square)](https://android-arsenal.com/api?level=21)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20-blue?style=flat-square&logo=kotlin)](https://kotlinlang.org)
+<p align="center">
+  <a href="README_EN.md">English</a> · 简体中文
+</p>
 
-**vFlow** 是一款为 Android 平台设计的、强大且高度可扩展的自动化工具。它允许你通过图形化界面，将一系列“动作模块”自由组合成强大的“工作流”，从而自动完成各种日常的、重复性的屏幕操作任务。
+<p align="center">
+  <a href="https://github.com/ChaoMixian/vFlow/releases/latest"><img src="https://img.shields.io/github/v/release/ChaoMixian/vFlow?display_name=tag&style=flat-square" alt="Latest Release" /></a>
+  <a href="https://github.com/ChaoMixian/vFlow/stargazers"><img src="https://img.shields.io/github/stars/ChaoMixian/vFlow?style=flat-square" alt="GitHub Stars" /></a>
+  <a href="https://github.com/ChaoMixian/vFlow/network/members"><img src="https://img.shields.io/github/forks/ChaoMixian/vFlow?style=flat-square" alt="GitHub Forks" /></a>
+  <a href="https://github.com/ChaoMixian/vFlow/issues"><img src="https://img.shields.io/github/issues/ChaoMixian/vFlow?style=flat-square" alt="GitHub Issues" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/ChaoMixian/vFlow?style=flat-square" alt="License" /></a>
+  <a href="https://android-arsenal.com/api?level=29"><img src="https://img.shields.io/badge/API-29%2B-brightgreen?style=flat-square" alt="Android API 29+" /></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.3.20-blue?style=flat-square&logo=kotlin" alt="Kotlin" /></a>
+</p>
 
-> [!WARNING]
-> **免责声明**: 使用本软件即表示您已充分理解并接受所有条款。本软件涉及自动化操作、Root权限执行等高风险功能，可能导致设备损坏、数据丢失、账号封禁等风险。**所有风险由用户自行承担，开发者不承担任何责任。** 请在使用前仔细阅读 [完整免责声明](DISCLAIMER.md)。
+<p align="center">
+  <a href="https://discord.gg/7AMqhjdUH6" target="_blank"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join Discord" /></a>
+  <a href="https://qm.qq.com/q/5OhnIUNHzO" target="_blank"><img src="https://img.shields.io/badge/QQ%20Group-0366CC?style=for-the-badge&logo=qq&logoColor=white" alt="Join QQ Group" /></a>
+</p>
 
-## ✨ 项目简介
+<p align="center">
+  <a href="https://trendshift.io/repositories/17290" target="_blank"><img src="https://trendshift.io/api/badge/repositories/17290" alt="ChaoMixian%2FvFlow | Trendshift" style="width: 250px; height: 55px;" width="250" height="55" /></a>
+</p>
+
+
+## 📸 应用截图
+
+<table align="center">
+  <tr>
+    <td><img src="docs/screenshots/home_zh.png" width="200"></td>
+    <td><img src="docs/screenshots/editor_zh.png" width="200"></td>
+    <td><img src="docs/screenshots/settings_zh.png" width="200"></td>
+  </tr>
+  <tr>
+    <td align="center">首页</td>
+    <td align="center">工作流编辑</td>
+    <td align="center">设置</td>
+  </tr>
+</table>
+
+## 🎁 vFlow 是什么
 
 **vFlow 的核心设计理念** 是将复杂的自动化逻辑分解为一个个独立、可复用、易于理解的模块。无论是简单的“每日签到”，还是包含复杂条件判断和循环的“自动化测试流程”，vFlow 都旨在提供一个直观、灵活且强大的平台。
 
 项目完全采用 Kotlin 编写，并遵循现代 Android 开发实践。其核心架构（模块注册表、动态 UI 生成器、类型安全的执行上下文）被精心设计，不仅保证了当前功能的稳定性，也为未来添加更多、更强大的自动化模块提供了无限可能。无论你是希望解放双手的普通用户，还是寻求灵感和实践的开发者，vFlow 都欢迎你的探索和贡献。
 
-## 📸 应用截图
-
-<table>
-  <tr>
-    <td><img src="docs/home_fragment.png" width="200"></td>
-    <td><img src="docs/workflow_editor.png" width="200"></td>
-    <td><img src="docs/module_fragment.png" width="200"></td>
-  </tr>
-  <tr>
-    <td align="center">首页</td>
-    <td align="center">工作流编辑</td>
-    <td align="center">模块管理器</td>
-  </tr>
-</table>
 
 ## 🚀 主要特性
 
@@ -58,33 +67,48 @@
 
 ## 🛠️ 技术架构概览
 
-vFlow App 的核心是其高度解耦的模块化架构。
+vFlow 目前由两个主要部分组成：运行在 Android 应用进程内的工作流引擎，以及按需启动的 `vFlowCore.dex` 后端。前者负责模块注册、编辑、执行与触发器调度，后者负责一部分需要更高权限或独立进程隔离的系统能力。
 
 1.  **模块 (Module)**
 
-    - 所有自动化动作的实现基础，每个模块都实现了 `ActionModule` 接口。
-    - 模块负责定义自身的元数据（名称、图标）、输入输出参数、UI 摘要、执行逻辑以及所需权限。
-    - **示例**: `ClickModule`, `IfModule`, `LoopModule`。
+    - 所有动作、触发器和控制流节点都基于 `ActionModule` 接口。
+    - 大多数模块继承 `BaseModule`；成对或成块的控制流模块通常继承 `BaseBlockModule`。
+    - 模块除了执行逻辑外，还会声明 `ActionMetadata`、`InputDefinition`、`OutputDefinition`、权限需求、摘要文本，以及可选的 `ModuleUIProvider` 自定义编辑界面。
+    - **示例**: `ClickModule`、`IfModule`、`TimeTriggerModule`。
 
 2.  **模块注册表 (ModuleRegistry)**
 
-    - 一个单例对象，在应用启动时注册所有可用的模块。
-    - 为应用的其他部分（如动作选择器）提供按分类获取模块的能力。
+    - `app/src/main/java/com/chaomixian/vflow/core/workflow/module/ModuleRegistry.kt` 负责集中注册内建模块。
+    - 注册时会给 `BaseModule` 注入 `ApplicationContext`，并按分类向动作选择器、编辑器、执行器等组件暴露模块。
+    - 当前内建模块覆盖触发器、交互、逻辑、数据、文件、网络、系统、Core、Shizuku、Snippet 和 UI 组件等类别。
 
 3.  **工作流编辑器 (Workflow Editor)**
 
     - `WorkflowEditorActivity` 是核心 UI，负责展示和操作 `ActionStep` 列表。
     - `ActionStepAdapter` 将 `ActionStep` 数据渲染为用户可见的卡片列表。
-    - `ActionEditorSheet` 是一个通用的底部表单，它能根据任何模块的 `InputDefinition` 动态生成编辑界面，实现了 UI 与模块逻辑的完全解耦。
+    - `ActionEditorSheet` 会基于模块的 `InputDefinition`、动态输入定义和 `ModuleUIProvider` 组合生成编辑界面，不只是“静态表单”。
+    - 编辑器还会处理魔法变量、参数可见性、错误处理策略、块结构编辑以及部分模块的专用配置入口。
 
 4.  **工作流执行器 (WorkflowExecutor)**
-    - 负责按顺序执行工作流中的每一个步骤。
-    - 为每个步骤创建包含上下文信息（如魔法变量值、服务实例）的 `ExecutionContext`。
-    - 处理模块返回的不同结果，如成功、失败，或跳转、循环等流程控制信号。
 
-vFlow Core 采用 Master-Worker 多进程架构，基于 TCP Socket 通信与自定义 JSON-RPC 协议，将指令动态路由至 Shell 或 Root 权限的子进程执行，实现了严格的权限隔离与高效的系统服务管控。
+    - `WorkflowExecutor` 基于协程执行工作流，维护运行实例、重入策略、日志、超时和停止控制。
+    - 执行时会构造 `ExecutionContext`，统一携带变量、魔法变量、触发器数据、服务实例、步骤输出和临时工作目录。
+    - 它不仅顺序执行步骤，也负责条件分支、循环、子工作流、失败策略和通知状态同步。
 
-![vFlow Core Architecture](docs/vFlow_Core_Architecture.png)
+5.  **触发器与后台服务**
+
+    - `TriggerService`、`VoiceTriggerService`、`TimeTriggerReceiver` 等组件负责监听系统事件并拉起工作流执行。
+    - 这部分让工作流既可以手动运行，也可以由时间、通知、剪贴板、位置、语音等事件驱动。
+
+6.  **vFlow Core**
+
+    - `core/` 模块会构建出 `app/src/main/assets/vFlowCore.dex`，由应用侧通过 `CoreLauncher` / `VFlowCoreBridge` 启动和连接。
+    - 当前 Core 是 Master-Worker 架构。Master 负责接收请求并路由到 Shell 或 Root Worker。
+    - App 与 Core 之间通过本地 Socket 通信，支持 TCP 和 Unix Domain Socket 两种传输方式；部分高权限系统能力通过 Core 模块暴露给工作流。
+
+<p align="center">
+  <img src="docs/vFlow_Core_Architecture.png" alt="vFlow Core Architecture" width="780" />
+</p>
 
 ## 📦 如何构建
 
@@ -108,13 +132,16 @@ vFlow Core 采用 Master-Worker 多进程架构，基于 TCP Socket 通信与自
 
 ### 💻 开发一个新模块
 
-vFlow 最常见的贡献方式就是添加新的模块。步骤如下：
+这部分总体方向还是对的，但按当前代码，推荐流程比“新建类然后注册”更具体一些：
 
-1.  在 `com.chaomixian.vflow.core.workflow.module` 包下的相应分类中创建一个新的 Kotlin 类。
-2.  让它继承自 `BaseModule` 或 `BaseBlockModule`。
-3.  实现 `ActionModule` 接口中的必要属性和方法（如 `id`, `metadata`, `getInputs`, `getOutputs`, `execute`）。
-4.  在 `ModuleRegistry.kt` 的 `initialize()` 方法中注册你的新模块。
-5.  就是这样！你的模块现在应该会自动出现在动作选择器中并可以正常使用了。
+1.  在 `app/src/main/java/com/chaomixian/vflow/core/workflow/module/` 下选择合适分类创建模块类，例如 `interaction/`、`logic/`、`triggers/`。
+2.  普通模块通常继承 `BaseModule`；如果是 `If / Loop / UI 容器` 这类成块结构，优先参考 `BaseBlockModule` 和现有块模块实现。
+3.  为模块定义稳定的 `id`、`metadata`、输入输出定义，以及 `execute()` 逻辑。新增枚举型参数时，请保存稳定常量值，不要直接保存本地化文案。
+4.  如果参数界面比较特殊，可以提供 `uiProvider`；如果通用表单足够，编辑器会直接根据 `InputDefinition` 自动生成 UI。
+5.  在 `app/src/main/java/com/chaomixian/vflow/core/workflow/module/ModuleRegistry.kt` 的 `initialize()` 中注册模块，让它出现在选择器和执行器里。
+6.  如果模块需要权限、触发器联动、Core/Shizuku 能力、字符串资源或图标资源，还需要同步补齐对应实现，而不只是注册类本身。
+7.  如果你替换了历史上已经发布过的参数值，记得在定义层添加兼容映射（如 `legacyValueMap`）；全新模块不要预先添加无依据的兼容逻辑。
+8.  最后补上测试。涉及解析、执行、类型或兼容行为变化时，优先在 `app/src/test/java` 添加对应单元测试。
 
 [开发指南](docs/CONTRIBUTION.md)
 
@@ -131,12 +158,19 @@ vFlow 最常见的贡献方式就是添加新的模块。步骤如下：
 vFlow 还在成长，相比成熟软件，功能存在较大差距。当前保持为爱发电，**不接受赞助**，感谢。
 
 <details>
-<summary>赞助名单 (非通过 vFlow 项目，按时间顺序)</summary>
+<summary>赞助名单（非通过 vFlow 项目，按时间顺序）</summary>
 
-```
-鲨鱼辣椒    RMB 18.88   2026/01/29
-罗密欧的沉默  RMB 26.66   2026/02/10
-起飞      RMB 200.00      2026/04/08
+```text
+鲨鱼辣椒      RMB 18.88    2026/01/29
+罗密欧的沉默   RMB 26.66    2026/02/10
+起飞          RMB 200.00   2026/04/08
+起飞          RMB 500.00   2026/04/15
+起飞          RMB 800.00   2026/05/02
 ```
 
 </details>
+
+---
+
+> [!WARNING]
+> **免责声明**: 使用本软件即表示您已充分理解并接受所有条款。本软件涉及自动化操作、Root权限执行等高风险功能，可能导致设备损坏、数据丢失、账号封禁等风险。**所有风险由用户自行承担，开发者不承担任何责任。** 请在使用前仔细阅读 [完整免责声明](DISCLAIMER.md)。
