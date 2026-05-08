@@ -95,6 +95,7 @@ data class SettingsScreenActions(
     val onSetForceKeepAliveEnabled: (Boolean) -> Unit,
     val onSetAutoEnableAccessibility: (Boolean) -> Unit,
     val onSetEnableTypeFilter: (Boolean) -> Unit,
+    val onSetAllowPopupKeepScreenOn: (Boolean) -> Unit,
     val onSetHideFromRecents: (Boolean) -> Unit,
     val onSetDefaultShellMode: (String) -> Unit,
     val onOpenPermissionManager: () -> Unit,
@@ -203,6 +204,9 @@ fun SettingsScreen(
     val typeFilterTitle = stringResource(R.string.settings_switch_enable_type_filter)
     val typeFilterSubtitle = stringResource(R.string.settings_switch_enable_type_filter_summary)
     val typeFilterInfo = stringResource(R.string.settings_switch_enable_type_filter_desc)
+    val popupKeepScreenOnTitle = stringResource(R.string.settings_switch_allow_popup_keep_screen_on)
+    val popupKeepScreenOnSubtitle = stringResource(R.string.settings_switch_allow_popup_keep_screen_on_summary)
+    val popupKeepScreenOnInfo = stringResource(R.string.settings_switch_allow_popup_keep_screen_on_desc)
     val hideRecentsTitle = stringResource(R.string.settings_switch_hide_from_recents)
     val hideRecentsSubtitle = stringResource(R.string.settings_switch_hide_from_recents_desc)
 
@@ -262,6 +266,7 @@ fun SettingsScreen(
         forceKeepAliveTitle, forceKeepAliveSubtitle, forceKeepAliveInfo,
         autoAccessibilityTitle, autoAccessibilitySubtitle, autoAccessibilityInfo,
         typeFilterTitle, typeFilterSubtitle, typeFilterInfo,
+        popupKeepScreenOnTitle, popupKeepScreenOnSubtitle, popupKeepScreenOnInfo,
         hideRecentsTitle, hideRecentsSubtitle
     ).any { matchesSearch(normalizedQuery, it) }
     val showPermissionsSection = listOf(
@@ -495,6 +500,16 @@ fun SettingsScreen(
                     checked = uiState.enableTypeFilter,
                     onCheckedChange = actions.onSetEnableTypeFilter,
                     infoText = typeFilterInfo
+                )
+                NativeSwitchRow(
+                    title = popupKeepScreenOnTitle,
+                    subtitle = popupKeepScreenOnSubtitle,
+                    icon = Icons.Default.Lock,
+                    tone = languageTone(),
+                    position = SettingsGroupPosition.Middle,
+                    checked = uiState.allowPopupKeepScreenOn,
+                    onCheckedChange = actions.onSetAllowPopupKeepScreenOn,
+                    infoText = popupKeepScreenOnInfo
                 )
                 NativeSwitchRow(
                     title = hideRecentsTitle,

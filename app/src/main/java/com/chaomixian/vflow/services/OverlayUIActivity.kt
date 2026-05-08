@@ -128,7 +128,9 @@ class OverlayUIActivity : AppCompatActivity() {
         val allowShowOnLockScreen = OverlayUiPreferences.isShowOnLockScreenAllowed(this)
         setShowWhenLocked(allowShowOnLockScreen)
         setTurnScreenOn(allowShowOnLockScreen)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (OverlayUiPreferences.isPopupKeepScreenOnAllowed(this)) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 
     private fun handleIntent() {

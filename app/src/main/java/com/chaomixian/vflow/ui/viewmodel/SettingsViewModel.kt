@@ -32,6 +32,7 @@ data class SettingsUiState(
     val forceKeepAliveEnabled: Boolean = false,
     val autoEnableAccessibility: Boolean = false,
     val enableTypeFilter: Boolean = false,
+    val allowPopupKeepScreenOn: Boolean = false,
     val hideFromRecents: Boolean = false,
     val allowShowOnLockScreen: Boolean = false,
     val defaultShellMode: String = "shizuku",
@@ -72,6 +73,7 @@ class SettingsViewModel : ViewModel() {
                 forceKeepAliveEnabled = prefs.getBoolean(KEY_FORCE_KEEP_ALIVE_ENABLED, false),
                 autoEnableAccessibility = prefs.getBoolean(KEY_AUTO_ENABLE_ACCESSIBILITY, false),
                 enableTypeFilter = prefs.getBoolean(KEY_ENABLE_TYPE_FILTER, false),
+                allowPopupKeepScreenOn = OverlayUiPreferences.isPopupKeepScreenOnAllowed(context),
                 hideFromRecents = prefs.getBoolean(KEY_HIDE_FROM_RECENTS, false),
                 allowShowOnLockScreen = OverlayUiPreferences.isShowOnLockScreenAllowed(context),
                 defaultShellMode = prefs.getString(
@@ -160,6 +162,11 @@ class SettingsViewModel : ViewModel() {
     fun setHideFromRecents(context: Context, enabled: Boolean) = editPref(context) {
         putBoolean(KEY_HIDE_FROM_RECENTS, enabled)
         _uiState.update { it.copy(hideFromRecents = enabled) }
+    }
+
+    fun setAllowPopupKeepScreenOn(context: Context, enabled: Boolean) = editPref(context) {
+        putBoolean(OverlayUiPreferences.KEY_ALLOW_POPUP_KEEP_SCREEN_ON, enabled)
+        _uiState.update { it.copy(allowPopupKeepScreenOn = enabled) }
     }
 
     fun setAllowShowOnLockScreen(context: Context, enabled: Boolean) = editPref(context) {

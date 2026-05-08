@@ -236,6 +236,9 @@ fun SettingsRoute(
             onSetEnableTypeFilter = { enabled ->
                 settingsViewModel.setEnableTypeFilter(context, enabled)
             },
+            onSetAllowPopupKeepScreenOn = { enabled ->
+                settingsViewModel.setAllowPopupKeepScreenOn(context, enabled)
+            },
             onSetHideFromRecents = { enabled ->
                 settingsViewModel.setHideFromRecents(context, enabled)
                 context.toast(

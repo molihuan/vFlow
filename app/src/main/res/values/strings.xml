@@ -374,6 +374,9 @@
     <string name="settings_switch_enable_type_filter">启用变量类型限制</string>
     <string name="settings_switch_enable_type_filter_summary">按类型筛选变量与操作符</string>
     <string name="settings_switch_enable_type_filter_desc">开启后，变量选择器将按模块输入类型过滤变量，IF/循环模块的操作符也会按变量类型过滤。关闭时为快捷指令风格的弱类型模式。</string>
+    <string name="settings_switch_allow_popup_keep_screen_on">允许弹窗阻止息屏</string>
+    <string name="settings_switch_allow_popup_keep_screen_on_summary">弹窗显示时保持屏幕常亮</string>
+    <string name="settings_switch_allow_popup_keep_screen_on_desc">开启后，输入框、报错提示等 vFlow 弹窗显示期间会阻止系统自动息屏。默认关闭以减少待处理弹窗造成的额外耗电。</string>
     <string name="settings_switch_hide_from_recents">从最近任务中隐藏</string>
     <string name="settings_switch_hide_from_recents_desc">不出现在最近任务列表。</string>
     <string name="settings_toast_hide_from_recents_enabled">已开启从最近任务中隐藏</string>
