@@ -1652,9 +1652,6 @@ class WorkflowEditorActivity : BaseActivity() {
         }
         sheet.onMetadataSaved = { updatedWorkflow ->
             currentWorkflow = updatedWorkflow
-            if (updatedWorkflow.name.isNotBlank()) {
-                workflowManager.saveWorkflow(updatedWorkflow)
-            }
         }
         sheet.show(supportFragmentManager, "EditorMoreOptionsSheet")
     }

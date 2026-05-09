@@ -665,6 +665,7 @@
     <string name="workflow_tags_hint">标签</string>
     <string name="workflow_tags_helper">多个标签用逗号分隔</string>
     <string name="metadata_saved">元数据已保存</string>
+    <string name="metadata_updated_pending_save">元数据已更新，保存工作流后生效</string>
 
     <!-- Workflow Config -->
     <string name="workflow_config">工作流配置</string>

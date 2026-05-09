@@ -665,6 +665,7 @@
     <string name="workflow_tags_hint">Tags</string>
     <string name="workflow_tags_helper">Separate tags with commas</string>
     <string name="metadata_saved">Metadata saved</string>
+    <string name="metadata_updated_pending_save">Metadata updated. Save the workflow to apply it.</string>
 
     <!-- Workflow Config -->
     <string name="workflow_config">Workflow Config</string>

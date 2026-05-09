@@ -95,6 +95,7 @@ class EditorMoreOptionsSheet : BottomSheetDialogFragment() {
     private var selectedReentryBehavior by mutableStateOf(WorkflowReentryBehavior.BLOCK_NEW)
 
     private var isMoreMetadataExpanded = false
+    private var metadataCommittedByAction = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
@@ -113,6 +114,11 @@ class EditorMoreOptionsSheet : BottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.sheet_editor_more_options, container, false)
+    }
+
+    override fun onDismiss(dialog: android.content.DialogInterface) {
+        commitMetadataToEditorState(showToast = false)
+        super.onDismiss(dialog)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -220,7 +226,9 @@ class EditorMoreOptionsSheet : BottomSheetDialogFragment() {
 
         // 保存元数据
         btnSaveMetadata.setOnClickListener {
-            saveMetadata()
+            commitMetadataToEditorState(showToast = true)
+            metadataCommittedByAction = true
+            dismiss()
         }
 
         layoutAiGenerate.setOnClickListener {
@@ -330,8 +338,9 @@ class EditorMoreOptionsSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun saveMetadata() {
+    private fun commitMetadataToEditorState(showToast: Boolean) {
         val wf = workflow ?: return
+        if (metadataCommittedByAction && !showToast) return
 
         val version = editVersion.text?.toString()?.trim() ?: getString(R.string.default_workflow_version)
         val vFlowLevel = editVFlowLevel.text?.toString()?.toIntOrNull() ?: 1
@@ -364,9 +373,11 @@ class EditorMoreOptionsSheet : BottomSheetDialogFragment() {
             cardThemeColor = selectedThemeColor
         )
 
+        workflow = updatedWorkflow
         onMetadataSaved?.invoke(updatedWorkflow)
-        Toast.makeText(requireContext(), R.string.metadata_saved, Toast.LENGTH_SHORT).show()
-        dismiss()
+        if (showToast) {
+            Toast.makeText(requireContext(), R.string.metadata_updated_pending_save, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun copyToClipboard(text: String) {
