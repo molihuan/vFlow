@@ -929,6 +929,7 @@
     <string name="output_vflow_data_file_operation_mime_type_name">MIME类型</string>
     <string name="output_vflow_data_file_operation_size_name">文件大小</string>
     <string name="output_vflow_data_file_operation_success_name">是否成功</string>
+    <string name="output_vflow_data_file_operation_exists_name">文件是否存在</string>
     <string name="output_vflow_data_file_operation_message_name">操作信息</string>
     <string name="output_vflow_data_file_operation_file_path_name">文件路径</string>
     <string name="summary_vflow_data_file_operation_create_prefix">创建: </string>

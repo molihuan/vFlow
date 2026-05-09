@@ -235,6 +235,8 @@ class FileOperationModule : BaseModule() {
 
         return when (operation) {
             OP_READ -> listOf(
+                OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_success_name),
+                OutputDefinition("exists", "文件是否存在", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_exists_name),
                 OutputDefinition("content", "文件内容", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_content_name),
                 OutputDefinition("file", "文件", VTypeRegistry.FILE.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name),
                 OutputDefinition("file_name", "文件名", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name_name),
@@ -243,6 +245,7 @@ class FileOperationModule : BaseModule() {
             )
             OP_CREATE -> listOf(
                 OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_success_name),
+                OutputDefinition("exists", "文件是否存在", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_exists_name),
                 OutputDefinition("message", "操作信息", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_message_name),
                 OutputDefinition("file", "文件", VTypeRegistry.FILE.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name),
                 OutputDefinition("file_path", "文件路径", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_file_path_name),
@@ -250,6 +253,7 @@ class FileOperationModule : BaseModule() {
             )
             else -> listOf(
                 OutputDefinition("success", "是否成功", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_success_name),
+                OutputDefinition("exists", "文件是否存在", VTypeRegistry.BOOLEAN.id, nameStringRes = R.string.output_vflow_data_file_operation_exists_name),
                 OutputDefinition("message", "操作信息", VTypeRegistry.STRING.id, nameStringRes = R.string.output_vflow_data_file_operation_message_name),
                 OutputDefinition("file", "文件", VTypeRegistry.FILE.id, nameStringRes = R.string.output_vflow_data_file_operation_file_name)
             )
@@ -442,7 +446,8 @@ class FileOperationModule : BaseModule() {
         if (!file.exists() || !file.isFile) {
             return ExecutionResult.Failure(
                 context.getString(R.string.error_vflow_data_file_operation_execution_error),
-                context.getString(R.string.error_vflow_data_file_operation_open_failed)
+                context.getString(R.string.error_vflow_data_file_operation_open_failed),
+                mapOf("success" to false, "exists" to false)
             )
         }
 
@@ -464,6 +469,8 @@ class FileOperationModule : BaseModule() {
                     onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_read_complete), 100))
 
                     ExecutionResult.Success(mapOf(
+                        "success" to true,
+                        "exists" to true,
                         "content" to content.toString(),
                         "file" to VFile(file.toURI().toString(), mimeType),
                         "file_name" to fileName,
@@ -500,6 +507,8 @@ class FileOperationModule : BaseModule() {
                     onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_read_complete), 100))
 
                     ExecutionResult.Success(mapOf(
+                        "success" to true,
+                        "exists" to true,
                         "content" to content.toString(),
                         "file" to VFile(uriString, mimeType),
                         "file_name" to uri.lastPathSegment.orEmpty().ifBlank { "unknown" },
@@ -509,14 +518,16 @@ class FileOperationModule : BaseModule() {
                 }
             } ?: ExecutionResult.Failure(
                 context.getString(R.string.error_vflow_data_file_operation_execution_error),
-                context.getString(R.string.error_vflow_data_file_operation_open_failed)
+                context.getString(R.string.error_vflow_data_file_operation_open_failed),
+                mapOf("success" to false, "exists" to false)
             )
         } catch (e: java.io.UnsupportedEncodingException) {
             ExecutionResult.Failure(context.getString(R.string.error_vflow_data_file_operation_encoding_error), context.getString(R.string.error_vflow_data_file_operation_unsupported_encoding, encoding))
         } catch (_: Exception) {
             ExecutionResult.Failure(
                 context.getString(R.string.error_vflow_data_file_operation_execution_error),
-                context.getString(R.string.error_vflow_data_file_operation_open_failed)
+                context.getString(R.string.error_vflow_data_file_operation_open_failed),
+                mapOf("success" to false, "exists" to false)
             )
         }
     }
@@ -571,6 +582,7 @@ class FileOperationModule : BaseModule() {
 
             ExecutionResult.Success(mapOf(
                 "success" to true,
+                "exists" to true,
                 "message" to "$message: $filePath",
                 "file" to VFile(file.toURI().toString(), getMimeType(file))
             ))
@@ -608,6 +620,7 @@ class FileOperationModule : BaseModule() {
 
             ExecutionResult.Success(mapOf(
                 "success" to true,
+                "exists" to true,
                 "message" to "$message: $uriString",
                 "file" to VFile(uriString, context.contentResolver.getType(uri).orEmpty())
             ))
@@ -677,6 +690,7 @@ class FileOperationModule : BaseModule() {
             onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_delete_complete), 100))
             ExecutionResult.Success(mapOf(
                 "success" to true,
+                "exists" to false,
                 "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, filePath),
                 "file" to VFile(file.toURI().toString(), getMimeType(file))
             ))
@@ -700,6 +714,7 @@ class FileOperationModule : BaseModule() {
             onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_delete_complete), 100))
             ExecutionResult.Success(mapOf(
                 "success" to true,
+                "exists" to false,
                 "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, uriString),
                 "file" to VFile(uriString)
             ))
@@ -782,6 +797,7 @@ class FileOperationModule : BaseModule() {
 
         return ExecutionResult.Success(mapOf(
             "success" to true,
+            "exists" to true,
             "message" to context.getString(R.string.message_vflow_data_file_operation_created, fileName),
             "file" to VFile(newFile.toURI().toString(), getMimeType(newFile)),
             "file_path" to newFile.absolutePath,
@@ -853,6 +869,8 @@ class FileOperationModule : BaseModule() {
         onProgress(ProgressUpdate(context.getString(R.string.progress_vflow_data_file_operation_read_complete), 100))
         return ExecutionResult.Success(
             mapOf(
+                "success" to true,
+                "exists" to true,
                 "content" to content,
                 "file" to VFile(file.toURI().toString(), getMimeType(file)),
                 "file_name" to file.name.ifBlank { "unknown" },
@@ -913,6 +931,7 @@ class FileOperationModule : BaseModule() {
         return ExecutionResult.Success(
             mapOf(
                 "success" to true,
+                "exists" to true,
                 "message" to "$message: $normalizedPath",
                 "file" to VFile(File(normalizedPath).toURI().toString(), getMimeType(File(normalizedPath)))
             )
@@ -937,6 +956,7 @@ class FileOperationModule : BaseModule() {
             ExecutionResult.Success(
                 mapOf(
                     "success" to true,
+                    "exists" to false,
                     "message" to context.getString(R.string.message_vflow_data_file_operation_deleted, normalizedPath),
                     "file" to VFile(File(normalizedPath).toURI().toString(), getMimeType(File(normalizedPath)))
                 )
@@ -996,6 +1016,7 @@ class FileOperationModule : BaseModule() {
         return ExecutionResult.Success(
             mapOf(
                 "success" to true,
+                "exists" to true,
                 "message" to context.getString(R.string.message_vflow_data_file_operation_created, fileName),
                 "file" to VFile(File(targetPath).toURI().toString(), getMimeType(File(targetPath))),
                 "file_path" to targetPath,
