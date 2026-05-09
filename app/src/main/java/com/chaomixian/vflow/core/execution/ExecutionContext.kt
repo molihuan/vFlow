@@ -13,6 +13,7 @@ import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
 import com.chaomixian.vflow.core.types.complex.VNotification
 import com.chaomixian.vflow.core.types.complex.VUiComponent
+import com.chaomixian.vflow.core.workflow.GlobalVariableStore
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.core.workflow.module.ui.model.UiElement
 import java.io.File
@@ -104,6 +105,18 @@ data class ExecutionContext(
      */
     fun setMagicVariable(key: String, value: Any?) {
         magicVariables[key] = VObjectFactory.from(value)
+    }
+
+    fun getGlobalVariable(key: String): VObject {
+        return GlobalVariableStore.get(applicationContext, key)
+    }
+
+    fun setGlobalVariable(key: String, value: Any?) {
+        GlobalVariableStore.put(applicationContext, key, value)
+    }
+
+    fun removeGlobalVariable(key: String) {
+        GlobalVariableStore.remove(applicationContext, key)
     }
 
     /**

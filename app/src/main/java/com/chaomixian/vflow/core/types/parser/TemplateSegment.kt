@@ -14,6 +14,6 @@ sealed class TemplateSegment {
     data class Variable(
         val path: List<String>,      // 路径链: ["step1", "output", "width"]
         val rawExpression: String,   // 原始表达式: "{{step1.output.width}}" (用于调试或回退)
-        val isNamedVariable: Boolean = false // 标记是否为 [[name]] 格式
+        val isNamedVariable: Boolean = false // 标记是否为命名变量格式（[[name]] 或 {{vars.name}}）
     ) : TemplateSegment()
 }

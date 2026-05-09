@@ -108,6 +108,8 @@
     <string name="settings_switch_force_keep_alive_desc">实验性功能。启用后可通过下拉通知栏触发恢复；若 Shizuku 可用，则提供额外进程守护。可能会增加耗电。</string>
     <string name="settings_module_config">模块配置</string>
     <string name="settings_module_config_desc">配置各个模块的运行参数。</string>
+    <string name="settings_global_variables">全局变量</string>
+    <string name="settings_global_variables_desc">管理持久化全局变量。</string>
     <string name="settings_model_config">模型配置</string>
     <string name="settings_model_config_desc">管理聊天使用的供应商、密钥和模型。</string>
     <string name="settings_switch_auto_check_updates">自动检测更新</string>
@@ -1372,4 +1374,22 @@
     <string name="api_settings_toast_stopped">远程API已停止</string>
     <string name="api_settings_label">API管理</string>
     <string name="api_settings_desc">查看服务器状态和管理访问令牌</string>
+    <string name="module_config_section_global_variables">全局变量</string>
+    <string name="global_variable_config_title">全局变量</string>
+    <string name="global_variable_config_desc">跨工作流共享的持久化全局变量。</string>
+    <string name="global_variable_config_add">新增变量</string>
+    <string name="global_variable_config_edit">编辑</string>
+    <string name="global_variable_config_delete">删除</string>
+    <string name="global_variable_config_empty">还没有全局变量。</string>
+    <string name="global_variable_config_name_label">变量名</string>
+    <string name="global_variable_config_value_label">变量值</string>
+    <string name="global_variable_config_text_hint">例如 Hello,vFlow!</string>
+    <string name="global_variable_config_number_value">数值</string>
+    <string name="global_variable_config_number_hint">例如 123</string>
+    <string name="global_variable_config_boolean_value">布尔值</string>
+    <string name="global_variable_config_invalid_name">请输入有效的变量名</string>
+    <string name="global_variable_config_duplicate_name">变量名已存在</string>
+    <string name="global_variable_config_invalid_value">变量值不合法</string>
+    <string name="global_variable_config_delete_confirm_title">删除全局变量</string>
+    <string name="global_variable_config_delete_confirm_message">确定删除全局变量“%1$s”吗？</string>
 </resources>

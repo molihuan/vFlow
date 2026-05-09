@@ -8,6 +8,7 @@ import com.chaomixian.vflow.core.types.basic.VNull
 import com.chaomixian.vflow.core.types.basic.VString
 import com.chaomixian.vflow.core.types.parser.TemplateParser
 import com.chaomixian.vflow.core.types.parser.TemplateSegment
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -130,10 +131,31 @@ object VariableResolver {
 
         // 1. 寻找根对象 (Root)
         if (segment.isNamedVariable) {
-            // [[varName]]: 查 namedVariables
-            val raw = context.namedVariables[rootKey]
-            currentObj = VObjectFactory.from(raw)
+            // [[varName]] / {{vars.varName}}: 查 namedVariables
+            val namedPath = if (path.firstOrNull() == VariablePathParser.NAMED_VARIABLE_NAMESPACE) {
+                path.drop(1)
+            } else {
+                path
+            }
+
+            if (namedPath.isNotEmpty()) {
+                val raw = context.namedVariables[namedPath[0]]
+                currentObj = VObjectFactory.from(raw)
+                if (currentObj !is VNull) {
+                    return traverseProperties(currentObj, namedPath, 1)
+                }
+            }
         } else {
+            if (path.size >= 2 && path.firstOrNull() == VariablePathParser.GLOBAL_VARIABLE_NAMESPACE) {
+                val globalPath = path.drop(1)
+                if (globalPath.isNotEmpty()) {
+                    val root = context.getGlobalVariable(globalPath[0])
+                    if (root !is VNull) {
+                        return traverseProperties(root, globalPath, 1)
+                    }
+                }
+            }
+
             // {{stepId.outputId}}: 查 stepOutputs (现在直接返回 VObject)
             // 路径通常是 [stepId, outputId, prop1, prop2...]
             if (path.size >= 2) {

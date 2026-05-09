@@ -90,7 +90,13 @@ class TemplateParser(private val input: String) {
 
             if (content.isNotEmpty()) {
                 val path = parsePath(content)
-                segments.add(TemplateSegment.Variable(path, raw, isNamed))
+                segments.add(
+                    TemplateSegment.Variable(
+                        path = path,
+                        rawExpression = raw,
+                        isNamedVariable = isNamed || isCanonicalNamedVariable(path)
+                    )
+                )
             } else {
                 // 空的 {{}} 视为文本
                 segments.add(TemplateSegment.Text(raw))
@@ -137,5 +143,9 @@ class TemplateParser(private val input: String) {
     private fun parsePath(expression: String): List<String> {
         // 简单按点分割
         return expression.split('.').map { it.trim() }
+    }
+
+    private fun isCanonicalNamedVariable(path: List<String>): Boolean {
+        return path.size >= 2 && path.firstOrNull() == VariablePathParser.NAMED_VARIABLE_NAMESPACE
     }
 }

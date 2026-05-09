@@ -110,6 +110,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.settings.GlobalVariableConfigActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.onboarding.ConsentUpdateActivity"
             android:exported="false" />
 

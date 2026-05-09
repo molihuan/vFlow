@@ -108,6 +108,8 @@
     <string name="settings_switch_force_keep_alive_desc">Experimental feature. Pulling down Quick Settings can trigger recovery; if Shizuku is available, it adds extra process guarding. May increase battery usage.</string>
     <string name="settings_module_config">Module Config</string>
     <string name="settings_module_config_desc">Configure runtime parameters for various modules.</string>
+    <string name="settings_global_variables">Global Variables</string>
+    <string name="settings_global_variables_desc">Manage persistent variables accessible from all workflows.</string>
     <string name="settings_model_config">Model Config</string>
     <string name="settings_model_config_desc">Manage providers, keys, and models used by chat.</string>
     <string name="settings_switch_auto_check_updates">Auto-check updates</string>
@@ -1372,4 +1374,22 @@ Note: Ensure device and web editor are on the same network
     <string name="api_settings_toast_stopped">Remote API stopped</string>
     <string name="api_settings_label">API Settings</string>
     <string name="api_settings_desc">View server status and manage access tokens</string>
+    <string name="module_config_section_global_variables">Global Variables</string>
+    <string name="global_variable_config_title">Global Variables</string>
+    <string name="global_variable_config_desc">Persistent global variables shared across workflows.</string>
+    <string name="global_variable_config_add">Add Variable</string>
+    <string name="global_variable_config_edit">Edit</string>
+    <string name="global_variable_config_delete">Delete</string>
+    <string name="global_variable_config_empty">No global variables yet.</string>
+    <string name="global_variable_config_name_label">Variable Name</string>
+    <string name="global_variable_config_value_label">Variable Value</string>
+    <string name="global_variable_config_text_hint">For example Hello,vFlow!</string>
+    <string name="global_variable_config_number_value">Number</string>
+    <string name="global_variable_config_number_hint">For example 123</string>
+    <string name="global_variable_config_boolean_value">Boolean</string>
+    <string name="global_variable_config_invalid_name">Enter a valid variable name</string>
+    <string name="global_variable_config_duplicate_name">Variable name already exists</string>
+    <string name="global_variable_config_invalid_value">Variable value is invalid</string>
+    <string name="global_variable_config_delete_confirm_title">Delete Global Variable</string>
+    <string name="global_variable_config_delete_confirm_message">Delete global variable \"%1$s\"?</string>
 </resources>

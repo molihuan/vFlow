@@ -19,6 +19,8 @@ package com.chaomixian.vflow.core.types.parser
  * 确保整个应用中的路径解析行为完全一致。
  */
 object VariablePathParser {
+    const val NAMED_VARIABLE_NAMESPACE = "vars"
+    const val GLOBAL_VARIABLE_NAMESPACE = "global"
 
     data class ParsedVariableReference(
         val rawReference: String,
@@ -78,6 +80,45 @@ object VariablePathParser {
         return parseSingleVariableReference(variableRef)?.path ?: parsePath(variableRef.trim())
     }
 
+    fun parseNamedVariablePath(variableRef: String): List<String>? {
+        val parsed = parseSingleVariableReference(variableRef) ?: return null
+        if (!parsed.isNamedVariable) return null
+        return stripNamedVariableNamespace(parsed.path)
+    }
+
+    fun canonicalizeNamedVariableReference(variableRef: String): String {
+        val parsed = parseSingleVariableReference(variableRef) ?: return variableRef
+        if (!parsed.isNamedVariable) return variableRef
+
+        val path = stripNamedVariableNamespace(parsed.path)
+        if (path.isEmpty()) return variableRef
+
+        return buildNamedVariableReference(path.first(), path.drop(1))
+    }
+
+    fun buildNamedVariableReference(name: String, pathSegments: List<String> = emptyList()): String {
+        val fullPath = buildList {
+            add(name)
+            addAll(pathSegments)
+        }.joinToString(".")
+        return "{{${NAMED_VARIABLE_NAMESPACE}.${fullPath}}}"
+    }
+
+    fun parseGlobalVariablePath(variableRef: String): List<String>? {
+        val parsed = parseSingleVariableReference(variableRef) ?: return null
+        if (parsed.isNamedVariable) return null
+        if (parsed.path.size < 2 || parsed.path.firstOrNull() != GLOBAL_VARIABLE_NAMESPACE) return null
+        return parsed.path.drop(1)
+    }
+
+    fun buildGlobalVariableReference(name: String, pathSegments: List<String> = emptyList()): String {
+        val fullPath = buildList {
+            add(name)
+            addAll(pathSegments)
+        }.joinToString(".")
+        return "{{${GLOBAL_VARIABLE_NAMESPACE}.${fullPath}}}"
+    }
+
     fun parseSingleVariableReference(variableRef: String): ParsedVariableReference? {
         val segments = TemplateParser(variableRef).parse()
         if (segments.size != 1) return null
@@ -94,7 +135,19 @@ object VariablePathParser {
 
     fun appendPathSegment(variableRef: String, segment: String): String {
         val parsed = parseSingleVariableReference(variableRef) ?: return variableRef
-        val closeToken = if (parsed.isNamedVariable) "]]" else "}}"
-        return variableRef.removeSuffix(closeToken) + ".${segment}$closeToken"
+        return if (parsed.isNamedVariable) {
+            val path = stripNamedVariableNamespace(parsed.path)
+            if (path.isEmpty()) {
+                variableRef
+            } else {
+                buildNamedVariableReference(path.first(), path.drop(1) + segment)
+            }
+        } else {
+            variableRef.removeSuffix("}}") + ".${segment}}}"
+        }
+    }
+
+    private fun stripNamedVariableNamespace(path: List<String>): List<String> {
+        return if (path.firstOrNull() == NAMED_VARIABLE_NAMESPACE) path.drop(1) else path
     }
 }

@@ -7,6 +7,8 @@ import com.chaomixian.vflow.core.module.ActionModule
 import com.chaomixian.vflow.core.module.InputDefinition
 import com.chaomixian.vflow.core.module.ModuleRegistry
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
+import com.chaomixian.vflow.core.workflow.GlobalVariableStore
 import com.chaomixian.vflow.core.workflow.WorkflowManager
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.core.workflow.module.data.CreateVariableModule
@@ -68,6 +70,29 @@ internal class WorkflowEditorMagicVariableCatalogBuilder(
                     availableNamedVariables[varName] = namedVariableItem(varName, varType)
                 }
             }
+
+        val globalVariables = GlobalVariableStore.getAll(context)
+        if (globalVariables.isNotEmpty()) {
+            val globalItems = globalVariables.entries
+                .sortedBy { it.key }
+                .map { (name, value) ->
+                    MagicVariableItem(
+                        variableReference = VariablePathParser.buildGlobalVariableReference(name),
+                        variableName = name,
+                        originDescription = typeDescription(value.type.id),
+                        typeId = value.type.id
+                    )
+                }
+            return buildMap {
+                if (availableNamedVariables.isNotEmpty()) {
+                    put(
+                        context.getString(R.string.editor_group_named_variables),
+                        availableNamedVariables.values.toList()
+                    )
+                }
+                put(context.getString(R.string.module_config_section_global_variables), globalItems)
+            }
+        }
 
         return if (availableNamedVariables.isNotEmpty()) {
             mapOf(context.getString(R.string.editor_group_named_variables) to availableNamedVariables.values.toList())
@@ -221,7 +246,7 @@ internal class WorkflowEditorMagicVariableCatalogBuilder(
         val typeEnum = VariableType.fromStoredValue(varType)
         val typeId = typeEnum?.typeId ?: VTypeRegistry.ANY.id
         return MagicVariableItem(
-            variableReference = "[[$varName]]",
+            variableReference = VariablePathParser.buildNamedVariableReference(varName),
             variableName = varName,
             originDescription = context.getString(R.string.error_named_variable, varType),
             typeId = typeId

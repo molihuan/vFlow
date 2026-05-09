@@ -53,6 +53,21 @@ object PillVariableResolver {
         variableReference: String,
         allSteps: List<ActionStep>
     ): ResolvedInfo? {
+        VariablePathParser.parseGlobalVariablePath(variableReference)?.let { globalPath ->
+            val globalName = globalPath.firstOrNull() ?: return@let null
+            val propertyName = globalPath.getOrNull(1)
+            val displayName = if (propertyName != null) {
+                "${context.getString(R.string.module_config_section_global_variables)} $globalName.$propertyName"
+            } else {
+                "${context.getString(R.string.module_config_section_global_variables)} $globalName"
+            }
+            return ResolvedInfo(
+                displayName = displayName,
+                color = PillTheme.getColor(context, R.color.variable_pill_color),
+                propertyName = propertyName
+            )
+        }
+
         // 解析属性名
         val propertyName = resolvePropertyName(variableReference)
         
@@ -127,12 +142,13 @@ object PillVariableResolver {
      */
     private fun resolvePropertyName(variableReference: String): String? {
         val parsed = VariablePathParser.parseSingleVariableReference(variableReference) ?: return null
-        val parts = parsed.path
         val propName = when {
-            // 命名变量：[[varName.property]]
-            parsed.isNamedVariable && parts.size > 1 -> parts[1]
+            parsed.isNamedVariable -> {
+                val namedPath = VariablePathParser.parseNamedVariablePath(variableReference) ?: emptyList()
+                namedPath.getOrNull(1)
+            }
             // 魔法变量：{{stepId.outputName.property}}
-            !parsed.isNamedVariable && parts.size > 2 -> parts[2]
+            !parsed.isNamedVariable && parsed.path.size > 2 -> parsed.path[2]
             else -> null
         }
 

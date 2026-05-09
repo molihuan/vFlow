@@ -73,11 +73,17 @@ class GetVariableModule : BaseModule() {
         // 这样用户传入 [[myVar]] 时，我们获取到的是 "myVar"（不带 [[]]）
         val rawSource = context.getParameterRaw("source") ?: context.getVariableAsString("source", "")
 
-        // 解析源变量引用（支持 {{step.output}} 或 [[varName]] 格式）
+        // 解析源变量引用（支持 {{step.output}}、[[varName]]、{{vars.varName}}、{{global.varName}}）
         val variableValue: VObject = if (rawSource.isNamedVariable()) {
-            // 处理命名变量引用：[[varName]] -> varName
-            val variableName = VariablePathParser.parseVariableReference(rawSource).firstOrNull() ?: rawSource
+            val variablePath = VariablePathParser.parseNamedVariablePath(rawSource) ?: emptyList()
+            val variableName = variablePath.firstOrNull() ?: rawSource
             context.getVariable(variableName)
+        } else if (VariablePathParser.parseGlobalVariablePath(rawSource) != null) {
+            val globalPath = VariablePathParser.parseGlobalVariablePath(rawSource) ?: emptyList()
+            val globalName = globalPath.firstOrNull() ?: rawSource
+            context.getGlobalVariable(globalName)
+        } else if (rawSource.startsWith("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")) {
+            context.getGlobalVariable(rawSource.removePrefix("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}."))
         } else if (rawSource.isMagicVariable()) {
             // 处理魔法变量引用
             val raw = VariableResolver.resolveValue(rawSource, context)

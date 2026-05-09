@@ -205,14 +205,14 @@ data class VariableInfo(
 
         /**
          * 从任意变量引用字符串创建 VariableInfo
-         * 支持 [[varName]] 和 [[varName.prop]] 以及 {{stepId.outputId}} 和 {{stepId.outputId.prop}}
+         * 支持 [[varName]]、{{vars.varName}}、{{stepId.outputId}} 和 {{global.varName}}
          *
          * @return VariableInfo，如果解析失败则返回 null
          */
         fun fromReference(variableRef: String, allSteps: List<ActionStep>): VariableInfo? {
             return when {
                 variableRef.isNamedVariable() -> {
-                    val varName = VariablePathParser.parseVariableReference(variableRef).firstOrNull() ?: return null
+                    val varName = VariablePathParser.parseNamedVariablePath(variableRef)?.firstOrNull() ?: return null
                     fromNamedVariable(varName, allSteps)
                 }
                 variableRef.isMagicVariable() -> {

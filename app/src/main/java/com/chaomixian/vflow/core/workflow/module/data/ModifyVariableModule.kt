@@ -90,21 +90,34 @@ class ModifyVariableModule : BaseModule() {
         val rawVariableRef = context.getParameterRaw("variable") ?: ""
         val variableRef = rawVariableRef.ifBlank { context.getVariableAsString("variable", "") }
 
-        if (variableRef.isNullOrBlank() || !variableRef.isNamedVariable()) {
+        val namedVariablePath = VariablePathParser.parseNamedVariablePath(variableRef)
+        val globalVariablePath = VariablePathParser.parseGlobalVariablePath(variableRef)
+        val plainGlobalVariableName = variableRef
+            .removePrefix("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")
+            .takeIf { variableRef.startsWith("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.") && it.isNotBlank() }
+
+        val isSupportedReference =
+            namedVariablePath != null || globalVariablePath != null || plainGlobalVariableName != null
+
+        if (variableRef.isBlank() || !isSupportedReference) {
             val title = appContext.getString(R.string.error_vflow_variable_modify_param_error)
             val message = appContext.getString(R.string.error_vflow_variable_modify_invalid)
             return ExecutionResult.Failure(title, message)
         }
 
-        // 从 "[[...]]" 中提取变量名
-        val variableName = VariablePathParser.parseVariableReference(variableRef).firstOrNull()
+        val variableName = namedVariablePath?.firstOrNull() ?: globalVariablePath?.firstOrNull() ?: plainGlobalVariableName
             ?: return ExecutionResult.Failure(
                 appContext.getString(R.string.error_vflow_variable_modify_param_error),
                 appContext.getString(R.string.error_vflow_variable_modify_invalid)
             )
 
-        // 检查变量是否存在
-        val existingVar = context.getVariable(variableName)
+        val isGlobalVariable = globalVariablePath != null || plainGlobalVariableName != null
+
+        val existingVar = if (isGlobalVariable) {
+            context.getGlobalVariable(variableName)
+        } else {
+            context.getVariable(variableName)
+        }
         if (existingVar is VNull) {
             val title = appContext.getString(R.string.error_vflow_variable_modify_param_error)
             val message = String.format(appContext.getString(R.string.error_vflow_variable_modify_not_found), variableName)
@@ -113,8 +126,13 @@ class ModifyVariableModule : BaseModule() {
 
         // 新值统一从 magicVariables 中获取
         val newValue = context.getVariable("newValue")
-        context.setVariable(variableName, newValue)
-        onProgress(ProgressUpdate("已修改变量 '$variableName' 的值"))
+        if (isGlobalVariable) {
+            context.setGlobalVariable(variableName, newValue)
+            onProgress(ProgressUpdate("已修改全局变量 '$variableName' 的值"))
+        } else {
+            context.setVariable(variableName, newValue)
+            onProgress(ProgressUpdate("已修改变量 '$variableName' 的值"))
+        }
         return ExecutionResult.Success()
     }
 }

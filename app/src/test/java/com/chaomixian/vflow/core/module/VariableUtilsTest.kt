@@ -19,6 +19,7 @@ class VariableUtilsTest {
     @Test
     fun `isNamedVariable returns true for single named variable`() {
         assertTrue("[[myVar]]".isNamedVariable())
+        assertTrue("{{vars.myVar}}".isNamedVariable())
     }
 
     @Test

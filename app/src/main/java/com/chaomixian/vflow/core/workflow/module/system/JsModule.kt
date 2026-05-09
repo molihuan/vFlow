@@ -92,12 +92,11 @@ class JsModule : BaseModule() {
             else -> emptyMap()
         }
 
-        inputMappings.forEach { (varName, magicVarRef) ->
-            if (magicVarRef.isMagicVariable()) {
-                // 使用公共解析方法，支持嵌套属性如 .round
-                scriptInputs[varName] = VariableResolver.resolveValue(magicVarRef, context)
+        inputMappings.forEach { (varName, variableRef) ->
+            if (VariableResolver.hasVariableReference(variableRef)) {
+                scriptInputs[varName] = VariableResolver.resolveValue(variableRef, context)
             } else {
-                scriptInputs[varName] = magicVarRef
+                scriptInputs[varName] = variableRef
             }
         }
 

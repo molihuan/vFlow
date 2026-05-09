@@ -8,8 +8,8 @@ import android.content.Context
 import com.chaomixian.vflow.R
 import com.chaomixian.vflow.core.execution.ExecutionContext
 import com.chaomixian.vflow.core.execution.LuaExecutor
+import com.chaomixian.vflow.core.execution.VariableResolver
 import com.chaomixian.vflow.core.module.*
-import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -95,18 +95,11 @@ class LuaModule : BaseModule() {
             else -> emptyMap()
         }
 
-        inputMappings.forEach { (varName, magicVarRef) ->
-            if (magicVarRef.isMagicVariable()) {
-                val parts = VariablePathParser.parseVariableReference(magicVarRef)
-                val sourceStepId = parts.getOrNull(0)
-                val sourceOutputId = parts.getOrNull(1)
-                if (sourceStepId != null && sourceOutputId != null) {
-                    // stepOutputs 现在包含 VObject，需要转换为 raw 值
-                    val vObj = context.stepOutputs[sourceStepId]?.get(sourceOutputId)
-                    scriptInputs[varName] = vObj?.raw ?: vObj?.asString()
-                }
+        inputMappings.forEach { (varName, variableRef) ->
+            if (VariableResolver.hasVariableReference(variableRef)) {
+                scriptInputs[varName] = VariableResolver.resolveValue(variableRef, context)
             } else {
-                scriptInputs[varName] = magicVarRef
+                scriptInputs[varName] = variableRef
             }
         }
 

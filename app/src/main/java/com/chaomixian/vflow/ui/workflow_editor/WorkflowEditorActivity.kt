@@ -38,6 +38,8 @@ import com.chaomixian.vflow.core.execution.ExecutionStateBus
 import com.chaomixian.vflow.core.execution.WorkflowExecutor
 import com.chaomixian.vflow.core.module.*
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.parser.NamedVariableReferenceRewriter
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.WorkflowEnumMigration
 import com.chaomixian.vflow.core.workflow.WorkflowJumpReferenceUpdater
 import com.chaomixian.vflow.core.workflow.WorkflowManager
@@ -360,8 +362,8 @@ class WorkflowEditorActivity : BaseActivity() {
         return Workflow(
             id = UUID.randomUUID().toString(),
             name = name,
-            triggers = triggerSteps.toList(),
-            steps = actionSteps.toList(),
+            triggers = triggerSteps.map { step -> step.copy(parameters = normalizeStepParameters(step.parameters)) },
+            steps = actionSteps.map { step -> step.copy(parameters = normalizeStepParameters(step.parameters)) },
             cardIconRes = WorkflowVisuals.defaultIconResName(),
             cardThemeColor = WorkflowVisuals.randomThemeColorHex()
         )
@@ -463,6 +465,21 @@ class WorkflowEditorActivity : BaseActivity() {
                 key.toString() to deepCopyValue(mapValue)
             }
             is List<*> -> value.map { item -> deepCopyValue(item) }
+            else -> value
+        }
+    }
+
+    private fun normalizeStepParameters(parameters: Map<String, Any?>): Map<String, Any?> {
+        return parameters.mapValues { (_, value) -> normalizeParameterValue(value) }
+    }
+
+    private fun normalizeParameterValue(value: Any?): Any? {
+        return when (value) {
+            is String -> VariablePathParser.canonicalizeNamedVariableReference(value)
+            is Map<*, *> -> value.entries.associate { (key, nestedValue) ->
+                key.toString() to normalizeParameterValue(nestedValue)
+            }
+            is List<*> -> value.map(::normalizeParameterValue)
             else -> value
         }
     }
@@ -765,45 +782,36 @@ class WorkflowEditorActivity : BaseActivity() {
         val editedStep = actionSteps.getOrNull(editedPosition) ?: return
         if (editedStep.moduleId != CreateVariableModule().id) return
 
-        val newVariableName = editedStep.parameters["variableName"] as? String
+        val oldName = oldVariableName?.trim()
+        val newVariableName = (editedStep.parameters["variableName"] as? String)?.trim()
 
-        if (!oldVariableName.isNullOrBlank() && oldVariableName != newVariableName) {
+        if (!oldName.isNullOrBlank() && oldName != newVariableName) {
             // 变量名被修改了
-            val oldRef = "[[$oldVariableName]]"
-            val newRef = if (!newVariableName.isNullOrBlank()) "[[${newVariableName}]]" else ""
-
             // 遍历被修改步骤之后的所有步骤
+            var updatedCount = 0
             for (i in (editedPosition + 1) until actionSteps.size) {
                 val currentStep = actionSteps[i]
-                val updatedParameters = currentStep.parameters.toMutableMap()
+                val updatedParameters = LinkedHashMap<String, Any?>()
                 var hasChanged = false
 
                 currentStep.parameters.forEach { (key, value) ->
-                    if (value is String && value == oldRef) {
-                        updatedParameters[key] = newRef
-                        hasChanged = true
+                    val rewritten = if (newVariableName.isNullOrBlank()) {
+                        NamedVariableReferenceRewriter.RewriteResult(value, false)
+                    } else {
+                        NamedVariableReferenceRewriter.rewrite(value, oldName, newVariableName)
                     }
-                    // 如果参数是Map，可以进一步检查Map内部的值
-                    if (value is Map<*, *>) {
-                        val updatedMap = value.mapValues { (_, v) ->
-                            if (v is String && v == oldRef) {
-                                hasChanged = true
-                                newRef
-                            } else {
-                                v
-                            }
-                        }
-                        if(hasChanged) {
-                            updatedParameters[key] = updatedMap
-                        }
-                    }
+                    updatedParameters[key] = rewritten.value
+                    hasChanged = hasChanged || rewritten.changed
                 }
 
                 if (hasChanged) {
                     actionSteps[i] = currentStep.copy(parameters = updatedParameters)
+                    updatedCount++
                 }
             }
-            toast(getString(R.string.editor_toast_variable_reference_updated, oldVariableName))
+            if (updatedCount > 0) {
+                toast(getString(R.string.editor_toast_variable_reference_updated, oldName))
+            }
         }
 
         oldVariableName = null // 重置
@@ -1613,8 +1621,8 @@ class WorkflowEditorActivity : BaseActivity() {
             val isNewWorkflow = currentWorkflow == null
             val workflowToSave = currentWorkflow?.copy(
                 name = name,
-                triggers = triggerSteps.toList(),
-                steps = actionSteps.toList(),
+                triggers = triggerSteps.map { step -> step.copy(parameters = normalizeStepParameters(step.parameters)) },
+                steps = actionSteps.map { step -> step.copy(parameters = normalizeStepParameters(step.parameters)) },
                 isEnabled = currentWorkflow?.isEnabled ?: true
             ) ?: createDraftWorkflow(name)
             workflowManager.saveWorkflow(workflowToSave)

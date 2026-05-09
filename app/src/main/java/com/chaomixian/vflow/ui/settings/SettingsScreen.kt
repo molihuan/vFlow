@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BlurOn
@@ -85,6 +86,7 @@ data class SettingsScreenActions(
     val onSetAppScale: (Float) -> Unit,
     val onOpenLanguageDialog: () -> Unit,
     val onOpenModuleConfig: () -> Unit,
+    val onOpenGlobalVariables: () -> Unit,
     val onOpenModelConfig: () -> Unit,
     val onSetAutoCheckUpdatesEnabled: (Boolean) -> Unit,
     val onSetAllowShowOnLockScreen: (Boolean) -> Unit,
@@ -170,6 +172,8 @@ fun SettingsScreen(
 
     val moduleConfigTitle = stringResource(R.string.settings_module_config)
     val moduleConfigSubtitle = stringResource(R.string.settings_module_config_desc)
+    val globalVariablesTitle = stringResource(R.string.settings_global_variables)
+    val globalVariablesSubtitle = stringResource(R.string.settings_global_variables_desc)
     val modelConfigTitle = stringResource(R.string.settings_model_config)
     val modelConfigSubtitle = stringResource(R.string.settings_model_config_desc)
     val autoCheckUpdatesTitle = stringResource(R.string.settings_switch_auto_check_updates)
@@ -410,6 +414,14 @@ fun SettingsScreen(
                     tone = paletteTone(),
                     position = SettingsGroupPosition.Top,
                     onClick = actions.onOpenModuleConfig
+                )
+                NativeEntryRow(
+                    title = globalVariablesTitle,
+                    subtitle = globalVariablesSubtitle,
+                    icon = Icons.Filled.Dataset,
+                    tone = paletteTone(),
+                    position = SettingsGroupPosition.Middle,
+                    onClick = actions.onOpenGlobalVariables
                 )
                 NativeEntryRow(
                     title = modelConfigTitle,

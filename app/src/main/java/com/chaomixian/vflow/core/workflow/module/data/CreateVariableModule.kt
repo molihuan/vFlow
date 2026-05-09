@@ -13,6 +13,7 @@ import com.chaomixian.vflow.core.types.basic.*
 import com.chaomixian.vflow.core.types.complex.VCoordinate
 import com.chaomixian.vflow.core.types.complex.VFile
 import com.chaomixian.vflow.core.types.complex.VImage
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -171,7 +172,7 @@ class CreateVariableModule : BaseModule() {
                     PillUtil.richTextPreview(rawText)
                 )
             } else {
-                val namePill = PillUtil.Pill("[[$name]]", "variableName")
+                val namePill = PillUtil.Pill(buildVariableReferenceForDisplay(name), "variableName")
                 PillUtil.buildSpannable(
                     context,
                     context.getString(R.string.summary_vflow_data_create_variable, "", typeLabel),
@@ -192,7 +193,7 @@ class CreateVariableModule : BaseModule() {
         return if (name.isNullOrBlank()) {
             PillUtil.buildSpannable(context, context.getString(R.string.summary_vflow_data_create_anon, typeLabel, ""), valuePill)
         } else {
-            val namePill = PillUtil.Pill("[[$name]]", "variableName")
+            val namePill = PillUtil.Pill(buildVariableReferenceForDisplay(name), "variableName")
             PillUtil.buildSpannable(context, context.getString(R.string.summary_vflow_data_create_variable, "", typeLabel), namePill, context.getString(R.string.summary_vflow_data_create_value_separator), valuePill)
         }
     }
@@ -202,8 +203,17 @@ class CreateVariableModule : BaseModule() {
         return if (name.isNullOrBlank()) {
             context.getString(R.string.summary_vflow_data_create_anon, typeLabel, "")
         } else {
-            val namePill = PillUtil.Pill("[[$name]]", "variableName")
+            val namePill = PillUtil.Pill(buildVariableReferenceForDisplay(name), "variableName")
             PillUtil.buildSpannable(context, context.getString(R.string.summary_vflow_data_create_variable, "", typeLabel), namePill)
+        }
+    }
+
+    private fun buildVariableReferenceForDisplay(variableName: String): String {
+        return if (variableName.startsWith("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")) {
+            val globalName = variableName.removePrefix("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")
+            VariablePathParser.buildGlobalVariableReference(globalName)
+        } else {
+            VariablePathParser.buildNamedVariableReference(variableName)
         }
     }
 
@@ -294,14 +304,27 @@ class CreateVariableModule : BaseModule() {
         }
 
         if (!variableName.isNullOrBlank()) {
-            // 检查变量是否存在
-            val existingVar = context.getVariable(variableName)
+            val globalVariableName = variableName
+                .removePrefix("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")
+                .takeIf { variableName.startsWith("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.") && it.isNotBlank() }
+
+            val existingVar = if (globalVariableName != null) {
+                context.getGlobalVariable(globalVariableName)
+            } else {
+                context.getVariable(variableName)
+            }
+
             if (existingVar !is VNull) {
                 return ExecutionResult.Failure("命名冲突", "变量 '$variableName' 已存在。")
             }
-            // 现在直接存储 VObject，无需转换
-            context.setVariable(variableName, variable)
-            onProgress(ProgressUpdate("已创建命名变量 '$variableName'"))
+
+            if (globalVariableName != null) {
+                context.setGlobalVariable(globalVariableName, variable)
+                onProgress(ProgressUpdate("已创建全局变量 '$globalVariableName'"))
+            } else {
+                context.setVariable(variableName, variable)
+                onProgress(ProgressUpdate("已创建命名变量 '$variableName'"))
+            }
         }
 
         return ExecutionResult.Success(mapOf("variable" to variable))

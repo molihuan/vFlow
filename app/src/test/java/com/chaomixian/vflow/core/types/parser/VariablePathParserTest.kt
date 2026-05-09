@@ -25,6 +25,14 @@ class VariablePathParserTest {
     }
 
     @Test
+    fun `parseSingleVariableReference parses canonical named variable`() {
+        val parsed = VariablePathParser.parseSingleVariableReference("{{vars.profile.name}}")
+
+        assertEquals(listOf("vars", "profile", "name"), parsed?.path)
+        assertTrue(parsed?.isNamedVariable ?: false)
+    }
+
+    @Test
     fun `parseSingleVariableReference rejects adjacent variables`() {
         assertNull(VariablePathParser.parseSingleVariableReference("{{a}}{{b}}"))
         assertNull(VariablePathParser.parseSingleVariableReference("[[a]][[b]]"))
@@ -37,6 +45,11 @@ class VariablePathParserTest {
 
     @Test
     fun `appendPathSegment appends property for named variable`() {
-        assertEquals("[[profile.name]]", VariablePathParser.appendPathSegment("[[profile]]", "name"))
+        assertEquals("{{vars.profile.name}}", VariablePathParser.appendPathSegment("[[profile]]", "name"))
+    }
+
+    @Test
+    fun `canonicalizeNamedVariableReference migrates legacy syntax`() {
+        assertEquals("{{vars.profile.name}}", VariablePathParser.canonicalizeNamedVariableReference("[[profile.name]]"))
     }
 }

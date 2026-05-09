@@ -99,7 +99,7 @@ class WhileModule : BaseBlockModule() {
         }
 
         if (variableReference.isNamedVariable()) {
-            val varName = VariablePathParser.parseVariableReference(variableReference).firstOrNull() ?: return null
+            val varName = VariablePathParser.parseNamedVariablePath(variableReference)?.firstOrNull() ?: return null
             val currentIndex = allSteps.indexOf(currentStep)
             val stepsToCheck = if (currentIndex != -1) allSteps.subList(0, currentIndex) else allSteps
             val creationStep = stepsToCheck.findLast {

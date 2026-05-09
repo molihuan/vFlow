@@ -145,6 +145,9 @@ fun SettingsRoute(
             onOpenModuleConfig = {
                 context.startActivity(Intent(context, ModuleConfigActivity::class.java))
             },
+            onOpenGlobalVariables = {
+                context.startActivity(Intent(context, GlobalVariableConfigActivity::class.java))
+            },
             onOpenModelConfig = {
                 context.startActivity(ModelConfigActivity.createIntent(context))
             },

@@ -125,11 +125,15 @@ class LoadVariablesModule : BaseModule() {
         if (rawValue != null) {
             return when (rawValue) {
                 is String -> {
-                    // 尝试解析魔法变量引用
-                    if (rawValue.isMagicVariable()) {
+                    if (VariablePathParser.parseGlobalVariablePath(rawValue) != null) {
+                        val globalPath = VariablePathParser.parseGlobalVariablePath(rawValue) ?: emptyList()
+                        val globalName = globalPath.firstOrNull() ?: return null
+                        context.getGlobalVariable(globalName)
+                    } else if (rawValue.isMagicVariable()) {
                         context.getVariable(VariablePathParser.parseVariableReference(rawValue).joinToString("."))
                     } else if (rawValue.isNamedVariable()) {
-                        context.getVariable(VariablePathParser.parseVariableReference(rawValue).joinToString("."))
+                        val variablePath = VariablePathParser.parseNamedVariablePath(rawValue) ?: emptyList()
+                        context.getVariable(variablePath.joinToString("."))
                     } else {
                         VObjectFactory.from(rawValue)
                     }

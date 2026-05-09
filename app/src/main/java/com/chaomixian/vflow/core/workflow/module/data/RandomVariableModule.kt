@@ -10,6 +10,7 @@ import com.chaomixian.vflow.core.types.VObject
 import com.chaomixian.vflow.core.types.basic.VNull
 import com.chaomixian.vflow.core.types.basic.VNumber
 import com.chaomixian.vflow.core.types.basic.VString
+import com.chaomixian.vflow.core.types.parser.VariablePathParser
 import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
@@ -157,7 +158,14 @@ class RandomVariableModule : BaseModule() {
         return if (varName.isNullOrEmpty()) {
             "$generate $anonymous ($typeLabel)"
         } else {
-            val namePill = PillUtil.Pill("[[$varName]]", "variableName")
+            val reference = if (varName.startsWith("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")) {
+                VariablePathParser.buildGlobalVariableReference(
+                    varName.removePrefix("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")
+                )
+            } else {
+                VariablePathParser.buildNamedVariableReference(varName)
+            }
+            val namePill = PillUtil.Pill(reference, "variableName")
             PillUtil.buildSpannable(context, "$named ", namePill, " ($typeLabel)")
         }
     }
@@ -255,13 +263,28 @@ class RandomVariableModule : BaseModule() {
 
         // 如果指定了变量名，存储到命名变量中
         if (!varName.isNullOrEmpty()) {
-            if (context.getVariable(varName) !is VNull) {
+            val globalVariableName = varName
+                .removePrefix("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.")
+                .takeIf { varName.startsWith("${VariablePathParser.GLOBAL_VARIABLE_NAMESPACE}.") && it.isNotBlank() }
+
+            val existingVar = if (globalVariableName != null) {
+                context.getGlobalVariable(globalVariableName)
+            } else {
+                context.getVariable(varName)
+            }
+
+            if (existingVar !is VNull) {
                 val title = appContext.getString(R.string.error_vflow_variable_random_name_conflict)
                 val message = String.format(appContext.getString(R.string.error_vflow_variable_random_exists), varName)
                 return ExecutionResult.Failure(title, message)
             }
-            context.setVariable(varName, resultVariable)
-            onProgress(ProgressUpdate("已创建命名变量 '$varName'"))
+            if (globalVariableName != null) {
+                context.setGlobalVariable(globalVariableName, resultVariable)
+                onProgress(ProgressUpdate("已创建全局变量 '$globalVariableName'"))
+            } else {
+                context.setVariable(varName, resultVariable)
+                onProgress(ProgressUpdate("已创建命名变量 '$varName'"))
+            }
         }
 
 //        Log.d("RandomVariableModule", "execute: resultVariable=$resultVariable")

@@ -495,7 +495,20 @@ object WorkflowExecutor {
                             val sourceStepId = parts.getOrNull(0)
                             val sourceOutputId = parts.getOrNull(1)
 
-                            if (sourceStepId != null && sourceOutputId != null) {
+                            if (sourceStepId == VariablePathParser.GLOBAL_VARIABLE_NAMESPACE && sourceOutputId != null) {
+                                val rootObj = initialContext.getGlobalVariable(sourceOutputId)
+                                if (parts.size > 2) {
+                                    var currentVObj = rootObj
+                                    for (i in 2 until parts.size) {
+                                        val propName = parts[i]
+                                        val nextVObj = currentVObj.getProperty(propName)
+                                        currentVObj = nextVObj ?: VNull
+                                    }
+                                    executionContext.magicVariables[key] = currentVObj
+                                } else {
+                                    executionContext.magicVariables[key] = rootObj
+                                }
+                            } else if (sourceStepId != null && sourceOutputId != null) {
                                 val rootObj = stepOutputs[sourceStepId]?.get(sourceOutputId)
                                 if (rootObj != null) {
                                     if (parts.size > 2) {
@@ -519,10 +532,10 @@ object WorkflowExecutor {
 
                         // 2. 命名变量 ([[...]])
                         value.isNamedVariable() -> {
-                            val parts = VariablePathParser.parseVariableReference(value)
-                            val varName = parts[0]
+                            val parts = VariablePathParser.parseNamedVariablePath(value) ?: emptyList()
+                            val varName = parts.firstOrNull()
 
-                            if (namedVariables.containsKey(varName)) {
+                            if (varName != null && namedVariables.containsKey(varName)) {
                                 val rootObj = namedVariables[varName]
                                 if (parts.size > 1) {
                                     // 命名变量属性访问
