@@ -18,6 +18,7 @@ import com.chaomixian.vflow.services.ShellManager
 import com.chaomixian.vflow.ui.app_picker.AppPickerMode
 import com.chaomixian.vflow.ui.app_picker.UnifiedAppPickerSheet
 import com.chaomixian.vflow.ui.overlay.RegionSelectionOverlay
+import com.chaomixian.vflow.ui.shortcut_picker.UnifiedShortcutPickerSheet
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import kotlinx.coroutines.launch
@@ -94,6 +95,12 @@ class PickerHandler(
                 callback(Activity.RESULT_OK, result)
             }
             pickerSheet.show(activity.supportFragmentManager, "UnifiedAppPicker")
+        } else if (intent.getBooleanExtra("shortcut_picker", false)) {
+            val pickerSheet = UnifiedShortcutPickerSheet.newInstance()
+            pickerSheet.setOnResultCallback { result ->
+                callback(Activity.RESULT_OK, result)
+            }
+            pickerSheet.show(activity.supportFragmentManager, "UnifiedShortcutPicker")
         } else {
             // 系统标准 Intent（图片选择、音频选择等）
             generalIntentCallback = callback

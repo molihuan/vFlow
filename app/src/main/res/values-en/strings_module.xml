@@ -253,6 +253,22 @@
     <string name="error_vflow_system_launch_app_exception">Launch exception</string>
     <string name="msg_vflow_system_launch_app_launched">Launched: %s</string>
 
+    <!-- vflow.system.launch_shortcut -->
+    <string name="module_vflow_system_launch_shortcut_name">Launch Shortcut</string>
+    <string name="module_vflow_system_launch_shortcut_desc">Launch an app shortcut through Shell.</string>
+    <string name="param_vflow_system_launch_shortcut_label_name">Shortcut Label</string>
+    <string name="param_vflow_system_launch_shortcut_package_name">Package Name</string>
+    <string name="param_vflow_system_launch_shortcut_command_name">Launch Command</string>
+    <string name="param_vflow_system_launch_shortcut_mode_name">Execution Mode</string>
+    <string name="output_vflow_system_launch_shortcut_success_name">Success</string>
+    <string name="output_vflow_system_launch_shortcut_result_name">Result</string>
+    <string name="summary_vflow_system_launch_shortcut_select">Select a shortcut</string>
+    <string name="summary_vflow_system_launch_shortcut_prefix">Launch</string>
+    <string name="msg_vflow_system_launch_shortcut_running">Launching shortcut</string>
+    <string name="error_vflow_system_launch_shortcut_missing_command">Missing shortcut launch command</string>
+    <string name="error_vflow_system_launch_shortcut_select_first">Please select a shortcut first</string>
+    <string name="error_vflow_system_launch_shortcut_failed">Failed to launch shortcut</string>
+
     <!-- vflow.system.close_app -->
     <string name="module_vflow_system_close_app_name">Close App</string>
     <string name="module_vflow_system_close_app_desc">Force stop the specified application (requires Shizuku or Root)</string>

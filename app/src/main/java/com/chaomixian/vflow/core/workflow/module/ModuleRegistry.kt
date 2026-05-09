@@ -175,6 +175,7 @@ object ModuleRegistry {
         register(JsModule(), context)
         register(FindInstalledAppModule(), context)
         register(LaunchAppModule(), context)
+        register(LaunchShortcutModule(), context)
         register(CloseAppModule(), context)
         register(GetClipboardModule(), context)
         register(SetClipboardModule(), context)

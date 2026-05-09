@@ -858,11 +858,16 @@
     <string name="text_select_app_activity">Select App/Activity</string>
     <string name="text_select_app">Select App</string>
     <string name="text_select_activity">Select Activity</string>
+    <string name="text_select_shortcut">Select Shortcut</string>
     <string name="text_show_system_apps">System</string>
     <string name="text_show_all_users">All users</string>
     <string name="text_app_user_label">User %1$d</string>
     <string name="text_search_app">Search by app name or package</string>
+    <string name="text_search_shortcut">Search shortcuts</string>
     <string name="text_launch_app">Launch app</string>
+    <string name="text_shortcut_picker_loading">Loading shortcuts…</string>
+    <string name="text_shortcut_picker_empty">No shortcuts found</string>
+    <string name="text_shortcut_picker_requires_shell">The shortcut picker needs Root or Shizuku to read system shortcut data</string>
     <string name="text_close">Close</string>
     <string name="text_ai_assisted_generation">AI Assisted Generation</string>
     <string name="text_describe_requirements">Describe your requirements, AI will automatically build the workflow for you.</string>
@@ -966,9 +971,13 @@
     <string name="text_when_closed">When Closed</string>
     <string name="button_select_app_activity">Select App/Activity</string>
     <string name="button_add_app_activity">Add App/Activity</string>
+    <string name="button_select_shortcut">Select Shortcut</string>
     <string name="text_not_selected">Not selected</string>
     <string name="text_app_selected">Selected: %s</string>
     <string name="text_activity_selected" formatted="false">Selected: %s / %s</string>
+    <string name="text_shortcut_selected">Selected shortcut: %1$s (%2$s)</string>
+    <string name="text_shortcut_selected_only">Selected shortcut: %1$s</string>
+    <string name="label_target_shortcut">Target Shortcut</string>
     <string name="label_workflow">Workflow</string>
     <string name="text_no_favorite_workflows">No favorite workflows</string>
     <string name="desc_details">Details</string>

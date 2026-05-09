@@ -858,11 +858,16 @@
     <string name="text_select_app_activity">选择应用或Activity</string>
     <string name="text_select_app">选择应用</string>
     <string name="text_select_activity">选择Activity</string>
+    <string name="text_select_shortcut">选择快捷方式</string>
     <string name="text_show_system_apps">系统应用</string>
     <string name="text_show_all_users">所有用户</string>
     <string name="text_app_user_label">用户 %1$d</string>
     <string name="text_search_app">搜索应用名称或包名</string>
+    <string name="text_search_shortcut">搜索快捷方式</string>
     <string name="text_launch_app">启动应用</string>
+    <string name="text_shortcut_picker_loading">正在加载快捷方式…</string>
+    <string name="text_shortcut_picker_empty">没有读取到可用快捷方式</string>
+    <string name="text_shortcut_picker_requires_shell">快捷方式 Picker 需要 Root 或 Shizuku 才能读取系统快捷方式数据</string>
     <string name="text_close">关闭</string>
     <string name="text_ai_assisted_generation">AI 辅助生成</string>
     <string name="text_describe_requirements">描述您的需求，AI 将自动为您构建工作流。</string>
@@ -966,9 +971,13 @@
     <string name="text_when_closed">关闭时</string>
     <string name="button_select_app_activity">选择应用或Activity</string>
     <string name="button_add_app_activity">添加应用或Activity</string>
+    <string name="button_select_shortcut">选择快捷方式</string>
     <string name="text_not_selected">尚未选择</string>
     <string name="text_app_selected">已选择: %s</string>
     <string name="text_activity_selected" formatted="false">已选择: %s / %s</string>
+    <string name="text_shortcut_selected">已选择快捷方式：%1$s (%2$s)</string>
+    <string name="text_shortcut_selected_only">已选择快捷方式：%1$s</string>
+    <string name="label_target_shortcut">目标快捷方式</string>
     <string name="label_workflow">工作流</string>
     <string name="text_no_favorite_workflows">暂无收藏的工作流</string>
     <string name="desc_details">详情</string>

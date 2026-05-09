@@ -253,6 +253,22 @@
     <string name="error_vflow_system_launch_app_exception">启动异常</string>
     <string name="msg_vflow_system_launch_app_launched">已启动: %s</string>
 
+    <!-- vflow.system.launch_shortcut -->
+    <string name="module_vflow_system_launch_shortcut_name">启动快捷方式</string>
+    <string name="module_vflow_system_launch_shortcut_desc">通过 Shell 启动一个应用快捷方式。</string>
+    <string name="param_vflow_system_launch_shortcut_label_name">快捷方式名称</string>
+    <string name="param_vflow_system_launch_shortcut_package_name">应用包名</string>
+    <string name="param_vflow_system_launch_shortcut_command_name">启动命令</string>
+    <string name="param_vflow_system_launch_shortcut_mode_name">执行方式</string>
+    <string name="output_vflow_system_launch_shortcut_success_name">是否成功</string>
+    <string name="output_vflow_system_launch_shortcut_result_name">执行结果</string>
+    <string name="summary_vflow_system_launch_shortcut_select">选择一个快捷方式</string>
+    <string name="summary_vflow_system_launch_shortcut_prefix">启动</string>
+    <string name="msg_vflow_system_launch_shortcut_running">正在启动快捷方式</string>
+    <string name="error_vflow_system_launch_shortcut_missing_command">缺少快捷方式启动命令</string>
+    <string name="error_vflow_system_launch_shortcut_select_first">请先选择一个快捷方式</string>
+    <string name="error_vflow_system_launch_shortcut_failed">启动快捷方式失败</string>
+
     <!-- vflow.system.close_app -->
     <string name="module_vflow_system_close_app_name">关闭应用</string>
     <string name="module_vflow_system_close_app_desc">强制停止指定的应用程序（需要 Shizuku 或 Root）</string>
