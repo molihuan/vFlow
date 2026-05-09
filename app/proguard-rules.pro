@@ -196,3 +196,14 @@
 -dontwarn reactor.blockhound.integration.**
 -dontwarn org.apache.log4j.**
 -dontwarn org.apache.logging.log4j.**
+
+# 29. Umeng analytics / ASMS
+-keepclassmembers class * {
+   public <init>(org.json.JSONObject);
+}
+-keep public class com.chaomixian.vflow.R$* {
+    public static final int *;
+}
+-keep class com.umeng.** { *; }
+-keep interface com.umeng.** { *; }
+-dontwarn com.umeng.**
