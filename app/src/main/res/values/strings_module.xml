@@ -1569,6 +1569,7 @@
     <string name="output_vflow_interaction_ui_selector_count_name">找到数量</string>
     <string name="output_vflow_interaction_ui_selector_element_name">选中的控件</string>
     <string name="output_vflow_interaction_ui_selector_all_elements_name">所有控件</string>
+    <string name="output_vflow_interaction_ui_selector_all_text_name">所有文本</string>
     <string name="summary_vflow_interaction_ui_selector_prefix">使用选择器查找</string>
     <string name="option_vflow_interaction_ui_selector_result_first">第一个</string>
     <string name="option_vflow_interaction_ui_selector_result_last">最后一个</string>

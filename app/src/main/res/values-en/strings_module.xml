@@ -1569,6 +1569,7 @@
     <string name="output_vflow_interaction_ui_selector_count_name">Match Count</string>
     <string name="output_vflow_interaction_ui_selector_element_name">Selected Element</string>
     <string name="output_vflow_interaction_ui_selector_all_elements_name">All Elements</string>
+    <string name="output_vflow_interaction_ui_selector_all_text_name">All Text</string>
     <string name="summary_vflow_interaction_ui_selector_prefix">Find using selector</string>
     <string name="option_vflow_interaction_ui_selector_result_first">First</string>
     <string name="option_vflow_interaction_ui_selector_result_last">Last</string>
