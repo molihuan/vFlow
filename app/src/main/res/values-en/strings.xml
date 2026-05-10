@@ -238,6 +238,7 @@
     <string name="common_confirm">Confirm</string>
     <string name="save">Save</string>
     <string name="workflow_editor_undo">Undo</string>
+    <string name="workflow_editor_redo">Redo</string>
     <string name="workflow_editor_add_action">Add Action</string>
     <string name="workflow_editor_add_trigger">Add Trigger</string>
     <string name="workflow_editor_trigger_group_title">#0 Triggers</string>
@@ -251,6 +252,11 @@
 
     <string name="workflow_editor_execute">Execute</string>
     <string name="workflow_editor_save">Save</string>
+    <string name="editor_tools_menu">More Tools</string>
+    <string name="editor_exit_selection_mode">Exit selection</string>
+    <string name="editor_selection_mode">Select Modules</string>
+    <string name="editor_copy_selected_modules">Copy selected modules</string>
+    <string name="editor_paste_workflow">Paste workflow</string>
     <string name="share_to_vflow">Share to vFlow</string>
     <string name="shortcut_executing">Launching via shortcut: %s</string>
 
@@ -447,8 +453,12 @@
     <string name="variable_named_variable">Named Variable</string>
     <string name="editor_toast_variable_reference_updated">Automatically updated references to variable \'%s\'</string>
     <string name="editor_toast_input_definition_not_found">Cannot find input definition: %s</string>
+    <string name="editor_toast_selection_mode_started">Selection mode enabled</string>
     <string name="editor_toast_trigger_cannot_duplicate">Trigger cannot be duplicated</string>
     <string name="editor_toast_steps_duplicated">Duplicated %d steps</string>
+    <string name="editor_toast_selected_modules_copied">Copied %d modules</string>
+    <string name="editor_toast_workflow_pasted">Pasted %d steps</string>
+    <string name="editor_toast_workflow_clipboard_empty">No workflow is available on the clipboard</string>
     <string name="editor_toast_step_enabled">Step enabled</string>
     <string name="editor_toast_step_disabled">Step disabled</string>
     <string name="editor_toast_enable_parent_block_first">Enable the parent block first</string>

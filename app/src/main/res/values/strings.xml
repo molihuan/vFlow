@@ -238,6 +238,7 @@
     <string name="common_confirm">确定</string>
     <string name="save">保存</string>
     <string name="workflow_editor_undo">撤销</string>
+    <string name="workflow_editor_redo">重做</string>
     <string name="workflow_editor_add_action">添加动作</string>
     <string name="workflow_editor_add_trigger">添加触发器</string>
     <string name="workflow_editor_trigger_group_title">#0 触发器</string>
@@ -251,6 +252,11 @@
 
     <string name="workflow_editor_execute">执行</string>
     <string name="workflow_editor_save">保存</string>
+    <string name="editor_tools_menu">更多工具</string>
+    <string name="editor_exit_selection_mode">退出选择</string>
+    <string name="editor_selection_mode">选择模块</string>
+    <string name="editor_copy_selected_modules">复制选中模块</string>
+    <string name="editor_paste_workflow">粘贴工作流</string>
     <string name="share_to_vflow">分享到 vFlow</string>
     <string name="shortcut_executing">正在通过快捷方式启动: %s</string>
 
@@ -447,8 +453,12 @@
     <string name="variable_named_variable">命名变量</string>
     <string name="editor_toast_variable_reference_updated">已自动更新对变量 \'%s\' 的引用</string>
     <string name="editor_toast_input_definition_not_found">无法找到输入定义：%s</string>
+    <string name="editor_toast_selection_mode_started">已进入选择模式</string>
     <string name="editor_toast_trigger_cannot_duplicate">触发器无法复制</string>
     <string name="editor_toast_steps_duplicated">已复制 %d 个步骤</string>
+    <string name="editor_toast_selected_modules_copied">已复制 %d 个模块</string>
+    <string name="editor_toast_workflow_pasted">已粘贴 %d 个步骤</string>
+    <string name="editor_toast_workflow_clipboard_empty">剪切板中没有可粘贴的工作流</string>
     <string name="editor_toast_step_enabled">已启用该步骤</string>
     <string name="editor_toast_step_disabled">已禁用该步骤</string>
     <string name="editor_toast_enable_parent_block_first">请先启用父块</string>
