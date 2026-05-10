@@ -358,6 +358,8 @@
     <string name="workflow_list_sort_name">Name order</string>
     <string name="workflow_list_sort_recent_modified">Recently modified</string>
     <string name="workflow_list_sort_favorites_first">Favorites first</string>
+    <string name="workflow_list_menu_grid_view">Grid view</string>
+    <string name="workflow_list_menu_list_view">List view</string>
     <string name="workflow_list_menu_backup_all">Back Up All Workflows</string>
     <string name="workflow_list_menu_import_restore">Import/Restore Workflows</string>
     <string name="toast_workflow_moved_to_folder">Moved \"%1$s\" to \"%2$s\"</string>
@@ -1307,7 +1309,9 @@
 
     <!-- Workflow Item Chips -->
     <string name="workflow_chip_missing_permissions">Missing Permissions</string>
+    <string name="workflow_chip_missing_permissions_count">%d missing permissions</string>
     <string name="workflow_chip_steps">%d steps</string>
+    <string name="workflow_chip_permissions_count">%d permissions</string>
     <string name="workflow_id_copied">Workflow ID copied</string>
 
     <!-- Key Tester -->

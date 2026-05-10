@@ -50,6 +50,7 @@ import com.chaomixian.vflow.permissions.PermissionManager
 import com.chaomixian.vflow.ui.common.ShortcutHelper
 import com.chaomixian.vflow.ui.float.WorkflowsFloatPanelService
 import com.chaomixian.vflow.ui.main.MainActivity
+import com.chaomixian.vflow.ui.main.WorkflowLayoutMode
 import com.chaomixian.vflow.ui.main.WorkflowSortMode
 import com.chaomixian.vflow.ui.main.WorkflowTopBarAction
 import com.chaomixian.vflow.ui.viewmodel.WorkflowListViewModel
@@ -84,6 +85,7 @@ fun WorkflowListRoute(
     activity: MainActivity,
     isActive: Boolean,
     workflowSortMode: WorkflowSortMode,
+    workflowLayoutMode: WorkflowLayoutMode,
     workflowAction: WorkflowTopBarAction?,
     workflowActionVersion: Int,
     extraBottomPadding: androidx.compose.ui.unit.Dp,
@@ -472,12 +474,14 @@ fun WorkflowListRoute(
             WorkflowTopBarAction.SortByName,
             WorkflowTopBarAction.SortByRecentModified,
             WorkflowTopBarAction.SortFavoritesFirst,
+            WorkflowTopBarAction.ToggleLayoutMode,
             null -> Unit
         }
     }
 
     WorkflowListScreen(
         uiState = uiState,
+        layoutMode = workflowLayoutMode,
         extraBottomPadding = extraBottomPadding,
         modifier = modifier,
         actions = WorkflowListScreenActions(
