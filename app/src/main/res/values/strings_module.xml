@@ -1894,9 +1894,22 @@
     <string name="module_vflow_logic_while_end_desc">While 循环块的结束点</string>
     <string name="module_vflow_logic_while_end_name">结束循环</string>
 
+    <!-- vflow.logic.do_while_start -->
+    <string name="module_vflow_logic_do_while_start_desc">先执行循环体，再判断条件是否继续</string>
+    <string name="module_vflow_logic_do_while_start_name">循环直到</string>
+
+    <!-- vflow.logic.do_while_end -->
+    <string name="module_vflow_logic_do_while_end_desc">循环直到块的结束点，判断条件是否继续循环</string>
+    <string name="module_vflow_logic_do_while_end_name">结束循环</string>
+    <string name="param_vflow_logic_do_while_end_input1_name">输入</string>
+    <string name="param_vflow_logic_do_while_end_operator_name">条件</string>
+    <string name="param_vflow_logic_do_while_end_value1_name">比较值 1</string>
+    <string name="param_vflow_logic_do_while_end_value2_name">比较值 2</string>
+    <string name="output_vflow_logic_do_while_end_result_name">条件结果</string>
+
     <!-- vflow.logic.while_start -->
-    <string name="module_vflow_logic_while_start_desc">当条件为真时重复，直到条件不满足</string>
-    <string name="module_vflow_logic_while_start_name">循环直到</string>
+    <string name="module_vflow_logic_while_start_desc">满足条件时重复执行循环体</string>
+    <string name="module_vflow_logic_while_start_name">条件循环</string>
     <string name="param_vflow_logic_while_start_input1_name">输入</string>
     <string name="param_vflow_logic_while_start_operator_name">条件</string>
     <string name="param_vflow_logic_while_start_value1_name">比较值 1</string>
@@ -2933,8 +2946,11 @@
     <string name="summary_vflow_logic_loop_prefix">循环</string>
     <string name="summary_vflow_logic_loop_suffix">次</string>
     <string name="summary_vflow_logic_stop_and_return_prefix">返回</string>
-    <string name="summary_vflow_logic_while_prefix">循环直到</string>
-    <string name="summary_vflow_logic_while_suffix">不成立</string>
+    <string name="summary_vflow_logic_while_prefix">如果</string>
+    <string name="summary_vflow_logic_while_suffix">就循环</string>
+    <string name="summary_vflow_logic_do_while_start">开始循环</string>
+    <string name="summary_vflow_logic_do_while_prefix">直到</string>
+    <string name="summary_vflow_logic_do_while_suffix">不成立</string>
     <string name="summary_vflow_logic_loop_between">之间</string>
     <string name="summary_vflow_logic_loop_between_suffix">次</string>
     <string name="button_edit_gkd_rules">编辑规则文件</string>

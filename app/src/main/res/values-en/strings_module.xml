@@ -1894,9 +1894,22 @@
     <string name="module_vflow_logic_while_end_desc">End point of While loop block</string>
     <string name="module_vflow_logic_while_end_name">End Loop</string>
 
+    <!-- vflow.logic.do_while_start -->
+    <string name="module_vflow_logic_do_while_start_desc">Execute loop body first, then check condition to continue</string>
+    <string name="module_vflow_logic_do_while_start_name">Loop Until</string>
+
+    <!-- vflow.logic.do_while_end -->
+    <string name="module_vflow_logic_do_while_end_desc">End point of Loop Until block, evaluates condition to continue loop</string>
+    <string name="module_vflow_logic_do_while_end_name">End Loop</string>
+    <string name="param_vflow_logic_do_while_end_input1_name">Input</string>
+    <string name="param_vflow_logic_do_while_end_operator_name">Condition</string>
+    <string name="param_vflow_logic_do_while_end_value1_name">Compare Value 1</string>
+    <string name="param_vflow_logic_do_while_end_value2_name">Compare Value 2</string>
+    <string name="output_vflow_logic_do_while_end_result_name">Condition Result</string>
+
     <!-- vflow.logic.while_start -->
-    <string name="module_vflow_logic_while_start_desc">Repeat while condition is true until condition is not met</string>
-    <string name="module_vflow_logic_while_start_name">Loop Until</string>
+    <string name="module_vflow_logic_while_start_desc">Repeat the loop body while the condition is met</string>
+    <string name="module_vflow_logic_while_start_name">Conditional Loop</string>
     <string name="param_vflow_logic_while_start_input1_name">Input</string>
     <string name="param_vflow_logic_while_start_operator_name">Condition</string>
     <string name="param_vflow_logic_while_start_value1_name">Compare Value 1</string>
@@ -2933,8 +2946,11 @@
     <string name="summary_vflow_logic_loop_prefix">Loop</string>
     <string name="summary_vflow_logic_loop_suffix">times</string>
     <string name="summary_vflow_logic_stop_and_return_prefix">Return</string>
-    <string name="summary_vflow_logic_while_prefix">Loop until</string>
-    <string name="summary_vflow_logic_while_suffix">is false</string>
+    <string name="summary_vflow_logic_while_prefix">If</string>
+    <string name="summary_vflow_logic_while_suffix">then loop</string>
+    <string name="summary_vflow_logic_do_while_start">Start Loop</string>
+    <string name="summary_vflow_logic_do_while_prefix">Until</string>
+    <string name="summary_vflow_logic_do_while_suffix">is false</string>
     <string name="summary_vflow_logic_loop_between">between</string>
     <string name="summary_vflow_logic_loop_between_suffix">and</string>
     <string name="button_edit_gkd_rules">Edit rule file</string>

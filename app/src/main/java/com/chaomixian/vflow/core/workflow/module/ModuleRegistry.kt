@@ -115,6 +115,8 @@ object ModuleRegistry {
         register(JumpModule(), context)
         register(WhileModule(), context)
         register(EndWhileModule(), context)
+        register(DoWhileModule(), context)
+        register(EndDoWhileModule(), context)
         register(BreakLoopModule(), context)
         register(ContinueLoopModule(), context)
         register(StopWorkflowModule(), context)

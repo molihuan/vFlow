@@ -874,8 +874,16 @@ class WorkflowEditorActivity : BaseActivity() {
             oldVariableName = null
         }
 
+        // 对于积木块模块，如果编辑目标不是第一个步骤，则使用目标步骤对应的模块来构建编辑器
+        val targetIndex = module.editorTargetStepIndex
+        val editorModule = if (position == -1 && targetIndex > 0) {
+            val targetModuleId = module.createSteps().getOrNull(targetIndex)?.moduleId
+            targetModuleId?.let { ModuleRegistry.getModule(it) } ?: module
+        } else {
+            module
+        }
 
-        val editor = ActionEditorSheet.newInstance(module, existingStep, focusedInputId, getAllEditableSteps())
+        val editor = ActionEditorSheet.newInstance(editorModule, existingStep, focusedInputId, getAllEditableSteps())
         currentEditorSheet = editor
 
         editor.onSave = { newStepData ->
@@ -892,10 +900,16 @@ class WorkflowEditorActivity : BaseActivity() {
                 handleVariableNameChange(position)
             } else {
                 val stepsToAdd = module.createSteps()
-                val configuredFirstStep = stepsToAdd.first().copy(parameters = newStepData.parameters)
-                actionSteps.add(configuredFirstStep)
-                if (stepsToAdd.size > 1) {
-                    actionSteps.addAll(stepsToAdd.subList(1, stepsToAdd.size))
+                if (targetIndex > 0 && targetIndex < stepsToAdd.size) {
+                    val configuredSteps = stepsToAdd.toMutableList()
+                    configuredSteps[targetIndex] = configuredSteps[targetIndex].copy(parameters = newStepData.parameters)
+                    actionSteps.addAll(configuredSteps)
+                } else {
+                    val configuredFirstStep = stepsToAdd.first().copy(parameters = newStepData.parameters)
+                    actionSteps.add(configuredFirstStep)
+                    if (stepsToAdd.size > 1) {
+                        actionSteps.addAll(stepsToAdd.subList(1, stepsToAdd.size))
+                    }
                 }
             }
             recalculateAndNotify()
@@ -1673,16 +1687,30 @@ class WorkflowEditorActivity : BaseActivity() {
      * 在指定位置显示参数编辑器，插入新模块
      */
     private fun showActionEditorAtPosition(module: ActionModule, insertPosition: Int) {
-        val editor = ActionEditorSheet.newInstance(module, null, null, getAllEditableSteps())
+        val targetIndex = module.editorTargetStepIndex
+        val editorModule = if (targetIndex > 0) {
+            val targetModuleId = module.createSteps().getOrNull(targetIndex)?.moduleId
+            targetModuleId?.let { ModuleRegistry.getModule(it) } ?: module
+        } else {
+            module
+        }
+
+        val editor = ActionEditorSheet.newInstance(editorModule, null, null, getAllEditableSteps())
         currentEditorSheet = editor
 
         editor.onSave = { newStepData ->
             pushUndoSnapshot()
             val stepsToAdd = module.createSteps()
-            val configuredFirstStep = stepsToAdd.first().copy(parameters = newStepData.parameters)
-            actionSteps.add(insertPosition, configuredFirstStep)
-            if (stepsToAdd.size > 1) {
-                actionSteps.addAll(insertPosition + 1, stepsToAdd.subList(1, stepsToAdd.size))
+            if (targetIndex > 0 && targetIndex < stepsToAdd.size) {
+                val configuredSteps = stepsToAdd.toMutableList()
+                configuredSteps[targetIndex] = configuredSteps[targetIndex].copy(parameters = newStepData.parameters)
+                actionSteps.addAll(insertPosition, configuredSteps)
+            } else {
+                val configuredFirstStep = stepsToAdd.first().copy(parameters = newStepData.parameters)
+                actionSteps.add(insertPosition, configuredFirstStep)
+                if (stepsToAdd.size > 1) {
+                    actionSteps.addAll(insertPosition + 1, stepsToAdd.subList(1, stepsToAdd.size))
+                }
             }
             recalculateAndNotify()
         }

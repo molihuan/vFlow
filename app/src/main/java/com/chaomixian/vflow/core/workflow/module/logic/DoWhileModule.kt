@@ -1,4 +1,3 @@
-// 文件: main/java/com/chaomixian/vflow/core/workflow/module/logic/WhileModule.kt
 package com.chaomixian.vflow.core.workflow.module.logic
 
 import android.content.Context
@@ -13,39 +12,66 @@ import com.chaomixian.vflow.core.workflow.model.ActionStep
 import com.chaomixian.vflow.core.workflow.module.data.CreateVariableModule
 import com.chaomixian.vflow.ui.workflow_editor.PillUtil
 
-const val WHILE_PAIRING_ID = "while"
-const val WHILE_START_ID = "vflow.logic.while.start"
-const val WHILE_END_ID = "vflow.logic.while.end"
+const val DO_WHILE_PAIRING_ID = "do_while"
+const val DO_WHILE_START_ID = "vflow.logic.do_while.start"
+const val DO_WHILE_END_ID = "vflow.logic.do_while.end"
 
-class WhileModule : BaseBlockModule() {
-    override val id = WHILE_START_ID
+class DoWhileModule : BaseBlockModule() {
+    override val id = DO_WHILE_START_ID
     override val metadata = ActionMetadata(
-        nameStringRes = R.string.module_vflow_logic_while_start_name,
-        descriptionStringRes = R.string.module_vflow_logic_while_start_desc,
-        name = "条件循环",
-        description = "满足条件时重复执行循环体",
+        nameStringRes = R.string.module_vflow_logic_do_while_start_name,
+        descriptionStringRes = R.string.module_vflow_logic_do_while_start_desc,
+        name = "循环直到",
+        description = "先执行循环体，再判断条件是否继续",
         iconRes = R.drawable.rounded_repeat_24,
         category = "逻辑控制",
         categoryId = "logic"
     )
-    override val pairingId = WHILE_PAIRING_ID
-    override val stepIdsInBlock = listOf(WHILE_START_ID, WHILE_END_ID)
+    override val pairingId = DO_WHILE_PAIRING_ID
+    override val stepIdsInBlock = listOf(DO_WHILE_START_ID, DO_WHILE_END_ID)
+    override val editorTargetStepIndex = 1
 
-    /** 获取动态输入参数，与 IfModule 类似。条件输入始终显示，不依赖 input1 是否已连接。 */
+    override fun getInputs(): List<InputDefinition> = emptyList()
+    override fun getOutputs(step: ActionStep?): List<OutputDefinition> = emptyList()
+
+    override fun getSummary(context: Context, step: ActionStep): CharSequence {
+        return context.getString(R.string.summary_vflow_logic_do_while_start)
+    }
+
+    override suspend fun execute(
+        context: ExecutionContext,
+        onProgress: suspend (ProgressUpdate) -> Unit
+    ): ExecutionResult {
+        onProgress(ProgressUpdate("进入循环体。"))
+        return ExecutionResult.Success(emptyMap())
+    }
+}
+
+class EndDoWhileModule : BaseModule() {
+    override val id = DO_WHILE_END_ID
+    override val metadata = ActionMetadata(
+        nameStringRes = R.string.module_vflow_logic_do_while_end_name,
+        descriptionStringRes = R.string.module_vflow_logic_do_while_end_desc,
+        name = "结束循环",
+        description = "循环直到块的结束点，判断条件是否继续循环",
+        iconRes = R.drawable.ic_control_flow,
+        category = "逻辑控制",
+        categoryId = "logic"
+    )
+    override val blockBehavior = BlockBehavior(BlockType.BLOCK_END, DO_WHILE_PAIRING_ID)
+
     override fun getDynamicInputs(step: ActionStep?, allSteps: List<ActionStep>?): List<InputDefinition> {
         val staticInputs = getInputs()
         val currentParameters = step?.parameters ?: emptyMap()
 
-        // 获取是否启用类型限制的设置（默认关闭，快捷指令风格）
         val enableTypeFilter = isTypeFilterEnabled()
 
         val dynamicInputs = mutableListOf<InputDefinition>()
         dynamicInputs.add(staticInputs.first { it.id == "input1" })
 
-        // 根据 input1 是否已连接来决定可用的操作符
         val input1Value = currentParameters["input1"] as? String
         val availableOperators = if (!enableTypeFilter || input1Value == null) {
-            ALL_OPERATORS  // 未启用类型限制或 input1 未连接时，使用所有操作符
+            ALL_OPERATORS
         } else {
             val input1TypeName = resolveVariableType(input1Value, allSteps, step)
             getOperatorsForVariableType(input1TypeName)
@@ -83,20 +109,13 @@ class WhileModule : BaseBlockModule() {
             VTypeRegistry.NUMBER.id -> OPERATORS_FOR_ANY + OPERATORS_FOR_NUMBER
             VTypeRegistry.BOOLEAN.id -> OPERATORS_FOR_ANY + OPERATORS_FOR_BOOLEAN
             VTypeRegistry.LIST.id, VTypeRegistry.DICTIONARY.id -> OPERATORS_FOR_ANY + OPERATORS_FOR_COLLECTION
-            VTypeRegistry.COORDINATE.id, VTypeRegistry.IMAGE.id, VTypeRegistry.TIME.id, VTypeRegistry.DATE.id, VTypeRegistry.NOTIFICATION.id -> OPERATORS_FOR_ANY
-            null -> OPERATORS_FOR_ANY
             else -> OPERATORS_FOR_ANY
         }.toSet()
         return ALL_OPERATORS.filter(allowedOperators::contains)
     }
 
-    /**
-     * 统一处理魔法变量和命名变量的类型解析。
-     */
     private fun resolveVariableType(variableReference: String?, allSteps: List<ActionStep>?, currentStep: ActionStep?): String? {
-        if (variableReference == null || allSteps == null || currentStep == null) {
-            return null
-        }
+        if (variableReference == null || allSteps == null || currentStep == null) return null
 
         if (variableReference.isNamedVariable()) {
             val varName = VariablePathParser.parseNamedVariablePath(variableReference)?.firstOrNull() ?: return null
@@ -106,7 +125,7 @@ class WhileModule : BaseBlockModule() {
                 it.moduleId == CreateVariableModule().id && it.parameters["variableName"] == varName
             }
             val userType = creationStep?.parameters?.get("type") as? String
-            return userTypeToInternalName(userType)
+            return VariableType.fromStoredValue(userType)?.typeId
         }
 
         if (variableReference.isMagicVariable()) {
@@ -121,23 +140,15 @@ class WhileModule : BaseBlockModule() {
         return null
     }
 
-    /**
-     * 辅助函数，映射UI类型到内部类型。
-     */
-    private fun userTypeToInternalName(userType: String?): String? {
-        return VariableType.fromStoredValue(userType)?.typeId
-    }
-
-
     override fun getInputs(): List<InputDefinition> = listOf(
-        InputDefinition(id = "input1", nameStringRes = R.string.param_vflow_logic_while_start_input1_name, name = "输入", staticType = ParameterType.ANY, acceptsMagicVariable = true, acceptsNamedVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.BOOLEAN.id, VTypeRegistry.NUMBER.id, VTypeRegistry.STRING.id, VTypeRegistry.DICTIONARY.id, VTypeRegistry.LIST.id, VTypeRegistry.SCREEN_ELEMENT.id)),
-        InputDefinition(id = "operator", nameStringRes = R.string.param_vflow_logic_while_start_operator_name, name = "条件", staticType = ParameterType.ENUM, defaultValue = OP_EXISTS, options = ALL_OPERATORS, acceptsMagicVariable = false, optionsStringRes = CONDITION_OPERATOR_OPTION_RES_IDS, legacyValueMap = CONDITION_OPERATOR_LEGACY_MAP),
-        InputDefinition(id = "value1", nameStringRes = R.string.param_vflow_logic_while_start_value1_name, name = "比较值 1", staticType = ParameterType.ANY, acceptsMagicVariable = true, acceptsNamedVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.STRING.id, VTypeRegistry.NUMBER.id, VTypeRegistry.BOOLEAN.id)),
-        InputDefinition(id = "value2", nameStringRes = R.string.param_vflow_logic_while_start_value2_name, name = "比较值 2", staticType = ParameterType.NUMBER, acceptsMagicVariable = true, acceptsNamedVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.NUMBER.id))
+        InputDefinition(id = "input1", nameStringRes = R.string.param_vflow_logic_do_while_end_input1_name, name = "输入", staticType = ParameterType.ANY, acceptsMagicVariable = true, acceptsNamedVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.BOOLEAN.id, VTypeRegistry.NUMBER.id, VTypeRegistry.STRING.id, VTypeRegistry.DICTIONARY.id, VTypeRegistry.LIST.id, VTypeRegistry.SCREEN_ELEMENT.id)),
+        InputDefinition(id = "operator", nameStringRes = R.string.param_vflow_logic_do_while_end_operator_name, name = "条件", staticType = ParameterType.ENUM, defaultValue = OP_EXISTS, options = ALL_OPERATORS, acceptsMagicVariable = false, optionsStringRes = CONDITION_OPERATOR_OPTION_RES_IDS),
+        InputDefinition(id = "value1", nameStringRes = R.string.param_vflow_logic_do_while_end_value1_name, name = "比较值 1", staticType = ParameterType.ANY, acceptsMagicVariable = true, acceptsNamedVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.STRING.id, VTypeRegistry.NUMBER.id, VTypeRegistry.BOOLEAN.id)),
+        InputDefinition(id = "value2", nameStringRes = R.string.param_vflow_logic_do_while_end_value2_name, name = "比较值 2", staticType = ParameterType.NUMBER, acceptsMagicVariable = true, acceptsNamedVariable = true, acceptedMagicVariableTypes = setOf(VTypeRegistry.NUMBER.id))
     )
 
     override fun getOutputs(step: ActionStep?): List<OutputDefinition> = listOf(
-        OutputDefinition("result", nameStringRes = R.string.output_vflow_logic_while_start_result_name, name = "条件结果", typeName = VTypeRegistry.BOOLEAN.id)
+        OutputDefinition("result", nameStringRes = R.string.output_vflow_logic_do_while_end_result_name, name = "条件结果", typeName = VTypeRegistry.BOOLEAN.id)
     )
 
     override fun getSummary(context: Context, step: ActionStep): CharSequence {
@@ -149,13 +160,13 @@ class WhileModule : BaseBlockModule() {
             allInputs.find { it.id == "input1" }
         )
         val operatorPill = PillUtil.createPillFromParam(
-            step.parameters["operator"],
+            step.parameters["operator"] ?: OP_EXISTS,
             allInputs.find { it.id == "operator" },
             isModuleOption = true
         )
 
         val parts = mutableListOf<Any>(
-            context.getString(R.string.summary_vflow_logic_while_prefix),
+            context.getString(R.string.summary_vflow_logic_do_while_prefix),
             input1Pill,
             " ",
             operatorPill
@@ -179,53 +190,39 @@ class WhileModule : BaseBlockModule() {
             parts.add(context.getString(R.string.summary_vflow_logic_loop_between_suffix))
         }
 
-        parts.add(context.getString(R.string.summary_vflow_logic_while_suffix))
+        parts.add(" ")
+        parts.add(context.getString(R.string.summary_vflow_logic_do_while_suffix))
 
         return PillUtil.buildSpannable(context, *parts.toTypedArray())
     }
 
-    /**
-     * 执行 While 模块的核心逻辑。
-     * 评估条件。如果为真，则继续执行下一个步骤。如果为假，则跳到 EndWhile。
-     */
     override suspend fun execute(
         context: ExecutionContext,
         onProgress: suspend (ProgressUpdate) -> Unit
     ): ExecutionResult {
-        // 优先从 magicVariables 中获取已解析的值
         val input1 = context.getVariable("input1")
         val rawOperator = context.getVariableAsString("operator", OP_EXISTS)
         val operator = getInputs().first { it.id == "operator" }.normalizeEnumValue(rawOperator) ?: rawOperator
         val value1 = context.getVariable("value1")
         val value2 = context.getVariable("value2")
 
-        // 使用 ConditionEvaluator
         val result = ConditionEvaluator.evaluateCondition(input1, operator, value1, value2)
         onProgress(ProgressUpdate("条件判断: $result (操作: $operator)"))
 
         if (result) {
-            onProgress(ProgressUpdate("条件为真，进入循环体。"))
-            return ExecutionResult.Success(mapOf("result" to VBoolean(true)))
-        } else {
-            onProgress(ProgressUpdate("条件为假，跳出循环。"))
-            // 使用 BlockNavigator
-            val jumpTo = BlockNavigator.findNextBlockPosition(
-                context.allSteps,
-                context.currentStepIndex,
-                setOf(WHILE_END_ID)
-            )
-            if (jumpTo != -1) {
-                // 跳转到结束循环模块的下一个位置，以跳出整个循环
-                return ExecutionResult.Signal(ExecutionSignal.Jump(jumpTo + 1))
+            onProgress(ProgressUpdate("条件仍然成立，继续循环。"))
+            val startPc = BlockNavigator.findBlockStartPosition(context.allSteps, context.currentStepIndex, DO_WHILE_START_ID)
+            return if (startPc != -1) {
+                ExecutionResult.Signal(ExecutionSignal.Jump(startPc + 1))
+            } else {
+                ExecutionResult.Failure("执行错误", "找不到配对的 '循环直到' 模块")
             }
+        } else {
+            onProgress(ProgressUpdate("条件不满足，跳出循环。"))
+            return ExecutionResult.Success(mapOf("result" to VBoolean(false)))
         }
-        return ExecutionResult.Failure("执行错误", "找不到配对的结束循环块")
     }
 
-    /**
-     * 检查是否启用了变量类型限制。
-     * 默认关闭（快捷指令风格），通过 SharedPreferences 获取用户设置。
-     */
     private fun isTypeFilterEnabled(): Boolean {
         return try {
             val prefs = com.chaomixian.vflow.core.logging.LogManager.applicationContext
@@ -233,47 +230,6 @@ class WhileModule : BaseBlockModule() {
             prefs.getBoolean("enableTypeFilter", false)
         } catch (e: Exception) {
             false
-        }
-    }
-}
-
-/**
- * "结束当条件为真时循环" (EndWhile) 模块，While 逻辑块的结束点。
- */
-class EndWhileModule : BaseModule() {
-    override val id = WHILE_END_ID
-    override val metadata = ActionMetadata(
-        nameStringRes = R.string.module_vflow_logic_while_end_name,
-        descriptionStringRes = R.string.module_vflow_logic_while_end_desc,
-        name = "结束循环",
-        description = "",
-        iconRes = R.drawable.ic_control_flow,
-        category = "逻辑控制",
-        categoryId = "logic"
-    )
-    override val blockBehavior = BlockBehavior(BlockType.BLOCK_END, WHILE_PAIRING_ID) // 标记为块结束
-
-    override fun getSummary(context: Context, step: ActionStep): CharSequence = context.getString(R.string.summary_end_loop)
-
-    /**
-     * 执行 EndWhile 模块的核心逻辑。
-     * 负责跳回到对应的 While 模块，继续进行下一次条件判断。
-     */
-    override suspend fun execute(
-        context: ExecutionContext,
-        onProgress: suspend (ProgressUpdate) -> Unit
-    ): ExecutionResult {
-        onProgress(ProgressUpdate("循环体执行完毕，返回到循环起点。"))
-
-        // 使用 BlockNavigator
-        val whilePc = BlockNavigator.findBlockStartPosition(context.allSteps, context.currentStepIndex, WHILE_START_ID)
-
-        return if (whilePc != -1) {
-            // 发出信号，跳转到 While 模块以重新评估条件
-            ExecutionResult.Signal(ExecutionSignal.Jump(whilePc))
-        } else {
-            // 理论上不应发生，但作为保护
-            ExecutionResult.Failure("执行错误", "找不到配对的 '条件循环' 模块")
         }
     }
 }
