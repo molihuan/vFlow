@@ -4,9 +4,10 @@ package com.chaomixian.vflow.core.types.complex
 import android.graphics.Rect
 import com.chaomixian.vflow.core.types.EnhancedBaseVObject
 import com.chaomixian.vflow.core.types.VTypeRegistry
+import com.chaomixian.vflow.core.types.basic.VBoolean
+import com.chaomixian.vflow.core.types.basic.VList
 import com.chaomixian.vflow.core.types.basic.VNumber
 import com.chaomixian.vflow.core.types.basic.VString
-import com.chaomixian.vflow.core.types.basic.VBoolean
 import com.chaomixian.vflow.core.types.properties.PropertyRegistry
 import com.chaomixian.vflow.core.utils.getCompatStableId
 
@@ -21,6 +22,7 @@ data class VScreenElement(
     // === 文本内容 ===
     val text: String?,
     val contentDescription: String?,
+    val allTexts: List<String>,
 
     // === 控件标识 ===
     val viewId: String?,
@@ -77,6 +79,9 @@ data class VScreenElement(
             })
             register("content_description", "contentDescription", "content-desc", getter = { host ->
                 VString((host as VScreenElement).contentDescription ?: "")
+            })
+            register("all_texts", "allTexts", "texts", getter = { host ->
+                VList((host as VScreenElement).allTexts.map { VString(it) })
             })
 
             // === 标识属性 ===
@@ -184,6 +189,7 @@ data class VScreenElement(
                 bounds = bounds,
                 text = node.text?.toString(),
                 contentDescription = node.contentDescription?.toString(),
+                allTexts = collectAllTexts(node),
                 viewId = node.viewIdResourceName,
                 className = node.className?.toString(),
                 isClickable = node.isClickable,
@@ -217,6 +223,9 @@ data class VScreenElement(
                     bounds = bounds,
                     text = parcel.readString(),
                     contentDescription = parcel.readString(),
+                    allTexts = buildList {
+                        parcel.readStringList(this)
+                    },
                     viewId = parcel.readString(),
                     className = parcel.readString(),
                     isClickable = parcel.readByte() != 0.toByte(),
@@ -239,6 +248,29 @@ data class VScreenElement(
                 return arrayOfNulls(size)
             }
         }
+
+        private fun collectAllTexts(node: android.view.accessibility.AccessibilityNodeInfo): List<String> {
+            val texts = mutableListOf<String>()
+            collectAllTextsRecursive(node, texts)
+            return texts
+        }
+
+        private fun collectAllTextsRecursive(
+            node: android.view.accessibility.AccessibilityNodeInfo,
+            sink: MutableList<String>
+        ) {
+            node.text?.toString()?.takeIf { it.isNotBlank() }?.let(sink::add)
+            node.contentDescription?.toString()?.takeIf { it.isNotBlank() }?.let(sink::add)
+
+            for (index in 0 until node.childCount) {
+                val child = node.getChild(index) ?: continue
+                try {
+                    collectAllTextsRecursive(child, sink)
+                } finally {
+                    child.recycle()
+                }
+            }
+        }
     }
 
     override fun writeToParcel(parcel: android.os.Parcel, flags: Int) {
@@ -248,6 +280,7 @@ data class VScreenElement(
         parcel.writeInt(bounds.bottom)
         parcel.writeString(text)
         parcel.writeString(contentDescription)
+        parcel.writeStringList(allTexts)
         parcel.writeString(viewId)
         parcel.writeString(className)
         parcel.writeByte(if (isClickable) 1 else 0)

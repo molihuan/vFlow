@@ -79,6 +79,7 @@ object VTypeRegistry {
         // 文本属性
         VPropertyDef("text", "文本内容", ANY, R.string.vtype_screen_element_text),
         VPropertyDef("content_description", "内容描述", ANY, R.string.vtype_screen_element_content_description),
+        VPropertyDef("all_texts", "所有文本", LIST, R.string.vtype_screen_element_all_texts),
         // 标识属性
         VPropertyDef("id", "控件ID", ANY, R.string.vtype_screen_element_id),
         VPropertyDef("class", "类名", ANY, R.string.vtype_screen_element_class),
