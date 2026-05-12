@@ -732,21 +732,7 @@ fun WorkflowListRoute(
 private enum class ConflictChoice { ASK, REPLACE_ALL, KEEP_ALL }
 
 private fun createWorkflowExportData(gson: Gson, workflow: Workflow): Map<String, Any?> {
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val updatedAt = dateFormat.format(Date(workflow.modifiedAt))
-    val meta = mapOf(
-        "id" to workflow.id,
-        "name" to workflow.name,
-        "version" to workflow.version,
-        "vFlowLevel" to workflow.vFlowLevel,
-        "description" to workflow.description,
-        "author" to workflow.author,
-        "homepage" to workflow.homepage,
-        "tags" to workflow.tags,
-        "updated_at" to updatedAt,
-        "modified_at" to workflow.modifiedAt
-    )
-    val workflowMap = mapOf(
+    return mapOf(
         "id" to workflow.id,
         "name" to workflow.name,
         "triggers" to workflow.triggers,
@@ -768,7 +754,6 @@ private fun createWorkflowExportData(gson: Gson, workflow: Workflow): Map<String
         "homepage" to workflow.homepage,
         "tags" to workflow.tags
     )
-    return mapOf("_meta" to meta) + workflowMap
 }
 
 private fun backupAllWorkflowsToUri(
