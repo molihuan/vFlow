@@ -1008,9 +1008,9 @@
     <string name="insert_below">在下方插入</string>
     <string name="desc_select_device">选择设备</string>
     <string name="label_trigger_condition">触发条件</string>
-    <string name="hint_package_name">应用包名包含 (可选)</string>
-    <string name="hint_notification_title">通知标题包含 (可选)</string>
-    <string name="hint_notification_content">通知内容包含 (可选)</string>
+    <string name="hint_package_name">应用包名 (可选)</string>
+    <string name="hint_notification_title">通知标题关键词 (可选)</string>
+    <string name="hint_notification_content">通知内容关键词 (可选)</string>
     <string name="text_when_connected">连接时</string>
     <string name="text_when_disconnected">断开时</string>
     <string name="hint_model_name">模型名称</string>

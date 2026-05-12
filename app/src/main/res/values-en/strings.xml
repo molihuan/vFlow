@@ -1008,9 +1008,9 @@
     <string name="insert_below">Insert Below</string>
     <string name="desc_select_device">Select Device</string>
     <string name="label_trigger_condition">Trigger Condition</string>
-    <string name="hint_package_name">App Package Contains (Optional)</string>
-    <string name="hint_notification_title">Notification Title Contains (Optional)</string>
-    <string name="hint_notification_content">Notification Content Contains (Optional)</string>
+    <string name="hint_package_name">App Package (Optional)</string>
+    <string name="hint_notification_title">Notification Title Keyword (Optional)</string>
+    <string name="hint_notification_content">Notification Content Keyword (Optional)</string>
     <string name="text_when_connected">When Connected</string>
     <string name="text_when_disconnected">When Disconnected</string>
     <string name="hint_model_name">Model Name</string>
