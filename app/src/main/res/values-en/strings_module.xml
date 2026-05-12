@@ -1498,6 +1498,9 @@
     <string name="module_vflow_interaction_ocr_name">OCR</string>
     <string name="module_vflow_interaction_ocr_desc">Recognize text in image, or find coordinates of specified text</string>
     <string name="param_vflow_interaction_ocr_image_name">Input Image</string>
+    <string name="param_vflow_interaction_ocr_engine_name">Recognition Engine</string>
+    <string name="param_vflow_interaction_ocr_engine_opt_ml_kit">ML Kit</string>
+    <string name="param_vflow_interaction_ocr_engine_opt_pp_ocr_v5">PP-OCRv5</string>
     <string name="param_vflow_interaction_ocr_mode_name">Mode</string>
     <string name="param_vflow_interaction_ocr_mode_opt_recognize">Recognize Full Text</string>
     <string name="param_vflow_interaction_ocr_mode_opt_find">Find Text</string>

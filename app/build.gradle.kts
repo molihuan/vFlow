@@ -20,6 +20,12 @@ android {
         versionName = "1.5.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf("-DANDROID_STL=c++_shared")
+            }
+        }
     }
 
     signingConfigs {
@@ -95,6 +101,13 @@ android {
         viewBinding = true
         aidl = true           // 启用aidl
         compose = true
+        prefab = true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+        }
     }
 
     splits {
@@ -111,6 +124,12 @@ android {
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/io.netty.versions.properties"
             excludes += "META-INF/DEPENDENCIES"
+        }
+        jniLibs {
+            pickFirsts += setOf(
+                "lib/**/libc++_shared.so",
+                "lib/**/libopencv_java4.so",
+            )
         }
     }
 }

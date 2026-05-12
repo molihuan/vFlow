@@ -1498,6 +1498,9 @@
     <string name="module_vflow_interaction_ocr_name">文字识别 (OCR)</string>
     <string name="module_vflow_interaction_ocr_desc">识别图片中的文字，或查找指定文字的坐标</string>
     <string name="param_vflow_interaction_ocr_image_name">输入图片</string>
+    <string name="param_vflow_interaction_ocr_engine_name">识别引擎</string>
+    <string name="param_vflow_interaction_ocr_engine_opt_ml_kit">ML Kit</string>
+    <string name="param_vflow_interaction_ocr_engine_opt_pp_ocr_v5">PP-OCRv5</string>
     <string name="param_vflow_interaction_ocr_mode_name">模式</string>
     <string name="param_vflow_interaction_ocr_mode_opt_recognize">识别全文</string>
     <string name="param_vflow_interaction_ocr_mode_opt_find">查找文本</string>
